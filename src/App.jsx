@@ -19,7 +19,7 @@ function App() {
         <Route path="/" element={<Body />}>
           <Route index element={<Homepage />} />
           {/* Add more routes here as needed */}
-          <Route path="/products" element={<ProductPage/>}/>
+          <Route path="/products" element={<ProductPageo/>}/>
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
