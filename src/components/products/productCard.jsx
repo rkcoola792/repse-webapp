@@ -1,7 +1,10 @@
 import { Star } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+
 const ProductCard = ({ imageUrl, title, rating, reviews, price, originalPrice, discount }) => {
+  const navigate=useNavigate()
   return (
-    <div className="bg-gray-100 rounded-lg p-6 flex flex-col">
+    <div className="bg-gray-100 rounded-lg p-6 flex flex-col" onClick={()=>navigate('/product-details/1')}>
       <div className="bg-white rounded-lg mb-4 flex items-center justify-center h-48 overflow-hidden">
         <img
           src={imageUrl}

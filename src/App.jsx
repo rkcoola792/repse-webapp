@@ -10,7 +10,10 @@ import NewsletterFooter from "./components/footer";
 import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
 import Body from "./body";
 import Homepage from "./components/homepage";
+import ProductsPage from "./components/products/productsPage";
+import PracticeLayout from "./components/products/practiceLayout";
 import ProductPage from "./components/products/productsPage";
+import ProductDetails from "./components/products/productDetails";
 
 function App() {
   return (
@@ -19,7 +22,9 @@ function App() {
         <Route path="/" element={<Body />}>
           <Route index element={<Homepage />} />
           {/* Add more routes here as needed */}
-          <Route path="/products" element={<ProductPageo/>}/>
+          <Route path="/products" element={<ProductsPage/>}/>
+          <Route path="/practice" element={<PracticeLayout/>}/>
+          <Route path="/product-details/:id" element={<ProductDetails/>}/>
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
