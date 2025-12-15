@@ -1,13 +1,44 @@
 import React, { useState } from 'react';
+import { useDispatch } from 'react-redux';
 import { ShoppingCart, Heart, Star, ChevronDown, Minus, Plus } from 'lucide-react';
-
+import { addItem } from '../../store/cartSlice';
 export default function ProductDetails() {
+  const dispatch = useDispatch();
   const [selectedSize, setSelectedSize] = useState('Large');
+  const [selectedColor, setSelectedColor] = useState('#2C3E50');
   const [quantity, setQuantity] = useState(1);
   const [activeTab, setActiveTab] = useState('reviews');
 
   const sizes = ['Small', 'Medium', 'Large', 'X-Large'];
   const colors = ['#2C3E50', '#34495E', '#7F8C8D'];
+
+  const product = {
+    id: 'one-life-graphic-tshirt',
+    name: 'ONE LIFE GRAPHIC T-SHIRT',
+    price: 260,
+    oldPrice: 300,
+    discount: 40,
+    image: '👕',
+    rating: 4.5
+  };
+
+  const handleAddToCart = () => {
+    const cartItem = {
+      id: `${product.id}-${selectedSize}-${selectedColor}`,
+      productId: product.id,
+      name: product.name,
+      price: product.price,
+      size: selectedSize,
+      color: selectedColor,
+      quantity: quantity,
+      image: product.image
+    };
+
+    dispatch(addItem(cartItem));
+    
+    // Optional: Show success message
+    // alert(`Added ${quantity} item(s) to cart!`);
+  };
 
   const reviews = [
     {
@@ -49,8 +80,6 @@ export default function ProductDetails() {
 
   return (
     <div className="min-h-screen bg-white">
-    
-
       {/* Breadcrumb */}
       <div className="max-w-7xl mx-auto px-4 py-4">
         <div className="text-sm text-gray-500">
@@ -106,7 +135,10 @@ export default function ProductDetails() {
                 {colors.map((color, i) => (
                   <div
                     key={i}
-                    className="w-10 h-10 rounded-full border-2 cursor-pointer hover:border-gray-400"
+                    onClick={() => setSelectedColor(color)}
+                    className={`w-10 h-10 rounded-full border-2 cursor-pointer hover:border-gray-400 ${
+                      selectedColor === color ? 'border-black ring-2 ring-offset-2 ring-black' : 'border-gray-300'
+                    }`}
                     style={{ backgroundColor: color }}
                   />
                 ))}
@@ -144,7 +176,10 @@ export default function ProductDetails() {
                   <Plus className="w-4 h-4" />
                 </button>
               </div>
-              <button className="flex-1 bg-black text-white py-4 rounded-full font-medium hover:bg-gray-800">
+              <button 
+                className="flex-1 bg-black text-white py-4 rounded-full font-medium hover:bg-gray-800 transition" 
+                onClick={handleAddToCart}
+              >
                 Add to Cart
               </button>
             </div>

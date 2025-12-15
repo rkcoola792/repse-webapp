@@ -3,20 +3,27 @@ import { CiSearch } from "react-icons/ci";
 import { CiShoppingCart } from "react-icons/ci";
 import { CgProfile } from "react-icons/cg";
 import Face5Icon from "@mui/icons-material/Face5";
+import { useNavigate } from "react-router-dom";
 
 export default function Header() {
+  const navigate = useNavigate();
   return (
-    <header className="bg-white shadow-sm border-b border-gray-200">
+    <header className="bg-white shadow-sm border-b border-gray-200 fixed top-0 z-50 w-full">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Left: logo + nav */}
           <div className="flex items-center space-x-6">
-            <div className="text-2xl font-extrabold tracking-tight">REPSE</div>
+            <div
+              className="text-2xl font-extrabold tracking-tight cursor-pointer" 
+              onClick={() => navigate("/")}
+            >
+              REPSE
+            </div>
             <nav className="hidden md:flex items-center space-x-4 text-sm text-gray-600">
               <a className="hover:text-gray-900">Shop</a>
               <a className="hover:text-gray-900">On Sale</a>
               <a className="hover:text-gray-900">New Arrivals</a>
-              <a className="hover:text-gray-900">Brands</a>
+              {/* <a className="hover:text-gray-900">Brands</a> */}
             </nav>
           </div>
 
@@ -44,7 +51,10 @@ export default function Header() {
               Sign in
             </button>
             <div className="flex items-center space-x-3">
-              <button className="p-2 rounded-full hover:bg-gray-100">
+              <button
+                className="p-2 rounded-full hover:bg-gray-100"
+                onClick={() => navigate("/cart")}
+              >
                 <CiShoppingCart />
               </button>
               <button className="p-2 rounded-full hover:bg-gray-100">
@@ -59,8 +69,6 @@ export default function Header() {
 }
 
 // File: src/components/Hero.jsx
-
-
 
 // // File: src/App.jsx
 // import React from 'react';
