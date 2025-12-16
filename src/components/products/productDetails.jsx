@@ -20,23 +20,34 @@ export default function ProductDetails() {
   const [activeTab, setActiveTab] = useState("reviews");
   const [selectedImage, setSelectedImage] = useState(0); // Track selected image index
 
+  const [showToast, setShowToast] = useState(false); //Popup
+
   const sizes = ["Small", "Medium", "Large", "X-Large"];
   const colors = ["#2C3E50", "#34495E", "#7F8C8D"];
 
   const handleAddToCart = () => {
-    const cartItem = {
-      id: `${product._id}-${selectedSize}-${selectedColor}`,
-      productId: product._id,
-      name: product.name,
-      price: product.price,
-      size: selectedSize,
-      color: selectedColor,
-      quantity: quantity,
-      image: product.images?.[0],
-    };
-
-    dispatch(addItem(cartItem));
+  const cartItem = {
+    id: `${product._id}-${selectedSize}-${selectedColor}`,
+    productId: product._id,
+    name: product.name,
+    price: product.price,
+    size: selectedSize,
+    color: selectedColor,
+    quantity: quantity,
+    image: product.images?.[0],
   };
+
+  dispatch(addItem(cartItem));
+
+  // show popup
+  setShowToast(true);
+
+  // auto hide after 2 sec
+  setTimeout(() => {
+    setShowToast(false);
+  }, 2000);
+};
+
 
   const reviews = [
     {
@@ -155,7 +166,7 @@ export default function ProductDetails() {
                 </div>
               ))}
             </div>
-            <div className="flex-1 bg-gray-100 rounded-2xl flex items-center justify-center p-12 overflow-hidden">
+            <div className="flex-1 bg-gray-100 rounded-2xl flex items-center justify-center aspect-square overflow-hidden">
               <img
                 src={product.images?.[selectedImage] || product.images?.[0] || "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&h=400&fit=crop"}
                 alt={product.name}
@@ -217,15 +228,15 @@ export default function ProductDetails() {
             <div className="flex gap-4 mb-6">
               <div className="flex items-center gap-4 bg-gray-100 rounded-full px-6">
                 <button onClick={() => setQuantity(Math.max(1, quantity - 1))}>
-                  <Minus className="w-4 h-4" />
+                  <Minus className="w-4 h-4 cursor-pointer" />
                 </button>
                 <span className="w-8 text-center">{quantity}</span>
                 <button onClick={() => setQuantity(quantity + 1)}>
-                  <Plus className="w-4 h-4" />
+                  <Plus className="w-4 h-4 cursor-pointer" />
                 </button>
               </div>
               <button
-                className="flex-1 bg-black text-white py-4 rounded-full font-medium hover:bg-gray-800 transition"
+                className="flex-1 bg-black text-white py-4 rounded-full font-medium hover:bg-gray-800 transition cursor-pointer"
                 onClick={handleAddToCart}
               >
                 Add to Cart
@@ -312,7 +323,7 @@ export default function ProductDetails() {
               </div>
 
               <div className="text-center mt-8">
-                <button className="px-12 py-3 border rounded-full hover:bg-gray-50">
+                <button className="px-12 py-3 border rounded-full hover:bg-gray-50 cursor-pointer">
                   Load More Reviews
                 </button>
               </div>
@@ -350,6 +361,24 @@ export default function ProductDetails() {
           </div>
         </div>
       </div>
+      {showToast && (
+      <div className="fixed bottom-10 right-6 z-50">
+      <div className="
+      flex items-center gap-3
+      bg-white text-gray-900
+      px-5 py-3
+      rounded-xl
+      shadow-lg border
+      animate-toast
+      ">
+      <p className="text-sm font-medium">
+      Added to cart
+      </p>
+      </div>
+      </div>
+      )}
+
+
     </div>
   );
 }

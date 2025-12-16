@@ -16,13 +16,13 @@ export default function Hero() {
             </h1>
 
             <p className="mt-6 text-gray-600 max-w-xl">
-              Browse through our diverse range of meticulously crafted garments, and
+              Browse through our diverse range of meticulously crafted garments,
               designed to bring out your individuality and cater to your sense
               of style.
             </p>
 
             <div className="mt-8 flex flex-col  gap-3">
-              <a className="inline-block bg-black text-white px-8 py-3 rounded-full text-sm font-medium w-fit" >
+              <a className="inline-block bg-black text-white px-8 py-3 rounded-full text-sm font-medium w-fit cursor-pointer" >
                 Shop Now
               </a>
 

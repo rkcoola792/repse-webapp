@@ -8,11 +8,13 @@ import PracticeLayout from "./components/products/practiceLayout";
 import ProductDetails from "./components/products/productDetails";
 import CartPage from "./components/cart/cart";
 import { store } from "./store/store";
+import ScrollToTop from "./components/products/ScrollToTop";
 
 function App() {
   return (
-    <Provider store={store}>
+    <Provider store={store}>  
       <BrowserRouter>
+      <ScrollToTop />
         <Routes>
           <Route path="/" element={<Body />}>
             <Route index element={<Homepage />} />

@@ -2,28 +2,24 @@ import React, { useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import {
   ShoppingCart,
-  Heart,
   Minus,
   Plus,
   Trash2,
   Tag,
   ArrowRight,
 } from "lucide-react";
-import { removeItem } from "../../store/cartSlice";
+import { removeItem, updateQuantity, clearCart } from "../../store/cartSlice";
+import { useNavigate } from "react-router-dom";
+
 export default function CartPage() {
   const dispatch = useDispatch();
   const cartItems = useSelector((state) => state.cart.cart);
   const [promoCode, setPromoCode] = useState("");
+  const navigate = useNavigate();
 
-  const updateQuantity = (id, newQuantity) => {
+  const handleUpdateQuantity = (id, newQuantity) => {
     if (newQuantity < 1) return;
-    
-    // Remove the old item and add updated one
-    const item = cartItems.find((item) => item.id === id);
-    if (item) {
-      dispatch(removeItem({ id }));
-      dispatch(addItem({ ...item, quantity: newQuantity }));
-    }
+    dispatch(updateQuantity({ id, quantity: newQuantity }));
   };
 
   const handleRemoveItem = (id) => {
@@ -40,8 +36,9 @@ export default function CartPage() {
     (sum, item) => sum + item.price * item.quantity,
     0
   );
-  const discount = subtotal * 0.2; // 20% discount
-  const deliveryFee = 15;
+
+  const discount = subtotal > 0 ? subtotal * 0.2 : 0;
+  const deliveryFee = subtotal > 0 ? 15 : 0;
   const total = subtotal - discount + deliveryFee;
 
   return (
@@ -60,7 +57,7 @@ export default function CartPage() {
           {cartItems.length > 0 && (
             <button
               onClick={handleClearCart}
-              className="text-red-500 hover:text-red-700 text-sm font-medium"
+              className="text-red-500 hover:text-red-700 text-sm font-medium cursor-pointer"
             >
               Clear Cart
             </button>
@@ -74,26 +71,27 @@ export default function CartPage() {
               <div className="text-center py-12 border rounded-2xl">
                 <ShoppingCart className="w-16 h-16 mx-auto text-gray-300 mb-4" />
                 <p className="text-xl text-gray-500">Your cart is empty</p>
-                <button className="mt-4 px-8 py-3 bg-black text-white rounded-full hover:bg-gray-800">
+                <button
+                  onClick={() => navigate("/")}
+                  className="mt-4 px-8 py-3 bg-black text-white rounded-full hover:bg-gray-800 cursor-pointer"
+                >
                   Continue Shopping
                 </button>
               </div>
             ) : (
-              cartItems?.map((item) => (
+              cartItems.map((item) => (
                 <div key={item.id} className="border rounded-2xl p-6">
                   <div className="flex gap-6">
-                    {/* Product Image */}
-                    <div className="bg-gray-100 rounded-xl w-32 h-32 flex items-center justify-center text-6xl flex-shrink-0">
-                     <img src={item.image} alt={item.name}></img> 
+                    <div className="bg-gray-100 rounded-xl w-32 h-32 flex items-center justify-center text-6xl flex-shrink-0 overflow-hidden">
+                      <img src={item.image} alt={item.name} />
                     </div>
 
-                    {/* Product Details */}
                     <div className="flex-1">
                       <div className="flex justify-between items-start mb-2">
                         <h3 className="font-semibold text-lg">{item.name}</h3>
                         <button
                           onClick={() => handleRemoveItem(item.id)}
-                          className="text-red-500 hover:text-red-700"
+                          className="text-red-500 hover:text-red-700 cursor-pointer"
                         >
                           <Trash2 className="w-5 h-5" />
                         </button>
@@ -111,27 +109,24 @@ export default function CartPage() {
                           ${item.price}
                         </span>
 
-                        {/* Quantity Selector */}
                         <div className="flex items-center gap-4 bg-gray-100 rounded-full px-4 py-2">
                           <button
                             onClick={() =>
-                              updateQuantity(item.id, item.quantity - 1)
+                              handleUpdateQuantity(item.id, item.quantity - 1)
                             }
-                            className="hover:text-gray-600"
                             disabled={item.quantity <= 1}
                           >
-                            <Minus className="w-4 h-4" />
+                            <Minus className="w-4 h-4 cursor-pointer" />
                           </button>
                           <span className="w-8 text-center font-medium">
                             {item.quantity}
                           </span>
                           <button
                             onClick={() =>
-                              updateQuantity(item.id, item.quantity + 1)
+                              handleUpdateQuantity(item.id, item.quantity + 1)
                             }
-                            className="hover:text-gray-600"
                           >
-                            <Plus className="w-4 h-4" />
+                            <Plus className="w-4 h-4 cursor-pointer" />
                           </button>
                         </div>
                       </div>
@@ -197,8 +192,8 @@ export default function CartPage() {
               </div>
 
               {/* Checkout Button */}
-              <button 
-                className="w-full bg-black text-white py-4 rounded-full font-medium hover:bg-gray-800 flex items-center justify-center gap-2 disabled:bg-gray-300 disabled:cursor-not-allowed"
+              <button
+                className="w-full bg-black text-white py-4 rounded-full font-medium hover:bg-gray-800 flex items-center justify-center gap-2 cursor-pointer disabled:bg-gray-300 disabled:cursor-not-allowed"
                 disabled={cartItems.length === 0}
               >
                 Go to Checkout
