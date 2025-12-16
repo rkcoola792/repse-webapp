@@ -13,7 +13,7 @@ const ProductCard = ({ images, name, price, _id }) => {
         <img
           src={images && images[0]}
           alt={name}
-          className="w-full h-full object-contain"
+          className="w-full h-full object-cover"
         />
       </div>
       <h3 className="font-semibold text-gray-900 mb-2">{name}</h3>
