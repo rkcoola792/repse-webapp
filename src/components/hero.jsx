@@ -2,7 +2,7 @@ export default function Hero() {
   return (
     <section className="bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center py-12 lg:py-20">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center py-20 lg:py-22">
           {/* Left column: text */}
           <div className="lg:col-span-6">
             <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight text-gray-900 leading-tight">
@@ -16,7 +16,7 @@ export default function Hero() {
             </h1>
 
             <p className="mt-6 text-gray-600 max-w-xl">
-              Browse through our diverse range of meticulously crafted garments,
+              Browse through our diverse range of meticulously crafted garments, and
               designed to bring out your individuality and cater to your sense
               of style.
             </p>
