@@ -79,12 +79,12 @@ export default function CartPage() {
                 </button>
               </div>
             ) : (
-              cartItems.map((item) => (
+              cartItems?.map((item) => (
                 <div key={item.id} className="border rounded-2xl p-6">
                   <div className="flex gap-6">
                     {/* Product Image */}
                     <div className="bg-gray-100 rounded-xl w-32 h-32 flex items-center justify-center text-6xl flex-shrink-0">
-                      {item.image}
+                     <img src={item.image} alt={item.name}></img> 
                     </div>
 
                     {/* Product Details */}

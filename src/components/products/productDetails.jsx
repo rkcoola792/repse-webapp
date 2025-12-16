@@ -1,89 +1,135 @@
-import React, { useState } from 'react';
-import { useDispatch } from 'react-redux';
-import { ShoppingCart, Heart, Star, ChevronDown, Minus, Plus } from 'lucide-react';
-import { addItem } from '../../store/cartSlice';
+import React, { useEffect, useState } from "react";
+import { useDispatch } from "react-redux";
+import {
+  ShoppingCart,
+  Heart,
+  Star,
+  ChevronDown,
+  Minus,
+  Plus,
+} from "lucide-react";
+import { addItem } from "../../store/cartSlice";
+import axios from "axios";
+import { useParams } from "react-router-dom";
+
 export default function ProductDetails() {
   const dispatch = useDispatch();
-  const [selectedSize, setSelectedSize] = useState('Large');
-  const [selectedColor, setSelectedColor] = useState('#2C3E50');
+  const [selectedSize, setSelectedSize] = useState("Large");
+  const [selectedColor, setSelectedColor] = useState("#2C3E50");
   const [quantity, setQuantity] = useState(1);
-  const [activeTab, setActiveTab] = useState('reviews');
+  const [activeTab, setActiveTab] = useState("reviews");
+  const [selectedImage, setSelectedImage] = useState(0); // Track selected image index
 
-  const sizes = ['Small', 'Medium', 'Large', 'X-Large'];
-  const colors = ['#2C3E50', '#34495E', '#7F8C8D'];
-
-  const product = {
-    id: 'one-life-graphic-tshirt',
-    name: 'ONE LIFE GRAPHIC T-SHIRT',
-    price: 260,
-    oldPrice: 300,
-    discount: 40,
-    image: '👕',
-    rating: 4.5
-  };
+  const sizes = ["Small", "Medium", "Large", "X-Large"];
+  const colors = ["#2C3E50", "#34495E", "#7F8C8D"];
 
   const handleAddToCart = () => {
     const cartItem = {
-      id: `${product.id}-${selectedSize}-${selectedColor}`,
-      productId: product.id,
+      id: `${product._id}-${selectedSize}-${selectedColor}`,
+      productId: product._id,
       name: product.name,
       price: product.price,
       size: selectedSize,
       color: selectedColor,
       quantity: quantity,
-      image: product.image
+      image: product.images?.[0],
     };
 
     dispatch(addItem(cartItem));
-    
-    // Optional: Show success message
-    // alert(`Added ${quantity} item(s) to cart!`);
   };
 
   const reviews = [
     {
-      name: 'Samantha D.',
+      name: "Samantha D.",
       verified: true,
       rating: 5,
-      date: 'August 14, 2023',
-      text: "I absolutely love this t-shirt! The design is unique and the fabric feels so comfortable. As a fellow designer, I appreciate the attention to detail. It's become my favorite go-to shirt."
+      date: "August 14, 2023",
+      text: "I absolutely love this t-shirt! The design is unique and the fabric feels so comfortable. As a fellow designer, I appreciate the attention to detail. It's become my favorite go-to shirt.",
     },
     {
-      name: 'Olivia P.',
+      name: "Olivia P.",
       verified: true,
       rating: 4,
-      date: 'August 15, 2023',
-      text: "One t-shirt is a must-have for anyone who appreciates good design. The minimalistic yet stylish pattern caught my eye, and the fit is perfect. I can see the designer's touch in every aspect of this shirt."
+      date: "August 15, 2023",
+      text: "One t-shirt is a must-have for anyone who appreciates good design. The minimalistic yet stylish pattern caught my eye, and the fit is perfect. I can see the designer's touch in every aspect of this shirt.",
     },
     {
-      name: 'Liam K.',
+      name: "Liam K.",
       verified: true,
       rating: 5,
-      date: 'August 16, 2023',
-      text: "This t-shirt is a fusion of comfort and creativity. The fabric is soft, and the design speaks volumes about the designer's skill. It's like wearing a piece of art that reflects my passion for design."
+      date: "August 16, 2023",
+      text: "This t-shirt is a fusion of comfort and creativity. The fabric is soft, and the design speaks volumes about the designer's skill. It's like wearing a piece of art that reflects my passion for design.",
     },
     {
-      name: 'Ava H.',
+      name: "Ava H.",
       verified: true,
       rating: 4,
-      date: 'August 17, 2023',
-      text: "I'm not just wearing a t-shirt; I'm wearing a piece of design philosophy. The intricate details and thoughtful layout of the design make this shirt a conversation starter."
-    }
+      date: "August 17, 2023",
+      text: "I'm not just wearing a t-shirt; I'm wearing a piece of design philosophy. The intricate details and thoughtful layout of the design make this shirt a conversation starter.",
+    },
   ];
 
   const recommendations = [
-    { name: 'Polo with Contrast Trims', price: 212, oldPrice: 242, discount: 20, image: '🔵' },
-    { name: 'Gradient Graphic T-shirt', price: 145, image: '🎨' },
-    { name: 'Polo with Tipping Details', price: 180, image: '🔴' },
-    { name: 'Black Striped T-shirt', price: 120, oldPrice: 160, discount: 30, image: '⚫' }
+    {
+      name: "Polo with Contrast Trims",
+      price: 212,
+      oldPrice: 242,
+      discount: 20,
+      image: "🔵",
+    },
+    { name: "Gradient Graphic T-shirt", price: 145, image: "🎨" },
+    { name: "Polo with Tipping Details", price: 180, image: "🔴" },
+    {
+      name: "Black Striped T-shirt",
+      price: 120,
+      oldPrice: 160,
+      discount: 30,
+      image: "⚫",
+    },
   ];
+  
+  const [product, setProduct] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const { id } = useParams();
+  
+  console.log("Product ID from URL:", id);
+  
+  const getProductDetails = async () => {
+    setLoading(true);
+    try {
+      const response = await axios.get(
+        `${import.meta.env.VITE_APP_BASE_URL}/product/${id}`
+      );
+      setProduct(response.data);
+      console.log("Product details fetched:", response.data);
+    } catch (error) {
+      console.error("Error fetching product details:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  console.log("Product details state:", product);
+  
+  useEffect(() => {
+    getProductDetails();
+  }, [id]);
+  
+  if (loading) {
+    return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+  }
+
+  if (!product) {
+    return <div className="min-h-screen flex items-center justify-center">Product not found</div>;
+  }
 
   return (
     <div className="min-h-screen bg-white">
       {/* Breadcrumb */}
       <div className="max-w-7xl mx-auto px-4 py-4">
         <div className="text-sm text-gray-500">
-          Home / Shop / Men / T-shirts / <span className="text-black">One Life Graphic T-shirt</span>
+          Home / Shop / Men / T-shirts /{" "}
+          <span className="text-black">{product.name}</span>
         </div>
       </div>
 
@@ -93,40 +139,40 @@ export default function ProductDetails() {
           {/* Image Gallery */}
           <div className="flex gap-4">
             <div className="flex flex-col gap-4">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="w-20 h-20 border rounded-lg bg-gray-100 flex items-center justify-center cursor-pointer hover:border-gray-400">
-                  <span className="text-3xl">👕</span>
+              {product.images?.map((image, i) => (
+                <div
+                  key={i}
+                  onClick={() => setSelectedImage(i)}
+                  className={`w-20 h-20 border-2 rounded-lg bg-gray-100 flex items-center justify-center cursor-pointer hover:border-gray-400 overflow-hidden transition ${
+                    selectedImage === i ? "border-black" : "border-gray-200"
+                  }`}
+                >
+                  <img 
+                    src={image} 
+                    alt={`${product.name} ${i + 1}`} 
+                    className="w-full h-full object-cover" 
+                  />
                 </div>
               ))}
             </div>
-            <div className="flex-1 bg-gray-100 rounded-2xl flex items-center justify-center p-12">
-              <span className="text-9xl">👕</span>
+            <div className="flex-1 bg-gray-100 rounded-2xl flex items-center justify-center p-12 overflow-hidden">
+              <img
+                src={product.images?.[selectedImage] || product.images?.[0] || "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&h=400&fit=crop"}
+                alt={product.name}
+                className="w-full h-full object-contain"
+              />
             </div>
           </div>
 
           {/* Product Details */}
           <div>
-            <h1 className="text-4xl font-bold mb-4">ONE LIFE GRAPHIC T-SHIRT</h1>
-            
-            <div className="flex items-center gap-2 mb-4">
-              <div className="flex">
-                {[...Array(4)].map((_, i) => (
-                  <Star key={i} className="w-5 h-5 fill-yellow-400 text-yellow-400" />
-                ))}
-                <Star className="w-5 h-5 fill-yellow-400 text-yellow-400" style={{ clipPath: 'inset(0 50% 0 0)' }} />
-              </div>
-              <span className="text-sm">4.5/5</span>
-            </div>
+            <h1 className="text-4xl font-bold mb-4">{product.name}</h1>
 
             <div className="flex items-center gap-3 mb-4">
-              <span className="text-3xl font-bold">$260</span>
-              <span className="text-2xl text-gray-400 line-through">$300</span>
-              <span className="bg-red-100 text-red-600 px-3 py-1 rounded-full text-sm">-40%</span>
+              <span className="text-3xl font-bold">${product.price}</span>
             </div>
 
-            <p className="text-gray-600 mb-6">
-              This graphic t-shirt is perfect for any occasion. Crafted from a soft and breathable fabric, it offers superior comfort and style.
-            </p>
+            <p className="text-gray-600 mb-6">{product.description}</p>
 
             {/* Color Selection */}
             <div className="mb-6">
@@ -137,7 +183,9 @@ export default function ProductDetails() {
                     key={i}
                     onClick={() => setSelectedColor(color)}
                     className={`w-10 h-10 rounded-full border-2 cursor-pointer hover:border-gray-400 ${
-                      selectedColor === color ? 'border-black ring-2 ring-offset-2 ring-black' : 'border-gray-300'
+                      selectedColor === color
+                        ? "border-black ring-2 ring-offset-2 ring-black"
+                        : "border-gray-300"
                     }`}
                     style={{ backgroundColor: color }}
                   />
@@ -155,8 +203,8 @@ export default function ProductDetails() {
                     onClick={() => setSelectedSize(size)}
                     className={`px-6 py-3 rounded-full border ${
                       selectedSize === size
-                        ? 'bg-black text-white'
-                        : 'bg-gray-100 hover:bg-gray-200'
+                        ? "bg-black text-white"
+                        : "bg-gray-100 hover:bg-gray-200"
                     }`}
                   >
                     {size}
@@ -176,8 +224,8 @@ export default function ProductDetails() {
                   <Plus className="w-4 h-4" />
                 </button>
               </div>
-              <button 
-                className="flex-1 bg-black text-white py-4 rounded-full font-medium hover:bg-gray-800 transition" 
+              <button
+                className="flex-1 bg-black text-white py-4 rounded-full font-medium hover:bg-gray-800 transition"
                 onClick={handleAddToCart}
               >
                 Add to Cart
@@ -190,33 +238,51 @@ export default function ProductDetails() {
         <div className="mt-16">
           <div className="border-b flex gap-8">
             <button
-              onClick={() => setActiveTab('details')}
-              className={`pb-4 ${activeTab === 'details' ? 'border-b-2 border-black' : 'text-gray-500'}`}
+              onClick={() => setActiveTab("details")}
+              className={`pb-4 ${
+                activeTab === "details"
+                  ? "border-b-2 border-black"
+                  : "text-gray-500"
+              }`}
             >
               Product Details
             </button>
             <button
-              onClick={() => setActiveTab('reviews')}
-              className={`pb-4 ${activeTab === 'reviews' ? 'border-b-2 border-black' : 'text-gray-500'}`}
+              onClick={() => setActiveTab("reviews")}
+              className={`pb-4 ${
+                activeTab === "reviews"
+                  ? "border-b-2 border-black"
+                  : "text-gray-500"
+              }`}
             >
               Rating & Reviews
             </button>
             <button
-              onClick={() => setActiveTab('faqs')}
-              className={`pb-4 ${activeTab === 'faqs' ? 'border-b-2 border-black' : 'text-gray-500'}`}
+              onClick={() => setActiveTab("faqs")}
+              className={`pb-4 ${
+                activeTab === "faqs"
+                  ? "border-b-2 border-black"
+                  : "text-gray-500"
+              }`}
             >
               FAQs
             </button>
           </div>
 
           {/* Reviews Section */}
-          {activeTab === 'reviews' && (
+          {activeTab === "reviews" && (
             <div className="mt-8">
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold">All Reviews <span className="text-gray-500">(451)</span></h2>
+                <h2 className="text-2xl font-bold">
+                  All Reviews <span className="text-gray-500">(451)</span>
+                </h2>
                 <div className="flex gap-3">
-                  <button className="px-4 py-2 border rounded-full text-sm">Latest</button>
-                  <button className="px-6 py-2 bg-black text-white rounded-full text-sm">Write a Review</button>
+                  <button className="px-4 py-2 border rounded-full text-sm">
+                    Latest
+                  </button>
+                  <button className="px-6 py-2 bg-black text-white rounded-full text-sm">
+                    Write a Review
+                  </button>
                 </div>
               </div>
 
@@ -225,7 +291,10 @@ export default function ProductDetails() {
                   <div key={i} className="border rounded-2xl p-6">
                     <div className="flex mb-3">
                       {[...Array(review.rating)].map((_, j) => (
-                        <Star key={j} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                        <Star
+                          key={j}
+                          className="w-4 h-4 fill-yellow-400 text-yellow-400"
+                        />
                       ))}
                     </div>
                     <div className="flex items-center gap-2 mb-3">
@@ -235,13 +304,17 @@ export default function ProductDetails() {
                       )}
                     </div>
                     <p className="text-gray-600 text-sm mb-3">{review.text}</p>
-                    <p className="text-gray-400 text-xs">Posted on {review.date}</p>
+                    <p className="text-gray-400 text-xs">
+                      Posted on {review.date}
+                    </p>
                   </div>
                 ))}
               </div>
 
               <div className="text-center mt-8">
-                <button className="px-12 py-3 border rounded-full hover:bg-gray-50">Load More Reviews</button>
+                <button className="px-12 py-3 border rounded-full hover:bg-gray-50">
+                  Load More Reviews
+                </button>
               </div>
             </div>
           )}
@@ -249,7 +322,9 @@ export default function ProductDetails() {
 
         {/* Recommendations */}
         <div className="mt-16">
-          <h2 className="text-3xl font-bold text-center mb-12">YOU MIGHT ALSO LIKE</h2>
+          <h2 className="text-3xl font-bold text-center mb-12">
+            YOU MIGHT ALSO LIKE
+          </h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             {recommendations.map((item, i) => (
               <div key={i} className="group cursor-pointer">
@@ -261,7 +336,9 @@ export default function ProductDetails() {
                   <span className="font-bold">${item.price}</span>
                   {item.oldPrice && (
                     <>
-                      <span className="text-gray-400 line-through">${item.oldPrice}</span>
+                      <span className="text-gray-400 line-through">
+                        ${item.oldPrice}
+                      </span>
                       <span className="bg-red-100 text-red-600 px-2 py-0.5 rounded-full text-xs">
                         -{item.discount}%
                       </span>
