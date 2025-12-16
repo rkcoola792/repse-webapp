@@ -36,8 +36,9 @@ export default function CartPage() {
     (sum, item) => sum + item.price * item.quantity,
     0
   );
-  const discount = subtotal * 0.2;
-  const deliveryFee = 15;
+
+  const discount = subtotal > 0 ? subtotal * 0.2 : 0;
+  const deliveryFee = subtotal > 0 ? 15 : 0;
   const total = subtotal - discount + deliveryFee;
 
   return (
@@ -104,7 +105,9 @@ export default function CartPage() {
                       </p>
 
                       <div className="flex justify-between items-center">
-                        <span className="text-2xl font-bold">${item.price}</span>
+                        <span className="text-2xl font-bold">
+                          ${item.price}
+                        </span>
 
                         <div className="flex items-center gap-4 bg-gray-100 rounded-full px-4 py-2">
                           <button
@@ -154,14 +157,18 @@ export default function CartPage() {
                 </div>
                 <div className="flex justify-between text-gray-600">
                   <span>Delivery Fee</span>
-                  <span className="font-semibold text-black">${deliveryFee}</span>
+                  <span className="font-semibold text-black">
+                    ${deliveryFee}
+                  </span>
                 </div>
               </div>
 
               <div className="border-t pt-4 mb-6">
                 <div className="flex justify-between text-lg">
                   <span className="font-semibold">Total</span>
-                  <span className="font-bold text-2xl">${total.toFixed(2)}</span>
+                  <span className="font-bold text-2xl">
+                    ${total.toFixed(2)}
+                  </span>
                 </div>
               </div>
 
