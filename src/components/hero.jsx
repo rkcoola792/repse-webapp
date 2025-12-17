@@ -22,7 +22,7 @@ export default function Hero() {
             </p>
 
             <div className="mt-8 flex flex-col  gap-3">
-              <a className="inline-block bg-black text-white px-8 py-3 rounded-full text-sm font-medium w-fit cursor-pointer" >
+              <a className="inline-block bg-black text-white px-8 py-3 rounded-full text-sm font-medium w-fit cursor-pointer">
                 Shop Now
               </a>
 
@@ -73,7 +73,13 @@ export default function Hero() {
       {/* brand bar */}
       <div className="bg-black mt-6">
         <div className="max-w-7xl mx-auto px-4 py-6 flex items-center justify-between overflow-x-auto space-x-8">
-          {["VERSACE", "ZARA", "GUCCI", "PRADA", "Calvin Klein"].map((b) => (
+          {[
+            "OVERSIZED",
+            "RUNNING PANTS",
+            "VEST",
+            "COMPRESSION",
+            " SLIMFIT",
+          ].map((b) => (
             <div
               key={b}
               className="text-white whitespace-nowrap font-medium text-lg"
