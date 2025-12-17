@@ -1,11 +1,16 @@
 import { Heart } from "lucide-react";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
-const ProductCard = ({ images, name, price, _id }) => {
+const ProductCard = ({ images, name, price, _id ,description}) => {
+  const navigate = useNavigate();
   const [isFavorite, setIsFavorite] = useState(false);
 
   return (
-    <div className="bg-white rounded-lg overflow-hidden shadow-sm  transition-shadow max-w-sm">
+    <div
+      className="bg-white rounded-lg overflow-hidden shadow-sm  transition-shadow max-w-sm cursor-pointer"
+      onClick={() => navigate(`/product-details/${_id}`)}
+    >
       {/* Image Container */}
       <div className="relative bg-gradient-to-br from-purple-900 via-indigo-900 to-purple-950 aspect-[4/5]">
         <img
@@ -13,7 +18,7 @@ const ProductCard = ({ images, name, price, _id }) => {
           alt={name}
           className="w-full h-full object-cover"
         />
-        
+
         {/* Favorite Button */}
         <button
           onClick={(e) => {
@@ -43,7 +48,7 @@ const ProductCard = ({ images, name, price, _id }) => {
       {/* Product Info */}
       <div className="p-4">
         <h3 className="text-gray-900 font-medium mb-1">{name}</h3>
-        <p className="text-gray-500 text-sm mb-2">Men Oversized Hoodies</p>
+        {/* <p className="text-gray-500 text-sm mb-2">{description}</p> */}
         <p className="text-gray-900 font-semibold text-lg">₹ {price}</p>
       </div>
     </div>

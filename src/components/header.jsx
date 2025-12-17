@@ -5,7 +5,8 @@ import { CgProfile } from "react-icons/cg";
 import Face5Icon from "@mui/icons-material/Face5";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
-
+import AccountCircleOutlinedIcon from "@mui/icons-material/AccountCircleOutlined";
+import FavoriteBorderOutlinedIcon from "@mui/icons-material/FavoriteBorderOutlined";
 export default function Header() {
   const navigate = useNavigate();
 
@@ -14,7 +15,7 @@ export default function Header() {
 
   return (
     <header className="bg-white shadow-sm border-b border-gray-200 fixed top-0 z-50 w-full">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className=" mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Left: logo + nav */}
           <div className="flex items-center space-x-6">
@@ -52,10 +53,13 @@ export default function Header() {
 
           {/* Right: icons */}
           <div className="flex items-center space-x-4">
-            <button className="hidden sm:inline-block text-sm px-3 py-1 border rounded-md cursor-pointer">
+            {/* <button className="hidden sm:inline-block text-sm px-3 py-1 border rounded-md cursor-pointer">
               Sign in
-            </button>
+            </button> */}
             <div className="flex items-center space-x-3">
+              <button className="p-2 rounded-full hover:bg-gray-100 cursor-pointer">
+                <FavoriteBorderOutlinedIcon />
+              </button>
               <button
                 className="p-2 rounded-full hover:bg-gray-100 relative cursor-pointer"
                 onClick={() => navigate("/cart")}
@@ -63,7 +67,7 @@ export default function Header() {
                 <CiShoppingCart size={28} />
                 {cartCount > 0 && (
                   <span
-                    className="absolute top-2 right-0 transform translate-x-1/2 -translate-y-1/2 
+                    className="absolute top-3 right-1 transform translate-x-1/2 -translate-y-1/2 
                      bg-black text-white rounded-full w-5 h-5 text-xs flex items-center justify-center
                      pointer-events-none"
                   >
@@ -71,9 +75,8 @@ export default function Header() {
                   </span>
                 )}
               </button>
-
               <button className="p-2 rounded-full hover:bg-gray-100 cursor-pointer">
-                <Face5Icon />
+                <AccountCircleOutlinedIcon />
               </button>
             </div>
           </div>

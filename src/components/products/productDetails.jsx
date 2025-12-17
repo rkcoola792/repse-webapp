@@ -11,6 +11,7 @@ import {
 import { addItem } from "../../store/cartSlice";
 import axios from "axios";
 import { useParams } from "react-router-dom";
+import ProductCard from "./productCard";
 
 export default function ProductDetails() {
   const dispatch = useDispatch();
@@ -23,88 +24,38 @@ export default function ProductDetails() {
   const [showToast, setShowToast] = useState(false); //Popup
 
   const sizes = ["Small", "Medium", "Large", "X-Large"];
-  const colors = ["#2C3E50", "#34495E", "#7F8C8D"];
+  // const colors = ["#2C3E50", "#34495E", "#7F8C8D"];
 
   const handleAddToCart = () => {
-  const cartItem = {
-    id: `${product._id}-${selectedSize}-${selectedColor}`,
-    productId: product._id,
-    name: product.name,
-    price: product.price,
-    size: selectedSize,
-    color: selectedColor,
-    quantity: quantity,
-    image: product.images?.[0],
+    const cartItem = {
+      id: `${product._id}-${selectedSize}-${selectedColor}`,
+      productId: product._id,
+      name: product.name,
+      price: product.price,
+      size: selectedSize,
+      color: selectedColor,
+      quantity: quantity,
+      image: product.images?.[0],
+    };
+
+    dispatch(addItem(cartItem));
+
+    // show popup
+    setShowToast(true);
+
+    // auto hide after 2 sec
+    setTimeout(() => {
+      setShowToast(false);
+    }, 2000);
   };
 
-  dispatch(addItem(cartItem));
-
-  // show popup
-  setShowToast(true);
-
-  // auto hide after 2 sec
-  setTimeout(() => {
-    setShowToast(false);
-  }, 2000);
-};
-
-
-  const reviews = [
-    {
-      name: "Samantha D.",
-      verified: true,
-      rating: 5,
-      date: "August 14, 2023",
-      text: "I absolutely love this t-shirt! The design is unique and the fabric feels so comfortable. As a fellow designer, I appreciate the attention to detail. It's become my favorite go-to shirt.",
-    },
-    {
-      name: "Olivia P.",
-      verified: true,
-      rating: 4,
-      date: "August 15, 2023",
-      text: "One t-shirt is a must-have for anyone who appreciates good design. The minimalistic yet stylish pattern caught my eye, and the fit is perfect. I can see the designer's touch in every aspect of this shirt.",
-    },
-    {
-      name: "Liam K.",
-      verified: true,
-      rating: 5,
-      date: "August 16, 2023",
-      text: "This t-shirt is a fusion of comfort and creativity. The fabric is soft, and the design speaks volumes about the designer's skill. It's like wearing a piece of art that reflects my passion for design.",
-    },
-    {
-      name: "Ava H.",
-      verified: true,
-      rating: 4,
-      date: "August 17, 2023",
-      text: "I'm not just wearing a t-shirt; I'm wearing a piece of design philosophy. The intricate details and thoughtful layout of the design make this shirt a conversation starter.",
-    },
-  ];
-
-  const recommendations = [
-    {
-      name: "Polo with Contrast Trims",
-      price: 212,
-      oldPrice: 242,
-      discount: 20,
-      image: "🔵",
-    },
-    { name: "Gradient Graphic T-shirt", price: 145, image: "🎨" },
-    { name: "Polo with Tipping Details", price: 180, image: "🔴" },
-    {
-      name: "Black Striped T-shirt",
-      price: 120,
-      oldPrice: 160,
-      discount: 30,
-      image: "⚫",
-    },
-  ];
-  
   const [product, setProduct] = useState(null);
+  const [suggestionProducts, setSuggestionProducts] = useState(null);
   const [loading, setLoading] = useState(true);
   const { id } = useParams();
-  
+
   console.log("Product ID from URL:", id);
-  
+
   const getProductDetails = async () => {
     setLoading(true);
     try {
@@ -119,19 +70,43 @@ export default function ProductDetails() {
       setLoading(false);
     }
   };
-  
-  console.log("Product details state:", product);
-  
+  const getProducts = async () => {
+    try {
+      const response = await axios.get(
+        `${import.meta.env.VITE_APP_BASE_URL}/products?page=1&limit=20`,
+        { withCredentials: true }
+      );
+      console.log("Products fetched:", response.data);
+      setSuggestionProducts(
+        response.data
+          .filter((prod) => prod._id !== id)
+          .filter((product) => product.topSelling === true)
+      );
+    } catch (error) {
+      console.error("Error fetching products:", error);
+    }
+  };
+  console.log("suggestion :", suggestionProducts);
+
   useEffect(() => {
     getProductDetails();
+    getProducts();
   }, [id]);
-  
+
   if (loading) {
-    return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        Loading...
+      </div>
+    );
   }
 
   if (!product) {
-    return <div className="min-h-screen flex items-center justify-center">Product not found</div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        Product not found
+      </div>
+    );
   }
 
   return (
@@ -158,19 +133,23 @@ export default function ProductDetails() {
                     selectedImage === i ? "border-black" : "border-gray-200"
                   }`}
                 >
-                  <img 
-                    src={image} 
-                    alt={`${product.name} ${i + 1}`} 
-                    className="w-full h-full object-cover" 
+                  <img
+                    src={image}
+                    alt={`${product.name} ${i + 1}`}
+                    className="w-full h-full object-cover"
                   />
                 </div>
               ))}
             </div>
             <div className="flex-1 bg-gray-100 rounded-2xl flex items-center justify-center aspect-square overflow-hidden">
               <img
-                src={product.images?.[selectedImage] || product.images?.[0] || "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&h=400&fit=crop"}
+                src={
+                  product.images?.[selectedImage] ||
+                  product.images?.[0] ||
+                  "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&h=400&fit=crop"
+                }
                 alt={product.name}
-                className="w-full h-full object-contain"
+                className="w-full h-full object-cover"
               />
             </div>
           </div>
@@ -185,25 +164,6 @@ export default function ProductDetails() {
 
             <p className="text-gray-600 mb-6">{product.description}</p>
 
-            {/* Color Selection */}
-            <div className="mb-6">
-              <p className="text-sm mb-3">Select Colors</p>
-              <div className="flex gap-3">
-                {colors.map((color, i) => (
-                  <div
-                    key={i}
-                    onClick={() => setSelectedColor(color)}
-                    className={`w-10 h-10 rounded-full border-2 cursor-pointer hover:border-gray-400 ${
-                      selectedColor === color
-                        ? "border-black ring-2 ring-offset-2 ring-black"
-                        : "border-gray-300"
-                    }`}
-                    style={{ backgroundColor: color }}
-                  />
-                ))}
-              </div>
-            </div>
-
             {/* Size Selection */}
             <div className="mb-6">
               <p className="text-sm mb-3">Choose Size</p>
@@ -212,7 +172,7 @@ export default function ProductDetails() {
                   <button
                     key={size}
                     onClick={() => setSelectedSize(size)}
-                    className={`px-6 py-3 rounded-full border ${
+                    className={`px-6 py-3 rounded-full border cursor-pointer ${
                       selectedSize === size
                         ? "bg-black text-white"
                         : "bg-gray-100 hover:bg-gray-200"
@@ -245,140 +205,33 @@ export default function ProductDetails() {
           </div>
         </div>
 
-        {/* Tabs */}
-        <div className="mt-16">
-          <div className="border-b flex gap-8">
-            <button
-              onClick={() => setActiveTab("details")}
-              className={`pb-4 ${
-                activeTab === "details"
-                  ? "border-b-2 border-black"
-                  : "text-gray-500"
-              }`}
-            >
-              Product Details
-            </button>
-            <button
-              onClick={() => setActiveTab("reviews")}
-              className={`pb-4 ${
-                activeTab === "reviews"
-                  ? "border-b-2 border-black"
-                  : "text-gray-500"
-              }`}
-            >
-              Rating & Reviews
-            </button>
-            <button
-              onClick={() => setActiveTab("faqs")}
-              className={`pb-4 ${
-                activeTab === "faqs"
-                  ? "border-b-2 border-black"
-                  : "text-gray-500"
-              }`}
-            >
-              FAQs
-            </button>
-          </div>
-
-          {/* Reviews Section */}
-          {activeTab === "reviews" && (
-            <div className="mt-8">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold">
-                  All Reviews <span className="text-gray-500">(451)</span>
-                </h2>
-                <div className="flex gap-3">
-                  <button className="px-4 py-2 border rounded-full text-sm">
-                    Latest
-                  </button>
-                  <button className="px-6 py-2 bg-black text-white rounded-full text-sm">
-                    Write a Review
-                  </button>
-                </div>
-              </div>
-
-              <div className="grid md:grid-cols-2 gap-6">
-                {reviews.map((review, i) => (
-                  <div key={i} className="border rounded-2xl p-6">
-                    <div className="flex mb-3">
-                      {[...Array(review.rating)].map((_, j) => (
-                        <Star
-                          key={j}
-                          className="w-4 h-4 fill-yellow-400 text-yellow-400"
-                        />
-                      ))}
-                    </div>
-                    <div className="flex items-center gap-2 mb-3">
-                      <span className="font-semibold">{review.name}</span>
-                      {review.verified && (
-                        <span className="text-green-600 text-xs">✓</span>
-                      )}
-                    </div>
-                    <p className="text-gray-600 text-sm mb-3">{review.text}</p>
-                    <p className="text-gray-400 text-xs">
-                      Posted on {review.date}
-                    </p>
-                  </div>
-                ))}
-              </div>
-
-              <div className="text-center mt-8">
-                <button className="px-12 py-3 border rounded-full hover:bg-gray-50 cursor-pointer">
-                  Load More Reviews
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
-
         {/* Recommendations */}
         <div className="mt-16">
           <h2 className="text-3xl font-bold text-center mb-12">
             YOU MIGHT ALSO LIKE
           </h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            {recommendations.map((item, i) => (
-              <div key={i} className="group cursor-pointer">
-                <div className="bg-gray-100 rounded-2xl mb-4 aspect-square flex items-center justify-center text-6xl group-hover:bg-gray-200 transition">
-                  {item.image}
-                </div>
-                <h3 className="font-semibold mb-2">{item.name}</h3>
-                <div className="flex items-center gap-2">
-                  <span className="font-bold">${item.price}</span>
-                  {item.oldPrice && (
-                    <>
-                      <span className="text-gray-400 line-through">
-                        ${item.oldPrice}
-                      </span>
-                      <span className="bg-red-100 text-red-600 px-2 py-0.5 rounded-full text-xs">
-                        -{item.discount}%
-                      </span>
-                    </>
-                  )}
-                </div>
-              </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-16">
+            {suggestionProducts?.slice(0, 4).map((item, i) => (
+              <ProductCard key={i} {...item}></ProductCard>
             ))}
           </div>
         </div>
       </div>
       {showToast && (
-      <div className="fixed bottom-10 right-6 z-50">
-      <div className="
-      flex items-center gap-3
+        <div className="fixed bottom-10 right-6 z-50">
+          <div
+            className="flex items-center gap-3
       bg-white text-gray-900
       px-5 py-3
       rounded-xl
       shadow-lg border
       animate-toast
-      ">
-      <p className="text-sm font-medium">
-      Added to cart
-      </p>
-      </div>
-      </div>
+      "
+          >
+            <p className="text-sm font-medium">Added to cart</p>
+          </div>
+        </div>
       )}
-
-
     </div>
   );
 }
