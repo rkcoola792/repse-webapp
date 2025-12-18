@@ -42,6 +42,12 @@ export default function CartSidebar({ isOpen, onClose }) {
   const deliveryFee = subtotal > 0 ? 15 : 0;
   const total = subtotal - discount + deliveryFee;
 
+const handleCheckout = () => {
+    // Placeholder for checkout logic
+    // alert("Proceeding to checkout...");
+    
+  }
+
   if (!isOpen) return null;
 
   return (
@@ -222,6 +228,7 @@ export default function CartSidebar({ isOpen, onClose }) {
               <button
                 className="w-full bg-black text-white py-3 rounded-full font-medium hover:bg-gray-800 flex items-center justify-center gap-2 cursor-pointer disabled:bg-gray-300 disabled:cursor-not-allowed"
                 disabled={cartItems.length === 0}
+                onClick={handleCheckout}
               >
                 Go to Checkout
                 <ArrowRight className="w-4 h-4" />

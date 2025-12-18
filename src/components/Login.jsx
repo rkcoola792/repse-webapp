@@ -1,21 +1,31 @@
 import { useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import { useDispatch } from "react-redux";
+import { addUser } from "../store/userSlice";
 
 export default function Login() {
-    
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-
-  const handleSubmit = (e) => {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const dispatch = useDispatch();
+  const handleSubmit = async (e) => {
     e.preventDefault();
     // handle login
-    console.log('Login:', { email, password });
-    navigate('/');
+    try {
+      const user = await axios.post(
+        `${import.meta.env.VITE_APP_BASE_URL}/signin`,
+        { email, password },
+        { withCredentials: true }
+      );
+      dispatch(addUser(user.data));
+      navigate("/");
+    } catch (error) {
+      console.error("Login error:", error);
+    }
   };
-
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-white px-4">
@@ -99,10 +109,7 @@ export default function Login() {
 
           {/* Forgot password */}
           <div className="text-center">
-            <a
-              href="#"
-              className="text-sm font-medium underline"
-            >
+            <a href="#" className="text-sm font-medium underline">
               Forgot password?
             </a>
           </div>
@@ -129,7 +136,10 @@ export default function Login() {
         {/* Signup */}
         <p className="text-sm text-gray-600 mt-6">
           Don&apos;t have an account?{" "}
-          <button onClick={() => navigate('/register')} className="font-semibold underline cursor-pointer">
+          <button
+            onClick={() => navigate("/register")}
+            className="font-semibold underline cursor-pointer"
+          >
             Sign up
           </button>
         </p>
