@@ -6,7 +6,8 @@ import Homepage from "./components/homepage";
 import ProductsPage from "./components/products/productsPage";
 import PracticeLayout from "./components/products/practiceLayout";
 import ProductDetails from "./components/products/productDetails";
-import CartPage from "./components/cart/cart";
+import Login from "./components/Login";
+import Register from "./components/Register";
 import { store } from "./store/store";
 import ScrollToTop from "./components/products/ScrollToTop";
 
@@ -22,8 +23,9 @@ function App() {
             <Route path="/products" element={<ProductsPage />} />
             <Route path="/practice" element={<PracticeLayout />} />
             <Route path="/product-details/:id" element={<ProductDetails />} />
-            <Route path="/cart" element={<CartPage />} />
           </Route>
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </BrowserRouter>
