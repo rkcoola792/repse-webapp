@@ -43,14 +43,13 @@ export default function CartSidebar({ isOpen, onClose }) {
   const discount = subtotal > 0 ? subtotal * 0.2 : 0;
   const deliveryFee = subtotal > 0 ? 15 : 0;
   const totalAmount = subtotal - discount + deliveryFee;
-  console.log("cartItems:", cartItems);
   const handleCheckout = async () => {
     // Checkout logic to be implemented
     try {
-      const options = {
-        amount: totalAmount * 100, // amount in the smallest currency unit
+      const createOrderOptions = {
+        amount: Math.round(totalAmount * 100), // Converts rupees to paise (e.g., 123.45 → 12345)
         currency: "INR",
-        receipt: "receipt_00daass1asdasd",
+        receipt: `receipt_${Date.now()}`,
         payment_capture: 1,
         notes: {
           first_name: "John Doe",
@@ -59,17 +58,34 @@ export default function CartSidebar({ isOpen, onClose }) {
       };
       const order = await axios.post(
         import.meta.env.VITE_APP_BASE_URL + "/create-order",
-        options
+        createOrderOptions,
+        { withCredentials: true }
       );
-
-      // const rzp1 = new window.Razorpay(options);
-      // rzp1.open();
+      const { keyId, currency, amount, notes, order_id } = order.data;
+      const options = {
+        key: keyId, // Replace with your Razorpay key_id
+        amount,
+        currency,
+        name: "Repse",
+        description: "Payment for your order",
+        order_id, // This is the order_id created in the backend
+        // callback_url: "http://localhost:3000/payment-success", // Your success URL
+        prefill: {
+          name: notes.first_name,
+          email: notes.email,
+          contact: "9999999999",
+        },
+        theme: {
+          color: "#F37254",
+        },
+      };
+      console.log("Options:", options);
+      const rzp1 = new window.Razorpay(options);
+      rzp1.open();
     } catch (error) {
       console.error("Error during checkout:", error);
     }
   };
-
-
 
   if (!isOpen) return null;
 
