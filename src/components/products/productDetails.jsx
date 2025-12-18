@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import {
   ShoppingCart,
   Heart,
@@ -7,14 +7,19 @@ import {
   ChevronDown,
   Minus,
   Plus,
+  Loader,
 } from "lucide-react";
 import { addItem } from "../../store/cartSlice";
+import { openCart } from "../../store/uiSlice";
 import axios from "axios";
 import { useParams } from "react-router-dom";
 import ProductCard from "./productCard";
+import { triggerCartShake } from "../../store/uiSlice";
+
 
 export default function ProductDetails() {
   const dispatch = useDispatch();
+  const cartItems = useSelector((state) => state.cart.cart);
   const [selectedSize, setSelectedSize] = useState("Large");
   const [selectedColor, setSelectedColor] = useState("#2C3E50");
   const [quantity, setQuantity] = useState(1);
@@ -34,19 +39,16 @@ export default function ProductDetails() {
       price: product.price,
       size: selectedSize,
       color: selectedColor,
-      quantity: quantity,
+      quantity,
       image: product.images?.[0],
     };
 
     dispatch(addItem(cartItem));
+    dispatch(openCart());
+    dispatch(triggerCartShake());
 
-    // show popup
     setShowToast(true);
-
-    // auto hide after 2 sec
-    setTimeout(() => {
-      setShowToast(false);
-    }, 2000);
+    setTimeout(() => setShowToast(false), 2000);
   };
 
   const [product, setProduct] = useState(null);
@@ -196,7 +198,7 @@ export default function ProductDetails() {
                 </button>
               </div>
               <button
-                className="flex-1 bg-black text-white py-4 rounded-full font-medium hover:bg-gray-800 transition cursor-pointer"
+                className="flex-1 bg-black text-white py-4 rounded-full font-medium hover:bg-gray-800 transition cursor-pointer flex items-center justify-center"
                 onClick={handleAddToCart}
               >
                 Add to Cart
@@ -217,21 +219,6 @@ export default function ProductDetails() {
           </div>
         </div>
       </div>
-      {showToast && (
-        <div className="fixed bottom-10 right-6 z-50">
-          <div
-            className="flex items-center gap-3
-      bg-white text-gray-900
-      px-5 py-3
-      rounded-xl
-      shadow-lg border
-      animate-toast
-      "
-          >
-            <p className="text-sm font-medium">Added to cart</p>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { CiSearch } from "react-icons/ci";
 import { CiShoppingCart } from "react-icons/ci";
 import { CgProfile } from "react-icons/cg";
@@ -7,11 +7,33 @@ import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import AccountCircleOutlinedIcon from "@mui/icons-material/AccountCircleOutlined";
 import FavoriteBorderOutlinedIcon from "@mui/icons-material/FavoriteBorderOutlined";
-export default function Header() {
+import { resetCartShake } from "../store/uiSlice";
+import { useDispatch } from "react-redux";
+import { Heart, User } from "lucide-react";
+
+export default function Header({ onCartClick, isCartOpen }) {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const cartItems = useSelector((state) => state.cart.cart); // Redux cart state
   const cartCount = cartItems.reduce((acc, item) => acc + item.quantity, 0); // total items
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const shakeCart = useSelector(state => state.ui.shakeCart);
+
+  const [shake, setShake] = useState(false);
+
+  useEffect(() => {
+  if (shakeCart) {
+    setShake(true);
+
+    const timer = setTimeout(() => {
+      setShake(false);
+      dispatch(resetCartShake());
+    }, 400);
+
+    return () => clearTimeout(timer);
+  }
+}, [shakeCart]);
 
   return (
     <header className="bg-white shadow-sm border-b border-gray-200 fixed top-0 z-50 w-full">
@@ -58,25 +80,25 @@ export default function Header() {
             </button> */}
             <div className="flex items-center space-x-3">
               <button className="p-2 rounded-full hover:bg-gray-100 cursor-pointer">
-                <FavoriteBorderOutlinedIcon />
+                <Heart strokeWidth={1.7} />
               </button>
               <button
-                className="p-2 rounded-full hover:bg-gray-100 relative cursor-pointer"
-                onClick={() => navigate("/cart")}
+                className={`relative cursor-pointer ${shake ? "animate-cart-shake" : ""}hover:bg-gray-100 rounded-full p-2`}
+                onClick={onCartClick}
               >
-                <CiShoppingCart size={28} />
-                {cartCount > 0 && (
+                <CiShoppingCart size={28} strokeWidth={0.18} />
+                {cartCount > 0 && ( 
                   <span
-                    className="absolute top-3 right-1 transform translate-x-1/2 -translate-y-1/2 
-                     bg-black text-white rounded-full w-5 h-5 text-xs flex items-center justify-center
+                    className="absolute top-4 right-2 transform translate-x-1/2 -translate-y-1/2 
+                     bg-black text-white rounded-full w-4 h-4 text-xs flex items-center justify-center
                      pointer-events-none"
                   >
                     {cartCount}
                   </span>
                 )}
               </button>
-              <button className="p-2 rounded-full hover:bg-gray-100 cursor-pointer">
-                <AccountCircleOutlinedIcon />
+              <button className="p-2 rounded-full hover:bg-gray-100 cursor-pointer" onClick={() => navigate('/login')}>
+                <User strokeWidth={1.5} />
               </button>
             </div>
           </div>
