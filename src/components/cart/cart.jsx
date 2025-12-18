@@ -12,6 +12,8 @@ import {
 } from "lucide-react";
 import { removeItem, updateQuantity, clearCart } from "../../store/cartSlice";
 import CartLikeToggle from "./CartToggle";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 export default function CartSidebar({ isOpen, onClose }) {
   const dispatch = useDispatch();
@@ -40,13 +42,34 @@ export default function CartSidebar({ isOpen, onClose }) {
 
   const discount = subtotal > 0 ? subtotal * 0.2 : 0;
   const deliveryFee = subtotal > 0 ? 15 : 0;
-  const total = subtotal - discount + deliveryFee;
+  const totalAmount = subtotal - discount + deliveryFee;
+  console.log("cartItems:", cartItems);
+  const handleCheckout = async () => {
+    // Checkout logic to be implemented
+    try {
+      const options = {
+        amount: totalAmount * 100, // amount in the smallest currency unit
+        currency: "INR",
+        receipt: "receipt_00daass1asdasd",
+        payment_capture: 1,
+        notes: {
+          first_name: "John Doe",
+          email: "user@gmail.com",
+        },
+      };
+      const order = await axios.post(
+        import.meta.env.VITE_APP_BASE_URL + "/create-order",
+        options
+      );
 
-const handleCheckout = () => {
-    // Placeholder for checkout logic
-    // alert("Proceeding to checkout...");
-    
-  }
+      // const rzp1 = new window.Razorpay(options);
+      // rzp1.open();
+    } catch (error) {
+      console.error("Error during checkout:", error);
+    }
+  };
+
+
 
   if (!isOpen) return null;
 
@@ -201,7 +224,9 @@ const handleCheckout = () => {
               <div className="border-t pt-4 mb-4">
                 <div className="flex justify-between text-lg">
                   <span className="font-semibold">Total</span>
-                  <span className="font-bold text-xl">${total.toFixed(2)}</span>
+                  <span className="font-bold text-2xl">
+                    ${totalAmount.toFixed(2)}
+                  </span>
                 </div>
               </div>
 
