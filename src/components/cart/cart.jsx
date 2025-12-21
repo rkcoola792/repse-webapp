@@ -26,7 +26,7 @@ export default function CartSidebar({ isOpen, onClose }) {
   };
 
   const handleRemoveItem = (id) => {
-    dispatch(removeItem({ id }));
+     dispatch(removeItem({ id }));
   };
 
   const handleClearCart = () => {
