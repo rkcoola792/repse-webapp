@@ -1,10 +1,14 @@
 import { Heart } from "lucide-react";
-import { useState } from "react";
+import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import { addToFavorites, removeFromFavorites } from "../../store/favoritesSlice";
+import { triggerFavoritesShake, showPopup } from "../../store/uiSlice";
 
 const ProductCard = ({ images, name, price, _id ,description}) => {
   const navigate = useNavigate();
-  const [isFavorite, setIsFavorite] = useState(false);
+  const dispatch = useDispatch();
+  const favorites = useSelector((state) => state.favorites.favorites);
+  const isFavorite = favorites.some(item => item.id === _id);
 
   return (
     <div
@@ -23,7 +27,22 @@ const ProductCard = ({ images, name, price, _id ,description}) => {
         <button
           onClick={(e) => {
             e.stopPropagation();
-            setIsFavorite(!isFavorite);
+            if (isFavorite) {
+              dispatch(removeFromFavorites({ id: _id }));
+              dispatch(showPopup({
+                message: "Item removed from the wishlist",
+                undoAction: 'add',
+                itemData: { id: _id, name, price, images, description }
+              }));
+            } else {
+              dispatch(addToFavorites({ id: _id, name, price, images, description }));
+              dispatch(triggerFavoritesShake());
+              dispatch(showPopup({
+                message: "Item added to wishlist",
+                undoAction: 'remove',
+                itemData: { id: _id }
+              }));
+            }
           }}
           className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center hover:bg-white/20 transition-colors"
         >

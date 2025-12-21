@@ -1,9 +1,12 @@
-import { useState } from "react";
-import { Eye, EyeOff } from "lucide-react";
+import { useState, useRef } from "react";
+import { Eye, EyeOff, AlertCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { showPopup } from "../store/uiSlice";
 
 export default function Register() {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const [showPassword, setShowPassword] = useState(false);
   const [hasSubmitted, setHasSubmitted] = useState(false);
@@ -16,6 +19,9 @@ export default function Register() {
 
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
+  const nameRef = useRef(null);
+  const emailRef = useRef(null);
+  const passwordRef = useRef(null);
 
   /* ---------- Password Rule ---------- */
   const isStrongPassword = (pwd) =>
@@ -48,14 +54,16 @@ export default function Register() {
       newErrors.password = "Password does not meet requirements";
     }
 
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    return newErrors;
   };
 
   /* ---------- Handle Input Change ---------- */
   const handleChange = (field, value) => {
     setForm({ ...form, [field]: value });
-    if (hasSubmitted) validate({ ...form, [field]: value }, true);
+    if (hasSubmitted) {
+      const newErrors = validate({ ...form, [field]: value }, true);
+      setErrors(newErrors);
+    }
   };
 
   /* ---------- Submit ---------- */
@@ -63,7 +71,18 @@ export default function Register() {
     e.preventDefault();
     setHasSubmitted(true);
 
-    if (!validate(form, true)) return;
+    const newErrors = validate(form, true);
+    setErrors(newErrors);
+    if (Object.keys(newErrors).length > 0) {
+      if (newErrors.name) {
+        nameRef.current?.focus();
+      } else if (newErrors.email) {
+        emailRef.current?.focus();
+      } else if (newErrors.password) {
+        passwordRef.current?.focus();
+      }
+      return;
+    }
 
     try {
       setLoading(true);
@@ -78,9 +97,16 @@ export default function Register() {
       if (!res.ok) throw new Error(data.error || "Signup failed");
 
       if (data.token) localStorage.setItem("token", data.token);
-      navigate("/");
+      dispatch(showPopup({ message: "Account created successfully!" }));
+      setTimeout(() => {
+        navigate("/login");
+      }, 2000);
     } catch (err) {
-      setErrors({ api: err.message });
+      let errorMessage = err.message;
+      if (errorMessage.toLowerCase().includes("email already in use")) {
+        errorMessage = "Already have an account. Try login.";
+      }
+      setErrors({ api: errorMessage });
     } finally {
       setLoading(false);
     }
@@ -104,6 +130,7 @@ export default function Register() {
           {/* Name */}
           <div>
             <input
+              ref={nameRef}
               type="text"
               placeholder="Full name*"
               value={form.name}
@@ -111,13 +138,16 @@ export default function Register() {
               className={inputClass(errors.name)}
             />
             {errors.name && (
-              <p className="text-xs text-red-500 mt-1 text-left">{errors.name}</p>
+              <p className="text-xs text-red-500 mt-1 text-left flex items-center gap-1">
+                <AlertCircle size={14} /> {errors.name}
+              </p>
             )}
           </div>
 
           {/* Email */}
           <div>
             <input
+              ref={emailRef}
               type="text"
               placeholder="Email address*"
               value={form.email}
@@ -125,7 +155,9 @@ export default function Register() {
               className={inputClass(errors.email)}
             />
             {errors.email && (
-              <p className="text-xs text-red-500 mt-1 text-left">{errors.email}</p>
+              <p className="text-xs text-red-500 mt-1 text-left flex items-center gap-1">
+                <AlertCircle size={14} /> {errors.email}
+              </p>
             )}
           </div>
 
@@ -133,6 +165,7 @@ export default function Register() {
           <div>
             <div className="relative">
               <input
+                ref={passwordRef}
                 type={showPassword ? "text" : "password"}
                 placeholder="Password*"
                 value={form.password}
@@ -172,12 +205,16 @@ export default function Register() {
             )}
 
             {errors.password && (
-              <p className="text-xs text-red-500 mt-1 text-left">{errors.password}</p>
+              <p className="text-xs text-red-500 mt-1 text-left flex items-center gap-1">
+                <AlertCircle size={14} /> {errors.password}
+              </p>
             )}
           </div>
 
           {errors.api && (
-            <p className="text-sm text-red-600 text-left">{errors.api}</p>
+            <p className="text-sm text-red-600 text-left flex items-center gap-1">
+              <AlertCircle size={14} /> {errors.api}
+            </p>
           )}
 
           <button

@@ -10,10 +10,11 @@ import Login from "./components/Login";
 import Register from "./components/Register";
 import { store } from "./store/store";
 import ScrollToTop from "./components/products/ScrollToTop";
+import Popup from "./components/Popup";
 
 function App() {
   return (
-    <Provider store={store}>  
+    <Provider store={store}>
       <BrowserRouter>
       <ScrollToTop />
         <Routes>
@@ -28,6 +29,7 @@ function App() {
           <Route path="/register" element={<Register />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
+        <Popup />
       </BrowserRouter>
     </Provider>
   );
