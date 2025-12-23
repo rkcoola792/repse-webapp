@@ -13,6 +13,8 @@ export default function Register() {
 
   const [form, setForm] = useState({
     name: "",
+    lastName: "",
+    gender: "",
     email: "",
     password: "",
   });
@@ -20,6 +22,8 @@ export default function Register() {
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const nameRef = useRef(null);
+  const lastNameRef = useRef(null);
+  const genderRef = useRef(null);
   const emailRef = useRef(null);
   const passwordRef = useRef(null);
 
@@ -28,8 +32,7 @@ export default function Register() {
     /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$/.test(pwd);
 
   /* ---------- Email Format Check ---------- */
-  const isValidEmail = (email) =>
-    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
   /* ---------- Validate Fields ---------- */
   const validate = (currentForm = form, forRealtime = false) => {
@@ -37,20 +40,38 @@ export default function Register() {
 
     // Name validation: only letters, spaces, dots, hyphens
     if (!currentForm.name.trim()) {
-      newErrors.name = "Full name is required";
+      newErrors.name = "First name is required";
     } else if (!/^[A-Za-z\s.-]+$/.test(currentForm.name.trim())) {
       newErrors.name = "Please only use letters, spaces, dots and hyphens";
     }
 
+    // Last Name validation
+    if (!currentForm.lastName.trim()) {
+      newErrors.lastName = "Last name is required";
+    } else if (!/^[A-Za-z\s.-]+$/.test(currentForm.lastName.trim())) {
+      newErrors.lastName = "Please only use letters, spaces, dots and hyphens";
+    }
+
+    // Gender validation
+    if (!currentForm.gender) {
+      newErrors.gender = "Gender is required";
+    }
+
     // Email validation
     if (!currentForm.email) newErrors.email = "Email is required";
-    else if ((hasSubmitted || forRealtime) && !isValidEmail(currentForm.email)) {
+    else if (
+      (hasSubmitted || forRealtime) &&
+      !isValidEmail(currentForm.email)
+    ) {
       newErrors.email = "Enter a valid email";
     }
 
     // Password validation
     if (!currentForm.password) newErrors.password = "Password is required";
-    else if ((hasSubmitted || forRealtime) && !isStrongPassword(currentForm.password)) {
+    else if (
+      (hasSubmitted || forRealtime) &&
+      !isStrongPassword(currentForm.password)
+    ) {
       newErrors.password = "Password does not meet requirements";
     }
 
@@ -76,6 +97,10 @@ export default function Register() {
     if (Object.keys(newErrors).length > 0) {
       if (newErrors.name) {
         nameRef.current?.focus();
+      } else if (newErrors.lastName) {
+        lastNameRef.current?.focus();
+      } else if (newErrors.gender) {
+        genderRef.current?.focus();
       } else if (newErrors.email) {
         emailRef.current?.focus();
       } else if (newErrors.password) {
@@ -115,7 +140,9 @@ export default function Register() {
   /* ---------- Helper for input classes ---------- */
   const inputClass = (fieldError) =>
     `w-full rounded-md px-4 py-3 text-[15px] border ${
-      fieldError ? "border-red-400 focus:ring-red-200" : "border-black focus:ring-blue-200"
+      fieldError
+        ? "border-red-400 focus:ring-red-200"
+        : "border-black focus:ring-blue-200"
     } focus:outline-none focus:ring-2`;
 
   return (
@@ -132,7 +159,7 @@ export default function Register() {
             <input
               ref={nameRef}
               type="text"
-              placeholder="Full name*"
+              placeholder="First name*"
               value={form.name}
               onChange={(e) => handleChange("name", e.target.value)}
               className={inputClass(errors.name)}
@@ -140,6 +167,43 @@ export default function Register() {
             {errors.name && (
               <p className="text-xs text-red-500 mt-1 text-left flex items-center gap-1">
                 <AlertCircle size={14} /> {errors.name}
+              </p>
+            )}
+          </div>
+
+          {/* Last Name */}
+          <div>
+            <input
+              ref={lastNameRef}
+              type="text"
+              placeholder="Last name*"
+              value={form.lastName}
+              onChange={(e) => handleChange("lastName", e.target.value)}
+              className={inputClass(errors.lastName)}
+            />
+            {errors.lastName && (
+              <p className="text-xs text-red-500 mt-1 text-left flex items-center gap-1">
+                <AlertCircle size={14} /> {errors.lastName}
+              </p>
+            )}
+          </div>
+
+          {/* Gender */}
+          <div>
+            <select
+              ref={genderRef}
+              value={form.gender}
+              onChange={(e) => handleChange("gender", e.target.value)}
+              className={inputClass(errors.gender)}
+            >
+              <option value="">Select gender*</option>
+              <option value="male">Male</option>
+              <option value="female">Female</option>
+              <option value="other">Other</option>
+            </select>
+            {errors.gender && (
+              <p className="text-xs text-red-500 mt-1 text-left flex items-center gap-1 mr-2">
+                <AlertCircle size={14} /> {errors.gender}
               </p>
             )}
           </div>
@@ -186,19 +250,54 @@ export default function Register() {
             {/* Password Requirement Box (shows only after first submit) */}
             {hasSubmitted && (
               <div className="mt-2 w-full p-3 border border-gray-200 rounded-md bg-white text-left text-xs text-gray-700 space-y-1">
-                <p className="font-medium text-gray-900 mb-1">Password requirements</p>
+                <p className="font-medium text-gray-900 mb-1">
+                  Password requirements
+                </p>
                 <ul className="space-y-0.5">
-                  <li className={`flex items-center gap-2 ${form.password.length >= 8 ? "text-green-600" : "text-gray-500"}`}>
-                    <span>{form.password.length >= 8 ? "✓" : "•"}</span> Minimum 8 characters
+                  <li
+                    className={`flex items-center gap-2 ${
+                      form.password.length >= 8
+                        ? "text-green-600"
+                        : "text-gray-500"
+                    }`}
+                  >
+                    <span>{form.password.length >= 8 ? "✓" : "•"}</span> Minimum
+                    8 characters
                   </li>
-                  <li className={`flex items-center gap-2 ${/[A-Z]/.test(form.password) && /[a-z]/.test(form.password) ? "text-green-600" : "text-gray-500"}`}>
-                    <span>{/[A-Z]/.test(form.password) && /[a-z]/.test(form.password) ? "✓" : "•"}</span> Upper & lowercase letters
+                  <li
+                    className={`flex items-center gap-2 ${
+                      /[A-Z]/.test(form.password) && /[a-z]/.test(form.password)
+                        ? "text-green-600"
+                        : "text-gray-500"
+                    }`}
+                  >
+                    <span>
+                      {/[A-Z]/.test(form.password) &&
+                      /[a-z]/.test(form.password)
+                        ? "✓"
+                        : "•"}
+                    </span>{" "}
+                    Upper & lowercase letters
                   </li>
-                  <li className={`flex items-center gap-2 ${/\d/.test(form.password) ? "text-green-600" : "text-gray-500"}`}>
-                    <span>{/\d/.test(form.password) ? "✓" : "•"}</span> One number
+                  <li
+                    className={`flex items-center gap-2 ${
+                      /\d/.test(form.password)
+                        ? "text-green-600"
+                        : "text-gray-500"
+                    }`}
+                  >
+                    <span>{/\d/.test(form.password) ? "✓" : "•"}</span> One
+                    number
                   </li>
-                  <li className={`flex items-center gap-2 ${/[@$!%*?&]/.test(form.password) ? "text-green-600" : "text-gray-500"}`}>
-                    <span>{/[@$!%*?&]/.test(form.password) ? "✓" : "•"}</span> One special character
+                  <li
+                    className={`flex items-center gap-2 ${
+                      /[@$!%*?&]/.test(form.password)
+                        ? "text-green-600"
+                        : "text-gray-500"
+                    }`}
+                  >
+                    <span>{/[@$!%*?&]/.test(form.password) ? "✓" : "•"}</span>{" "}
+                    One special character
                   </li>
                 </ul>
               </div>

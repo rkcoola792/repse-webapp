@@ -11,18 +11,20 @@ import Register from "./components/Register";
 import { store } from "./store/store";
 import ScrollToTop from "./components/products/ScrollToTop";
 import Popup from "./components/Popup";
+import Profile from "./components/profile";
 
 function App() {
   return (
     <Provider store={store}>
       <BrowserRouter>
-      <ScrollToTop />
+        <ScrollToTop />
         <Routes>
           <Route path="/" element={<Body />}>
             <Route index element={<Homepage />} />
             {/* Add more routes here as needed */}
             <Route path="/products" element={<ProductsPage />} />
             <Route path="/practice" element={<PracticeLayout />} />
+            <Route path="/profile" element={<Profile />} />
             <Route path="/product-details/:id" element={<ProductDetails />} />
           </Route>
           <Route path="/login" element={<Login />} />

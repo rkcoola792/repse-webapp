@@ -7,38 +7,49 @@ import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import AccountCircleOutlinedIcon from "@mui/icons-material/AccountCircleOutlined";
 import FavoriteBorderOutlinedIcon from "@mui/icons-material/FavoriteBorderOutlined";
-import { resetCartShake, resetFavoritesShake, setCartLoading } from "../store/uiSlice";
+import {
+  resetCartShake,
+  resetFavoritesShake,
+  setCartLoading,
+} from "../store/uiSlice";
 import { useDispatch } from "react-redux";
 import { Heart, User, Loader } from "lucide-react";
 
 export default function Header({ onCartClick, isCartOpen }) {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-
+  const user = useSelector((state) => state.user.user);
   const cartItems = useSelector((state) => state.cart.cart); // Redux cart state
   const cartCount = cartItems.reduce((acc, item) => acc + item.quantity, 0); // total items
   const favorites = useSelector((state) => state.favorites.favorites);
   const favoritesCount = favorites.length;
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const shakeCart = useSelector(state => state.ui.shakeCart);
+  const shakeCart = useSelector((state) => state.ui.shakeCart);
 
   const [shake, setShake] = useState(false);
   const [shakeFav, setShakeFav] = useState(false);
-  const shakeFavorites = useSelector(state => state.ui.shakeFavorites);
-  const cartLoading = useSelector(state => state.ui.cartLoading);
-
+  const shakeFavorites = useSelector((state) => state.ui.shakeFavorites);
+  const cartLoading = useSelector((state) => state.ui.cartLoading);
+  console.log("user",user.user);
+  const handleProfileClick = () => {
+    if (user?.user) {
+      navigate("/profile");
+    } else {
+      navigate("/login");
+    }
+  };
   useEffect(() => {
-  if (shakeCart) {
-    setShake(true);
+    if (shakeCart) {
+      setShake(true);
 
-    const timer = setTimeout(() => {
-      setShake(false);
-      dispatch(resetCartShake());
-    }, 400);
+      const timer = setTimeout(() => {
+        setShake(false);
+        dispatch(resetCartShake());
+      }, 400);
 
-    return () => clearTimeout(timer);
-  }
-}, [shakeCart]);
+      return () => clearTimeout(timer);
+    }
+  }, [shakeCart]);
 
   useEffect(() => {
     if (shakeFavorites) {
@@ -97,22 +108,32 @@ export default function Header({ onCartClick, isCartOpen }) {
               Sign in
             </button> */}
             <div className="flex items-center space-x-3">
-              <button className={`relative cursor-pointer ${shakeFav ? "animate-cart-shake" : ""}hover:bg-gray-100 rounded-full p-2`}>
+              <button
+                className={`relative cursor-pointer ${
+                  shakeFav ? "animate-cart-shake" : ""
+                }hover:bg-gray-100 rounded-full p-2`}
+              >
                 <Heart strokeWidth={1.7} />
                 {favoritesCount > 0 && (
                   <span className="absolute bottom-0 left-1/2 transform -translate-x-1/2 bg-red-500 rounded-full w-1 h-1"></span>
                 )}
               </button>
               <button
-                className={`relative cursor-pointer ${shake ? "animate-cart-shake" : ""}hover:bg-gray-100 rounded-full p-2`}
+                className={`relative cursor-pointer ${
+                  shake ? "animate-cart-shake" : ""
+                }hover:bg-gray-100 rounded-full p-2`}
                 onClick={() => {
                   dispatch(setCartLoading(true));
                   onCartClick();
                   setTimeout(() => dispatch(setCartLoading(false)), 500);
                 }}
               >
-                {cartLoading ? <Loader className="animate-spin w-7 h-7" /> : <CiShoppingCart size={28} strokeWidth={0.18} />}
-                {cartCount > 0 && ( 
+                {cartLoading ? (
+                  <Loader className="animate-spin w-7 h-7" />
+                ) : (
+                  <CiShoppingCart size={28} strokeWidth={0.18} />
+                )}
+                {cartCount > 0 && (
                   <span
                     className="absolute top-4 right-2 transform translate-x-1/2 -translate-y-1/2 
                      bg-black text-white rounded-full w-4 h-4 text-xs flex items-center justify-center
@@ -122,7 +143,10 @@ export default function Header({ onCartClick, isCartOpen }) {
                   </span>
                 )}
               </button>
-              <button className="p-2 rounded-full hover:bg-gray-100 cursor-pointer" onClick={() => navigate('/login')}>
+              <button
+                className="p-2 rounded-full hover:bg-gray-100 cursor-pointer"
+                onClick={handleProfileClick}
+              >
                 <User strokeWidth={1.5} />
               </button>
             </div>
