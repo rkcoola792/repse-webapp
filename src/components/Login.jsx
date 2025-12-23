@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Eye, EyeOff } from "lucide-react";
+import { useState, useRef } from "react";
+import { Eye, EyeOff, AlertCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useDispatch } from "react-redux";
@@ -10,9 +10,33 @@ export default function Login() {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [errors, setErrors] = useState({});
   const dispatch = useDispatch();
+  const emailRef = useRef(null);
+  const passwordRef = useRef(null);
+  const inputClass = (fieldError) =>
+    `w-full border rounded-md px-4 py-3 text-[16px] focus:outline-none focus:ring-2 focus:ring-blue-200 ${
+      fieldError ? "border-red-400 focus:ring-red-200" : "border-black"
+    }`;
+
+  const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setErrors({});
+    let newErrors = {};
+    if (!email.trim()) newErrors.email = "Email is required";
+    else if (!isValidEmail(email)) newErrors.email = "Enter a valid email";
+    if (!password.trim()) newErrors.password = "Password is required";
+    setErrors(newErrors);
+    if (Object.keys(newErrors).length > 0) {
+      if (newErrors.email) {
+        emailRef.current?.focus();
+      } else if (newErrors.password) {
+        passwordRef.current?.focus();
+      }
+      return;
+    }
     // handle login
     try {
       const user = await axios.post(
@@ -23,7 +47,7 @@ export default function Login() {
       dispatch(addUser(user.data));
       navigate("/");
     } catch (error) {
-      console.error("Login error:", error);
+      setErrors({ api: `Wrong email or password` });
     }
   };
 
@@ -59,44 +83,39 @@ export default function Login() {
         </p>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form noValidate onSubmit={handleSubmit} className="space-y-4">
           {/* Email */}
-          <input
-            type="email"
-            placeholder="Email address*"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="
-              w-full
-              border
-              rounded-md
-              px-4
-              py-3
-              text-[16px]
-              focus:outline-none
-              focus:ring-2
-              focus:ring-zinc-300
-            "
-          />
+          <div>
+            <input
+              ref={emailRef}
+              type="email"
+              placeholder="Email address*"
+              value={email}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                setErrors(prev => ({ ...prev, email: undefined }));
+              }}
+              className={inputClass(errors.email)}
+            />
+            {errors.email && (
+              <p className="text-xs text-red-500 mt-2 text-left flex items-center gap-1">
+                <AlertCircle size={14} /> {errors.email}
+              </p>
+            )}
+          </div>
 
           {/* Password */}
           <div className="relative">
             <input
+              ref={passwordRef}
               type={showPassword ? "text" : "password"}
               placeholder="Password*"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="
-                w-full
-                border
-                rounded-md
-                px-4
-                py-3
-                text-[16px]
-                focus:outline-none
-                focus:ring-2
-                focus:ring-zinc-300
-              "
+              onChange={(e) => {
+                setPassword(e.target.value);
+                setErrors(prev => ({ ...prev, password: undefined }));
+              }}
+              className={inputClass(errors.password)}
             />
             <button
               type="button"
@@ -106,6 +125,18 @@ export default function Login() {
               {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
             </button>
           </div>
+
+          {errors.password && (
+            <p className="text-xs text-red-500 mt-0 text-left flex items-center gap-1">
+              <AlertCircle size={14} /> {errors.password}
+            </p>
+          )}
+
+          {errors.api && (
+            <p className="text-xs text-red-500 mt-2 text-left flex items-center gap-1">
+              <AlertCircle size={14}/> {errors.api}
+            </p>
+          )}
 
           {/* Forgot password */}
           <div className="text-center">

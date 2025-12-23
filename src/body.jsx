@@ -1,21 +1,24 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { Outlet } from 'react-router-dom'
 import Header from './components/header'
 import NewsletterFooter from './components/footer'
 import CartSidebar from './components/cart/cart'
+import { useSelector, useDispatch } from 'react-redux'
+import { toggleCart, closeCart } from './store/uiSlice'
 
 const Body = () => {
-  const [isCartOpen, setIsCartOpen] = useState(false);
+  const dispatch = useDispatch();
+  const isCartOpen = useSelector(state => state.ui.isCartOpen);
 
-  const toggleCart = () => setIsCartOpen(!isCartOpen);
-  const closeCart = () => setIsCartOpen(false);
+  const handleToggleCart = () => dispatch(toggleCart());
+  const handleCloseCart = () => dispatch(closeCart());
 
   return (
      <div className={`h-screen ${isCartOpen ? 'overflow-hidden' : ''}`}>
-        <Header onCartClick={toggleCart} />
+        <Header onCartClick={handleToggleCart} />
         <Outlet />
         <NewsletterFooter/>
-        <CartSidebar isOpen={isCartOpen} onClose={closeCart} />
+        <CartSidebar isOpen={isCartOpen} onClose={handleCloseCart} />
       </div>
    )
 }

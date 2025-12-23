@@ -10,7 +10,9 @@ import {
   Loader,
 } from "lucide-react";
 import { addItem } from "../../store/cartSlice";
-import { openCart } from "../../store/uiSlice";
+import { openCart, showPopup, setCartView } from "../../store/uiSlice";
+import { addToFavorites, removeFromFavorites } from "../../store/favoritesSlice";
+import { triggerFavoritesShake } from "../../store/uiSlice";
 import axios from "axios";
 import { useParams } from "react-router-dom";
 import ProductCard from "./productCard";
@@ -20,16 +22,22 @@ import { triggerCartShake } from "../../store/uiSlice";
 export default function ProductDetails() {
   const dispatch = useDispatch();
   const cartItems = useSelector((state) => state.cart.cart);
+  const favorites = useSelector((state) => state.favorites.favorites);
   const [selectedSize, setSelectedSize] = useState("Large");
   const [selectedColor, setSelectedColor] = useState("#2C3E50");
   const [quantity, setQuantity] = useState(1);
   const [activeTab, setActiveTab] = useState("reviews");
   const [selectedImage, setSelectedImage] = useState(0); // Track selected image index
 
-  const [showToast, setShowToast] = useState(false); //Popup
-
   const sizes = ["Small", "Medium", "Large", "X-Large"];
   // const colors = ["#2C3E50", "#34495E", "#7F8C8D"];
+
+  const [product, setProduct] = useState(null);
+  const [suggestionProducts, setSuggestionProducts] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const { id } = useParams();
+
+  const isFavorite = favorites.some(item => item.id === product?._id);
 
   const handleAddToCart = () => {
     const cartItem = {
@@ -44,17 +52,10 @@ export default function ProductDetails() {
     };
 
     dispatch(addItem(cartItem));
+    dispatch(setCartView('cart'));
     dispatch(openCart());
     dispatch(triggerCartShake());
-
-    setShowToast(true);
-    setTimeout(() => setShowToast(false), 2000);
   };
-
-  const [product, setProduct] = useState(null);
-  const [suggestionProducts, setSuggestionProducts] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const { id } = useParams();
 
   console.log("Product ID from URL:", id);
 
@@ -97,7 +98,7 @@ export default function ProductDetails() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen bg-white flex items-center justify-center">
         Loading...
       </div>
     );
@@ -105,7 +106,7 @@ export default function ProductDetails() {
 
   if (!product) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen bg-white flex items-center justify-center">
         Product not found
       </div>
     );
@@ -202,6 +203,49 @@ export default function ProductDetails() {
                 onClick={handleAddToCart}
               >
                 Add to Cart
+              </button>
+              <button
+                onClick={() => {
+                  if (isFavorite) {
+                    dispatch(removeFromFavorites({ id: product._id }));
+                    dispatch(showPopup({
+                      message: "Item removed from the wishlist",
+                      undoAction: 'add',
+                      itemData: {
+                        id: product._id,
+                        name: product.name,
+                        price: product.price,
+                        images: product.images,
+                        description: product.description,
+                        selectedColor,
+                        selectedSize
+                      }
+                    }));
+                  } else {
+                    dispatch(addToFavorites({
+                      id: product._id,
+                      name: product.name,
+                      price: product.price,
+                      images: product.images,
+                      description: product.description,
+                      selectedColor,
+                      selectedSize
+                    }));
+                    dispatch(triggerFavoritesShake());
+                    dispatch(showPopup({
+                      message: "Item added to wishlist",
+                      undoAction: 'remove',
+                      itemData: { id: product._id }
+                    }));
+                  }
+                }}
+                className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center hover:bg-gray-200 transition cursor-pointer"
+              >
+                <Heart
+                  className={`w-5 h-5 ${
+                    isFavorite ? "fill-red-500 stroke-red-500" : "stroke-gray-600"
+                  }`}
+                />
               </button>
             </div>
           </div>
