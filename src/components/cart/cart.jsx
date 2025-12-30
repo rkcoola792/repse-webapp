@@ -87,14 +87,15 @@ export default function CartSidebar({ isOpen, onClose }) {
         createOrderOptions,
         { withCredentials: true }
       );
-      const { keyId, currency, amount, notes, order_id } = order.data;
+      console.log("Order created:", order.data);
+      const { keyId, currency, amount, notes, orderId } = order.data;
       const options = {
         key: keyId, // Replace with your Razorpay key_id
         amount,
         currency,
         name: "Repse",
         description: "Payment for your order",
-        order_id, // This is the order_id created in the backend
+        orderId, // This is the order_id created in the backend
         // callback_url: "http://localhost:3000/payment-success", // Your success URL
         prefill: {
           name: notes.first_name,
