@@ -65,78 +65,53 @@ export default function CartSidebar({ isOpen, onClose }) {
   const discount = subtotal > 0 ? subtotal * 0.2 : 0;
   const deliveryFee = subtotal > 0 ? 15 : 0;
   const totalAmount = subtotal - discount + deliveryFee;
-const handleCheckout = async () => {
-  if (!user || Object.keys(user).length === 0) {
-    navigate('/login');
-    return;
-  }
-  
-  try {
-    const createOrderOptions = {
-      amount: totalAmount, // Send in rupees, backend will convert to paise
-      currency: "INR",
-      receipt: `receipt_${Date.now()}`,
-      notes: {
-        first_name: user.firstName || "John Doe",
-        email: user.email || "user@gmail.com",
-      },
-    };
-    
-    const order = await axios.post(
-      import.meta.env.VITE_APP_BASE_URL + "/create-order",
-      createOrderOptions,
-      { withCredentials: true }
-    );
-    
-    console.log("Order response:", order.data);
-    
-    // FIXED: Use 'orderId' instead of 'order_id' to match your backend response
-    const { keyId, currency, amount, notes, orderId } = order.data;
-    
-    const options = {
-      key: keyId,
-      amount: amount * 100, // Backend sends in rupees, Razorpay needs paise
-      currency,
-      name: "Repse",
-      description: "Payment for your order",
-      order_id: orderId, // Pass the orderId from backend
-      handler: function (response) {
-        console.log("Payment Success:", response);
-        // Handle successful payment
-        // response will contain: razorpay_payment_id, razorpay_order_id, razorpay_signature
-        // You can verify payment here or redirect to success page
-      },
-      modal: {
-        ondismiss: function() {
-          console.log("Payment cancelled by user");
-        }
-      },
-      prefill: {
-        name: notes.first_name,
-        email: notes.email,
-        contact: user.contact || "9999999999",
-      },
-      theme: {
-        color: "#F37254",
-      },
-    };
-    
-    console.log("Razorpay Options:", options);
-    
-    const rzp1 = new window.Razorpay(options);
-    
-    rzp1.on('payment.failed', function (response) {
-      console.error("Payment Failed:", response.error);
-      // Handle payment failure
-    });
-    
-    rzp1.open();
-    
-  } catch (error) {
-    console.error("Error during checkout:", error);
-    alert("Failed to create order. Please try again.");
-  }
-};
+  const handleCheckout = async () => {
+    if (!user || Object.keys(user).length === 0) {
+      navigate('/login');
+      return;
+    }
+    // Checkout logic to be implemented
+    try {
+      const createOrderOptions = {
+        amount: Math.round(totalAmount * 100), // Converts rupees to paise (e.g., 123.45 → 12345)
+        currency: "INR",
+        receipt: `receipt_${Date.now()}`,
+        payment_capture: 1,
+        notes: {
+          first_name: "John Doe",
+          email: "user@gmail.com",
+        },
+      };
+      const order = await axios.post(
+        import.meta.env.VITE_APP_BASE_URL + "/create-order",
+        createOrderOptions,
+        { withCredentials: true }
+      );
+      const { keyId, currency, amount, notes, order_id } = order.data;
+      const options = {
+        key: keyId, // Replace with your Razorpay key_id
+        amount,
+        currency,
+        name: "Repse",
+        description: "Payment for your order",
+        order_id, // This is the order_id created in the backend
+        // callback_url: "http://localhost:3000/payment-success", // Your success URL
+        prefill: {
+          name: notes.first_name,
+          email: notes.email,
+          contact: "9999999999",
+        },
+        theme: {
+          color: "#F37254",
+        },
+      };
+      console.log("Options:", options);
+      const rzp1 = new window.Razorpay(options);
+      rzp1.open();
+    } catch (error) {
+      console.error("Error during checkout:", error);
+    }
+  };
 
   return (
     <>
