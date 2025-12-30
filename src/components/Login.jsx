@@ -16,7 +16,7 @@ export default function Login() {
   const passwordRef = useRef(null);
   const inputClass = (fieldError) =>
     `w-full border rounded-md px-4 py-3 text-[16px] focus:outline-none focus:ring-2 focus:ring-blue-200 ${
-      fieldError ? "border-red-400 focus:ring-red-200" : "border-black"
+      fieldError || errors.api ? "border-red-400 focus:ring-red-200" : "border-black"
     }`;
 
   const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -48,6 +48,7 @@ export default function Login() {
       navigate("/");
     } catch (error) {
       setErrors({ api: `Wrong email or password` });
+      emailRef.current?.focus();
     }
   };
 

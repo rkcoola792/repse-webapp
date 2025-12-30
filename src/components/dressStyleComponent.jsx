@@ -5,14 +5,14 @@ const StyleCard = ({ title, imageUrl, size = 'default' }) => {
     <div className={`relative bg-white rounded-3xl overflow-hidden ${
       size === 'large' ? 'col-span-2' : 'col-span-1'
     }`}>
-      <div className="relative h-72">
-        <img 
-          src={imageUrl} 
+      <div className="relative h-48 sm:h-72">
+        <img
+          src={imageUrl}
           alt={title}
           className="w-full h-full object-cover"
         />
-        <div className="absolute top-6 left-8">
-          <h3 className="text-3xl font-bold text-gray-900">{title}</h3>
+        <div className="absolute top-4 sm:top-6 left-4 sm:left-8">
+          <h3 className="text-xl sm:text-3xl font-bold text-gray-900">{title}</h3>
         </div>
       </div>
     </div>
@@ -48,8 +48,8 @@ const BrowseByDressStyle = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-white p-8">
-      <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen bg-white">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-0 py-8 sm:py-12 lg:py-6">
         {/* View All Button */}
         {/* <div className="text-center mb-8">
           <button className="px-8 py-3 border-2 border-gray-200 rounded-full font-medium hover:bg-gray-50 transition-colors">
@@ -58,8 +58,8 @@ const BrowseByDressStyle = () => {
         </div> */}
 
         {/* Main Section */}
-        <div className="bg-gray-100 rounded-3xl p-12">
-          <h1 className="text-5xl font-black text-center mb-12 tracking-tight">
+        <div className="bg-gray-100 rounded-3xl p-6 sm:p-12">
+          <h1 className="text-3xl sm:text-5xl font-black text-center mb-8 sm:mb-12 tracking-tight">
             BROWSE BY DRESS STYLE
           </h1>
           

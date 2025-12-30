@@ -3,7 +3,7 @@ import { Star, ChevronLeft, ChevronRight, CheckCircle } from 'lucide-react';
 
 const TestimonialCard = ({ name, verified, rating, review }) => {
   return (
-    <div className="bg-white border border-gray-200 rounded-2xl p-6 min-w-[350px] max-w-[400px] flex-shrink-0">
+    <div className="bg-white border border-gray-200 rounded-2xl p-4 sm:p-6 min-w-[280px] sm:min-w-[320px] md:min-w-[350px] max-w-[400px] flex-shrink-0">
       <div className="flex gap-1 mb-3">
         {[...Array(5)].map((_, i) => (
           <Star
@@ -66,7 +66,7 @@ const OurHappyCustomers = () => {
   const handleScroll = (direction) => {
     const container = document.getElementById('testimonials-container');
     if (container) {
-      const scrollAmount = 370;
+      const scrollAmount = window.innerWidth < 640 ? 300 : 370; // Responsive scroll amount
       if (direction === 'left') {
         container.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
       } else {
@@ -76,34 +76,34 @@ const OurHappyCustomers = () => {
   };
 
   return (
-    <div className="bg-white py-16 px-8">
-      <div className="max-w-7xl mx-auto">
-        <div className="flex items-center justify-between mb-10">
-          <h2 className="text-5xl font-black tracking-tight">
+    <div className="bg-white py-8 sm:py-6 lg:py-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-0">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8 sm:mb-10 gap-4">
+          <h2 className="text-2xl sm:text-2xl md:text-4xl lg:text-5xl font-black tracking-tight">
             OUR HAPPY CUSTOMERS
           </h2>
-          
-          <div className="flex gap-3">
+
+          <div className="flex gap-3 self-start sm:self-auto">
             <button
               onClick={() => handleScroll('left')}
-              className="p-2 border border-gray-300 rounded-full hover:bg-gray-50 transition-colors"
+              className="p-2 sm:p-3 border border-gray-300 rounded-full hover:bg-gray-50 transition-colors touch-manipulation"
               aria-label="Previous testimonials"
             >
-              <ChevronLeft className="w-6 h-6" />
+              <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6" />
             </button>
             <button
               onClick={() => handleScroll('right')}
-              className="p-2 border border-gray-300 rounded-full hover:bg-gray-50 transition-colors"
+              className="p-2 sm:p-3 border border-gray-300 rounded-full hover:bg-gray-50 transition-colors touch-manipulation"
               aria-label="Next testimonials"
             >
-              <ChevronRight className="w-6 h-6" />
+              <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6" />
             </button>
           </div>
         </div>
 
-        <div 
+        <div
           id="testimonials-container"
-          className="flex gap-5 overflow-x-auto scrollbar-hide pb-4"
+          className="flex gap-3 sm:gap-4 md:gap-5 overflow-x-auto scrollbar-hide pb-4"
           style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
         >
           {testimonials.map((testimonial) => (

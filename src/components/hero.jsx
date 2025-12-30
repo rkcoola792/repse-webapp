@@ -1,8 +1,8 @@
 export default function Hero() {
   return (
     <section className="bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center py-20 lg:py-22">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-0">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center py-22">
           {/* Left column: text */}
           <div className="lg:col-span-6">
             <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight text-gray-900 leading-tight">
@@ -71,7 +71,7 @@ export default function Hero() {
       </div>
 
       {/* brand bar */}
-      <div className="bg-black mt-6">
+      <div className="bg-black mt-6 mb-12">
         <div className="max-w-7xl mx-auto px-4 py-6 flex items-center justify-between overflow-x-auto space-x-8">
           {[
             "OVERSIZED",
