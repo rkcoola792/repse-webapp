@@ -5,20 +5,20 @@ const TopSelling = ({products}) => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-white p-8">
-      <div className="max-w-7xl mx-auto">
-        <h1 className="text-5xl font-black text-center mb-12 tracking-tight">
-          TOP SELLING 
+    <div className="min-h-screen bg-white">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-0 py-8 sm:py-12 lg:py-8">
+        <h1 className="text-3xl sm:text-5xl font-black text-center mb-8 sm:mb-12 tracking-tight">
+          TOP SELLING
         </h1>
-        
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           {products?.map((product) => (
             <ProductCard key={product.id} {...product} />
           ))}
         </div>
 
         <div className="text-center" onClick={() => navigate("/products")}>
-          <button className="px-8 py-3 border-2 border-gray-200 rounded-full cursor-pointer font-medium hover:bg-gray-50 transition-colors">
+          <button className="px-6 py-2 sm:px-8 sm:py-3 text-sm sm:text-base border-2 border-gray-200 rounded-full cursor-pointer font-medium hover:bg-gray-50 transition-colors">
             View All
           </button>
         </div>

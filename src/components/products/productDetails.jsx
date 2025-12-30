@@ -124,15 +124,15 @@ export default function ProductDetails() {
 
       {/* Product Section */}
       <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="grid md:grid-cols-2 gap-12">
+        <div className="grid md:grid-cols-2 gap-8 md:gap-12">
           {/* Image Gallery */}
-          <div className="flex gap-4">
-            <div className="flex flex-col gap-4">
+          <div className="flex gap-2 sm:gap-4">
+            <div className="flex flex-col gap-2 sm:gap-4">
               {product.images?.map((image, i) => (
                 <div
                   key={i}
                   onClick={() => setSelectedImage(i)}
-                  className={`w-20 h-20 border-2 rounded-lg bg-gray-100 flex items-center justify-center cursor-pointer hover:border-gray-400 overflow-hidden transition ${
+                  className={`w-16 h-16 sm:w-20 sm:h-20 border-2 rounded-lg bg-gray-100 flex items-center justify-center cursor-pointer hover:border-gray-400 overflow-hidden transition ${
                     selectedImage === i ? "border-black" : "border-gray-200"
                   }`}
                 >
@@ -144,7 +144,7 @@ export default function ProductDetails() {
                 </div>
               ))}
             </div>
-            <div className="flex-1 bg-gray-100 rounded-2xl flex items-center justify-center aspect-square overflow-hidden">
+            <div className="flex-1 bg-gray-100 rounded-2xl flex items-center justify-center aspect-[4/3] sm:aspect-square overflow-hidden">
               <img
                 src={
                   product.images?.[selectedImage] ||
@@ -159,23 +159,23 @@ export default function ProductDetails() {
 
           {/* Product Details */}
           <div>
-            <h1 className="text-4xl font-bold mb-4">{product.name}</h1>
+            <h1 className="text-2xl sm:text-4xl font-bold mb-4">{product.name}</h1>
 
             <div className="flex items-center gap-3 mb-4">
-              <span className="text-3xl font-bold">${product.price}</span>
+              <span className="text-xl sm:text-3xl font-bold">${product.price}</span>
             </div>
 
-            <p className="text-gray-600 mb-6">{product.description}</p>
+            <p className="text-sm sm:text-base text-gray-600 mb-6">{product.description}</p>
 
             {/* Size Selection */}
             <div className="mb-6">
               <p className="text-sm mb-3">Choose Size</p>
-              <div className="flex gap-3">
+              <div className="flex flex-wrap gap-2 sm:gap-3">
                 {sizes.map((size) => (
                   <button
                     key={size}
                     onClick={() => setSelectedSize(size)}
-                    className={`px-6 py-3 rounded-full border cursor-pointer ${
+                    className={`px-3 py-2 sm:px-6 sm:py-3 text-xs sm:text-sm rounded-full border cursor-pointer ${
                       selectedSize === size
                         ? "bg-black text-white"
                         : "bg-gray-100 hover:bg-gray-200"
@@ -188,8 +188,8 @@ export default function ProductDetails() {
             </div>
 
             {/* Quantity and Add to Cart */}
-            <div className="flex gap-4 mb-6">
-              <div className="flex items-center gap-4 bg-gray-100 rounded-full px-6">
+            <div className="flex gap-2 sm:gap-4 mb-6">
+              <div className="flex items-center gap-4 bg-gray-100 rounded-full px-4 sm:px-6">
                 <button onClick={() => setQuantity(Math.max(1, quantity - 1))}>
                   <Minus className="w-4 h-4 cursor-pointer" />
                 </button>
@@ -199,7 +199,7 @@ export default function ProductDetails() {
                 </button>
               </div>
               <button
-                className="flex-1 bg-black text-white py-4 rounded-full font-medium hover:bg-gray-800 transition cursor-pointer flex items-center justify-center"
+                className="flex-1 bg-black text-white py-3 sm:py-4 rounded-full font-medium hover:bg-gray-800 transition cursor-pointer flex items-center justify-center"
                 onClick={handleAddToCart}
               >
                 Add to Cart
@@ -253,10 +253,10 @@ export default function ProductDetails() {
 
         {/* Recommendations */}
         <div className="mt-16">
-          <h2 className="text-3xl font-bold text-center mb-12">
+          <h2 className="text-xl sm:text-3xl font-bold text-center mb-8 sm:mb-12">
             YOU MIGHT ALSO LIKE
           </h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-16">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-0">
             {suggestionProducts?.slice(0, 4).map((item, i) => (
               <ProductCard key={i} {...item}></ProductCard>
             ))}

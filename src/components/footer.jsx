@@ -39,8 +39,8 @@ const NewsletterFooter = () => {
   return (
     <div className="bg-white">
       {/* Newsletter Section */}
-      <div className="max-w-7xl mx-auto px-8 py-8">
-        <div className="bg-black rounded-3xl p-12 flex flex-col md:flex-row items-center justify-between gap-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-0 py-8 sm:py-12 lg:py-10">
+        <div className="bg-black rounded-3xl p-6 sm:p-12 flex flex-col md:flex-row items-center justify-between gap-8">
           <h2 className="text-white text-4xl font-black max-w-md leading-tight">
             STAY UPTO DATE ABOUT OUR LATEST OFFERS
           </h2>
@@ -58,7 +58,7 @@ const NewsletterFooter = () => {
             </div>
             <button
               onClick={handleSubscribe}
-              className="w-full md:w-80 py-3 bg-white text-black font-semibold rounded-full hover:bg-gray-100 transition-colors"
+              className="w-full md:w-80 py-3 bg-white text-black font-semibold rounded-full hover:bg-gray-100 transition-colors cursor-pointer"
             >
               Subscribe to Newsletter
             </button>
