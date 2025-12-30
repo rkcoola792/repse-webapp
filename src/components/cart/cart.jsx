@@ -95,7 +95,7 @@ export default function CartSidebar({ isOpen, onClose }) {
         currency,
         name: "Repse",
         description: "Payment for your order",
-        orderId, // This is the order_id created in the backend
+        order_id: orderId, // This is the order_id created in the backend
         // callback_url: "http://localhost:3000/payment-success", // Your success URL
         prefill: {
           name: notes.first_name,
