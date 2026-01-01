@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useDispatch } from "react-redux";
 import { addUser } from "../store/userSlice";
+import { loadFavoritesForUser } from "../store/favoritesSlice";
 
 export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
@@ -45,6 +46,7 @@ export default function Login() {
         { withCredentials: true }
       );
       dispatch(addUser(user.data));
+      dispatch(loadFavoritesForUser(user.data.user.email));
       navigate("/");
     } catch (error) {
       setErrors({ api: `Wrong email or password` });

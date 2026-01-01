@@ -6,6 +6,7 @@ const initialState = {
   shakeCart: false,
   shakeFavorites: false,
   cartLoading: false,
+  loginPromptVisible: false,
   popup: {
     message: '',
     visible: false,
@@ -57,6 +58,12 @@ export const uiSlice = createSlice({
       state.popup.undoAction = null;
       state.popup.itemData = null;
     },
+    showLoginPrompt: (state) => {
+      state.loginPromptVisible = true;
+    },
+    hideLoginPrompt: (state) => {
+      state.loginPromptVisible = false;
+    },
   },
 });
 
@@ -72,6 +79,8 @@ export const {
   setCartView,
   showPopup,
   hidePopup,
+  showLoginPrompt,
+  hideLoginPrompt,
 } = uiSlice.actions;
 
 export default uiSlice.reducer;

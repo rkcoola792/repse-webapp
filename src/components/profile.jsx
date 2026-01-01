@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { removeUser } from "../store/userSlice";
+import { clearCart } from "../store/cartSlice";
+import { clearFavorites, saveFavoritesForUser } from "../store/favoritesSlice";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
@@ -28,13 +30,18 @@ export default function Profile() {
     console.log("Form submitted:", formData);
   };
   const handleLogout = async () => {
+    const userEmail = user?.user?.email || user?.email;
+    if (userEmail) {
+      dispatch(saveFavoritesForUser(userEmail));
+    }
     try {
       await axios.post(`${import.meta.env.VITE_APP_BASE_URL}/signout`);
-      dispatch(removeUser());
-      navigate("/");
     } catch (error) {
       console.log(error);
     }
+    dispatch(removeUser());
+    dispatch(clearFavorites());
+    navigate("/");
   };
 
   return (
@@ -105,7 +112,7 @@ export default function Profile() {
                 className="w-full px-4 py-3 border-2 border-gray-300 text-black font-medium rounded-lg  hover:bg-gray-50  cursor-pointer"
                 onClick={handleLogout}
               >
-                LOGOUT
+                 LOGOUT
               </button>
             </div>
           </div>

@@ -10,7 +10,7 @@ import {
   Loader,
 } from "lucide-react";
 import { addItem } from "../../store/cartSlice";
-import { openCart, showPopup, setCartView } from "../../store/uiSlice";
+import { openCart, showPopup, setCartView, showLoginPrompt } from "../../store/uiSlice";
 import { addToFavorites, removeFromFavorites } from "../../store/favoritesSlice";
 import { triggerFavoritesShake } from "../../store/uiSlice";
 import axios from "axios";
@@ -23,11 +23,14 @@ export default function ProductDetails() {
   const dispatch = useDispatch();
   const cartItems = useSelector((state) => state.cart.cart);
   const favorites = useSelector((state) => state.favorites.favorites);
+  const user = useSelector((state) => state.user.user);
   const [selectedSize, setSelectedSize] = useState("Large");
   const [selectedColor, setSelectedColor] = useState("#2C3E50");
   const [quantity, setQuantity] = useState(1);
   const [activeTab, setActiveTab] = useState("reviews");
   const [selectedImage, setSelectedImage] = useState(0); // Track selected image index
+
+  const userEmail = user?.user?.email || user?.email;
 
   const sizes = ["Small", "Medium", "Large", "X-Large"];
   // const colors = ["#2C3E50", "#34495E", "#7F8C8D"];
@@ -206,8 +209,12 @@ export default function ProductDetails() {
               </button>
               <button
                 onClick={() => {
+                  if (!user || Object.keys(user).length === 0) {
+                    dispatch(showLoginPrompt());
+                    return;
+                  }
                   if (isFavorite) {
-                    dispatch(removeFromFavorites({ id: product._id }));
+                    dispatch(removeFromFavorites({ id: product._id, userEmail }));
                     dispatch(showPopup({
                       message: "Item removed from the wishlist",
                       undoAction: 'add',
@@ -229,7 +236,8 @@ export default function ProductDetails() {
                       images: product.images,
                       description: product.description,
                       selectedColor,
-                      selectedSize
+                      selectedSize,
+                      userEmail
                     }));
                     dispatch(triggerFavoritesShake());
                     dispatch(showPopup({
