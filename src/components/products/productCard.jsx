@@ -2,13 +2,16 @@ import { Heart } from "lucide-react";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { addToFavorites, removeFromFavorites } from "../../store/favoritesSlice";
-import { triggerFavoritesShake, showPopup } from "../../store/uiSlice";
+import { triggerFavoritesShake, showPopup, showLoginPrompt } from "../../store/uiSlice";
 
 const ProductCard = ({ images, name, price, _id ,description}) => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const favorites = useSelector((state) => state.favorites.favorites);
+  const user = useSelector((state) => state.user.user);
   const isFavorite = favorites.some(item => item.id === _id);
+
+  const userEmail = user?.user?.email || user?.email;
 
   return (
     <div
@@ -27,15 +30,19 @@ const ProductCard = ({ images, name, price, _id ,description}) => {
         <button
           onClick={(e) => {
             e.stopPropagation();
+            if (!user || Object.keys(user).length === 0) {
+              dispatch(showLoginPrompt());
+              return;
+            }
             if (isFavorite) {
-              dispatch(removeFromFavorites({ id: _id }));
+              dispatch(removeFromFavorites({ id: _id, userEmail }));
               dispatch(showPopup({
                 message: "Item removed from the wishlist",
                 undoAction: 'add',
                 itemData: { id: _id, name, price, images, description }
               }));
             } else {
-              dispatch(addToFavorites({ id: _id, name, price, images, description }));
+              dispatch(addToFavorites({ id: _id, name, price, images, description, userEmail }));
               dispatch(triggerFavoritesShake());
               dispatch(showPopup({
                 message: "Item added to wishlist",

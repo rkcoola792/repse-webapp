@@ -3,26 +3,27 @@ import { CiSearch } from "react-icons/ci";
 import { CiShoppingCart } from "react-icons/ci";
 import { CgProfile } from "react-icons/cg";
 import Face5Icon from "@mui/icons-material/Face5";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
-import AccountCircleOutlinedIcon from "@mui/icons-material/AccountCircleOutlined";
-import FavoriteBorderOutlinedIcon from "@mui/icons-material/FavoriteBorderOutlined";
 import {
   resetCartShake,
   resetFavoritesShake,
   setCartLoading,
+  showLoginPrompt,
 } from "../store/uiSlice";
 import { useDispatch } from "react-redux";
 import { Heart, User, Loader } from "lucide-react";
 
 export default function Header({ onCartClick, isCartOpen }) {
   const navigate = useNavigate();
+  const location = useLocation();
   const dispatch = useDispatch();
   const user = useSelector((state) => state.user.user);
   const cartItems = useSelector((state) => state.cart.cart); // Redux cart state
   const cartCount = cartItems.reduce((acc, item) => acc + item.quantity, 0); // total items
   const favorites = useSelector((state) => state.favorites.favorites);
   const favoritesCount = favorites.length;
+  const favoritesViewed = useSelector((state) => state.favorites.viewed);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const shakeCart = useSelector((state) => state.ui.shakeCart);
 
@@ -109,12 +110,19 @@ export default function Header({ onCartClick, isCartOpen }) {
             </button> */}
             <div className="flex items-center space-x-3">
               <button
+                onClick={() => {
+                  if (!user || Object.keys(user).length === 0) {
+                    dispatch(showLoginPrompt());
+                  } else {
+                    navigate('/favourites');
+                  }
+                }}
                 className={`relative cursor-pointer ${
                   shakeFav ? "animate-cart-shake" : ""
                 }hover:bg-gray-100 rounded-full p-2`}
               >
-                <Heart strokeWidth={1.7} />
-                {favoritesCount > 0 && (
+                {location.pathname === '/favourites' ? <Heart fill="black" /> : <Heart strokeWidth={1.7} />}
+                {favoritesCount > 0 && !favoritesViewed && (
                   <span className="absolute bottom-0 left-1/2 transform -translate-x-1/2 bg-red-500 rounded-full w-1 h-1"></span>
                 )}
               </button>

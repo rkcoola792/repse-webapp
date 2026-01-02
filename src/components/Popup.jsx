@@ -8,12 +8,14 @@ const Popup = () => {
     (state) => state.ui.popup
   );
   const dispatch = useDispatch();
+  const user = useSelector((state) => state.user.user);
+  const userEmail = user?.user?.email || user?.email;
 
   const handleUndo = () => {
     if (undoAction === "add") {
-      dispatch(addToFavorites(itemData));
+      dispatch(addToFavorites({ ...itemData, userEmail }));
     } else if (undoAction === "remove") {
-      dispatch(removeFromFavorites(itemData));
+      dispatch(removeFromFavorites({ ...itemData, userEmail }));
     }
     dispatch(hidePopup());
   };

@@ -3,22 +3,28 @@ import { persistStore, persistReducer } from "redux-persist";
 import storage from "redux-persist/lib/storage";
 import cartReducer from "./cartSlice";
 import uiReducer from "./uiSlice";
-import user from "./userSlice";
+import userReducer from "./userSlice";
 import favoritesReducer from "./favoritesSlice";
 
-const persistConfig = {
+const userPersistConfig = {
+  key: "user",
+  storage,
+};
+
+const cartPersistConfig = {
   key: "cart",
   storage,
 };
 
-const persistedCartReducer = persistReducer(persistConfig, cartReducer);
+const persistedUserReducer = persistReducer(userPersistConfig, userReducer);
+const persistedCartReducer = persistReducer(cartPersistConfig, cartReducer);
 
 export const store = configureStore({
   reducer: {
     // Add your reducers here
     cart: persistedCartReducer,
     ui: uiReducer,
-    user: user,
+    user: persistedUserReducer,
     favorites: favoritesReducer,
   },
   middleware: (getDefaultMiddleware) =>
