@@ -39,7 +39,7 @@ const NewsletterFooter = () => {
   return (
     <div className="bg-white">
       {/* Newsletter Section */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-0 py-8 sm:py-12 lg:py-10">
+      <div className="max-w-screen-2xl mx-auto px-6 sm:px-8 lg:px-16 py-8 sm:py-12 lg:py-10">
         <div className="bg-black rounded-3xl p-6 sm:p-12 flex flex-col md:flex-row items-center justify-between gap-8">
           <h2 className="text-white text-4xl font-black max-w-md leading-tight">
             STAY UPTO DATE ABOUT OUR LATEST OFFERS
@@ -68,7 +68,7 @@ const NewsletterFooter = () => {
 
       {/* Footer Section */}
       <footer className="bg-gray-50 border-t border-gray-200">
-        <div className="max-w-7xl mx-auto px-8 py-12">
+        <div className="max-w-screen-2xl mx-auto px-6 sm:px-8 lg:px-16 py-12">
           <div className="grid grid-cols-2 md:grid-cols-5 gap-8 mb-12">
             {/* Brand Column */}
             <div className="col-span-2 md:col-span-1">

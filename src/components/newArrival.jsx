@@ -49,7 +49,7 @@ const NewArrivalsGrid = ({products}) => {
 
   return (
     <div className="min-h-screen bg-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-0 py-0 sm:py-12 lg:py-2">
+      <div className="max-w-screen-2xl mx-auto px-6 sm:px-8 lg:px-16 py-0 sm:py-12 lg:py-2">
         <h1 className="text-3xl sm:text-5xl font-black text-center mb-8 sm:mb-12 tracking-tight">
           NEW ARRIVALS
         </h1>

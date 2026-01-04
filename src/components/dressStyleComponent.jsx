@@ -3,7 +3,7 @@ import React from 'react';
 const StyleCard = ({ title, imageUrl, size = 'default' }) => {
   return (
     <div className={`relative bg-white rounded-3xl overflow-hidden ${
-      size === 'large' ? 'col-span-2' : 'col-span-1'
+      size === 'large' ? 'lg:col-span-2' : ''
     }`}>
       <div className="relative h-48 sm:h-72">
         <img
@@ -49,7 +49,7 @@ const BrowseByDressStyle = () => {
 
   return (
     <div className="min-h-screen bg-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-0 py-8 sm:py-12 lg:py-6">
+      <div className="max-w-screen-2xl mx-auto px-6 sm:px-8 lg:px-16 py-8 sm:py-12 lg:py-6">
         {/* View All Button */}
         {/* <div className="text-center mb-8">
           <button className="px-8 py-3 border-2 border-gray-200 rounded-full font-medium hover:bg-gray-50 transition-colors">

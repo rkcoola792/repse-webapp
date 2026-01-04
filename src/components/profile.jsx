@@ -45,8 +45,8 @@ export default function Profile() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6 mt-16">
-      <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen bg-gray-50 p-8 mt-16">
+      <div className="max-w-screen-2xl mx-auto">
         <div className="grid grid-cols-12 gap-6">
           {/* Sidebar */}
           <div className="col-span-12 lg:col-span-3">

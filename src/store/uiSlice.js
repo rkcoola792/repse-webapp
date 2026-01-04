@@ -12,6 +12,8 @@ const initialState = {
     visible: false,
     undoAction: null,
     itemData: null,
+    viewAction: null,
+    id: null,
   },
 };
 
@@ -51,12 +53,16 @@ export const uiSlice = createSlice({
       state.popup.message = action.payload.message;
       state.popup.undoAction = action.payload.undoAction;
       state.popup.itemData = action.payload.itemData;
+      state.popup.viewAction = action.payload.viewAction || null;
+      state.popup.id = Date.now();
       state.popup.visible = true;
     },
     hidePopup: (state) => {
       state.popup.visible = false;
       state.popup.undoAction = null;
       state.popup.itemData = null;
+      state.popup.viewAction = null;
+      state.popup.id = null;
     },
     showLoginPrompt: (state) => {
       state.loginPromptVisible = true;

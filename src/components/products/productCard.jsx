@@ -1,4 +1,5 @@
 import { Heart } from "lucide-react";
+import { useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { addToFavorites, removeFromFavorites } from "../../store/favoritesSlice";
@@ -10,16 +11,17 @@ const ProductCard = ({ images, name, price, _id ,description}) => {
   const favorites = useSelector((state) => state.favorites.favorites);
   const user = useSelector((state) => state.user.user);
   const isFavorite = favorites.some(item => item.id === _id);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const userEmail = user?.user?.email || user?.email;
 
   return (
     <div
-      className="bg-white rounded-lg overflow-hidden shadow-sm  transition-shadow max-w-sm cursor-pointer"
+      className="bg-white rounded-lg overflow-hidden shadow-sm  transition-shadow max-w-xs cursor-pointer"
       onClick={() => navigate(`/product-details/${_id}`)}
     >
       {/* Image Container */}
-      <div className="relative bg-gradient-to-br from-purple-900 via-indigo-900 to-purple-950 aspect-[4/5]">
+      <div className="relative bg-gradient-to-br from-purple-900 via-indigo-900 to-purple-950 aspect-square">
         <img
           src={images && images[0]}
           alt={name}
@@ -30,10 +32,12 @@ const ProductCard = ({ images, name, price, _id ,description}) => {
         <button
           onClick={(e) => {
             e.stopPropagation();
+            if (isProcessing) return;
             if (!user || Object.keys(user).length === 0) {
               dispatch(showLoginPrompt());
               return;
             }
+            setIsProcessing(true);
             if (isFavorite) {
               dispatch(removeFromFavorites({ id: _id, userEmail }));
               dispatch(showPopup({
@@ -46,15 +50,16 @@ const ProductCard = ({ images, name, price, _id ,description}) => {
               dispatch(triggerFavoritesShake());
               dispatch(showPopup({
                 message: "Item added to wishlist",
-                undoAction: 'remove',
+                viewAction: 'favorites',
                 itemData: { id: _id }
               }));
             }
+            setTimeout(() => setIsProcessing(false), 500);
           }}
-          className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center hover:bg-white/20 transition-colors"
+          className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center hover:bg-white/20 transition-colors"
         >
           <Heart
-            className={`w-5 h-5 ${
+            className={`w-4 h-4 ${
               isFavorite ? "fill-red-500 stroke-red-500" : "stroke-white"
             }`}
           />
@@ -72,10 +77,10 @@ const ProductCard = ({ images, name, price, _id ,description}) => {
       </div>
 
       {/* Product Info */}
-      <div className="p-4">
+      <div className="p-3">
         <h3 className="text-gray-900 font-medium mb-1">{name}</h3>
         {/* <p className="text-gray-500 text-sm mb-2">{description}</p> */}
-        <p className="text-gray-900 font-semibold text-lg">₹ {price}</p>
+        <p className="text-gray-900 font-semibold text-base">₹ {price}</p>
       </div>
     </div>
   );
