@@ -1,7 +1,9 @@
 import React, { useState } from "react";
 import { Mail, Twitter, Facebook, Instagram, Github } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const NewsletterFooter = () => {
+  const navigate = useNavigate();
   const [email, setEmail] = useState("");
 
   const handleSubscribe = () => {
@@ -133,12 +135,13 @@ const NewsletterFooter = () => {
               <ul className="space-y-3">
                 {footerLinks.help.map((link) => (
                   <li key={link.name}>
-                    <a
-                      href={link.href}
+                    <p
+                      // href={link.href}
+                      onClick={() => navigate(link.href)}
                       className="text-gray-600 text-sm hover:text-gray-900 transition-colors"
                     >
                       {link.name}
-                    </a>
+                    </p>
                   </li>
                 ))}
               </ul>
