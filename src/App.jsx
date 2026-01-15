@@ -17,10 +17,18 @@ import LoginPromptModal from "./components/LoginPromptModal";
 import Profile from "./components/profile";
 import Favourites from "./components/Favourites";
 import { loadFavoritesForUser } from "./store/favoritesSlice";
+import TermsAndConditions from "./components/policies/termsAndConditions";
+import Privacy from "./components/policies/privacy";
+import CancellationsAndRefunds from "./components/policies/cancellationsAndRefunds";
+import { Contact } from "lucide-react";
+import Shipping from "./components/policies/shipping";
+import ContactUs from "./components/policies/contactUs";
 
 function App() {
-  const loginPromptVisible = useSelector(state => state.ui.loginPromptVisible);
-  const user = useSelector(state => state.user.user);
+  const loginPromptVisible = useSelector(
+    (state) => state.ui.loginPromptVisible
+  );
+  const user = useSelector((state) => state.user.user);
   const dispatch = useDispatch();
 
   useEffect(() => {
@@ -40,10 +48,33 @@ function App() {
             <Route path="/practice" element={<PracticeLayout />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/favourites" element={<Favourites />} />
+            <Route path="/terms" element={<TermsAndConditions />} />
+            <Route path="/privacy" element={<Privacy />} />
+            <Route path="/shipping" element={<Shipping />} />
+            <Route path="/contact" element={<ContactUs />} />
+            <Route path="/refunds" element={<CancellationsAndRefunds />} />
             <Route path="/product-details/:id" element={<ProductDetails />} />
           </Route>
-          <Route path="/login" element={user && user.user && user.user.email ? <Navigate to="/" replace /> : <Login />} />
-          <Route path="/register" element={user && user.user && user.user.email ? <Navigate to="/" replace /> : <Register />} />
+          <Route
+            path="/login"
+            element={
+              user && user.user && user.user.email ? (
+                <Navigate to="/" replace />
+              ) : (
+                <Login />
+              )
+            }
+          />
+          <Route
+            path="/register"
+            element={
+              user && user.user && user.user.email ? (
+                <Navigate to="/" replace />
+              ) : (
+                <Register />
+              )
+            }
+          />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
         <Popup />

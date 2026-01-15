@@ -1,39 +1,40 @@
-import React, { useState } from 'react';
-import { Mail, Twitter, Facebook, Instagram, Github } from 'lucide-react';
+import React, { useState } from "react";
+import { Mail, Twitter, Facebook, Instagram, Github } from "lucide-react";
 
 const NewsletterFooter = () => {
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState("");
 
   const handleSubscribe = () => {
-    console.log('Subscribed with email:', email);
-    setEmail('');
+    console.log("Subscribed with email:", email);
+    setEmail("");
   };
 
   const footerLinks = {
     company: [
-      { name: 'About', href: '#' },
-      { name: 'Features', href: '#' },
-      { name: 'Works', href: '#' },
-      { name: 'Career', href: '#' }
+      { name: "About", href: "#" },
+      { name: "Features", href: "#" },
+      { name: "Works", href: "#" },
+      { name: "Career", href: "#" },
     ],
     help: [
-      { name: 'Customer Support', href: '#' },
-      { name: 'Delivery Details', href: '#' },
-      { name: 'Terms & Conditions', href: '#' },
-      { name: 'Privacy Policy', href: '#' }
+      { name: "Cancellation/Returns", href: "/refunds" },
+      { name: "Shipping", href: "/shipping" },
+      { name: "Terms & Conditions", href: "/terms" },
+      { name: "Privacy Policy", href: "/privacy" },
+      { name: "Contact Us", href: "/contact" },
     ],
     faq: [
-      { name: 'Account', href: '#' },
-      { name: 'Manage Deliveries', href: '#' },
-      { name: 'Orders', href: '#' },
-      { name: 'Payments', href: '#' }
+      { name: "Account", href: "#" },
+      { name: "Manage Deliveries", href: "#" },
+      { name: "Orders", href: "#" },
+      { name: "Payments", href: "#" },
     ],
     resources: [
-      { name: 'Free eBooks', href: '#' },
-      { name: 'Development Tutorial', href: '#' },
-      { name: 'How to - Blog', href: '#' },
-      { name: 'Youtube Playlist', href: '#' }
-    ]
+      { name: "Free eBooks", href: "#" },
+      { name: "Development Tutorial", href: "#" },
+      { name: "How to - Blog", href: "#" },
+      { name: "Youtube Playlist", href: "#" },
+    ],
   };
 
   return (
@@ -44,7 +45,7 @@ const NewsletterFooter = () => {
           <h2 className="text-white text-4xl font-black max-w-md leading-tight">
             STAY UPTO DATE ABOUT OUR LATEST OFFERS
           </h2>
-          
+
           <div className="flex flex-col gap-3 w-full md:w-auto">
             <div className="relative">
               <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -74,19 +75,32 @@ const NewsletterFooter = () => {
             <div className="col-span-2 md:col-span-1">
               <h3 className="text-3xl font-black mb-4">SHOP.CO</h3>
               <p className="text-gray-600 text-sm mb-6 max-w-xs">
-                We have clothes that suits your style and which you're proud to wear. From women to men.
+                We have clothes that suits your style and which you're proud to
+                wear. From women to men.
               </p>
               <div className="flex gap-3">
-                <a href="#" className="w-10 h-10 bg-white border border-gray-300 rounded-full flex items-center justify-center hover:bg-gray-100 transition-colors">
+                <a
+                  href="#"
+                  className="w-10 h-10 bg-white border border-gray-300 rounded-full flex items-center justify-center hover:bg-gray-100 transition-colors"
+                >
                   <Twitter className="w-4 h-4" />
                 </a>
-                <a href="#" className="w-10 h-10 bg-black rounded-full flex items-center justify-center hover:bg-gray-800 transition-colors">
+                <a
+                  href="#"
+                  className="w-10 h-10 bg-black rounded-full flex items-center justify-center hover:bg-gray-800 transition-colors"
+                >
                   <Facebook className="w-4 h-4 text-white" />
                 </a>
-                <a href="#" className="w-10 h-10 bg-white border border-gray-300 rounded-full flex items-center justify-center hover:bg-gray-100 transition-colors">
+                <a
+                  href="#"
+                  className="w-10 h-10 bg-white border border-gray-300 rounded-full flex items-center justify-center hover:bg-gray-100 transition-colors"
+                >
                   <Instagram className="w-4 h-4" />
                 </a>
-                <a href="#" className="w-10 h-10 bg-white border border-gray-300 rounded-full flex items-center justify-center hover:bg-gray-100 transition-colors">
+                <a
+                  href="#"
+                  className="w-10 h-10 bg-white border border-gray-300 rounded-full flex items-center justify-center hover:bg-gray-100 transition-colors"
+                >
                   <Github className="w-4 h-4" />
                 </a>
               </div>
@@ -94,11 +108,16 @@ const NewsletterFooter = () => {
 
             {/* Company Links */}
             <div>
-              <h4 className="font-bold text-sm mb-4 uppercase tracking-wider">Company</h4>
+              <h4 className="font-bold text-sm mb-4 uppercase tracking-wider">
+                Company
+              </h4>
               <ul className="space-y-3">
                 {footerLinks.company.map((link) => (
                   <li key={link.name}>
-                    <a href={link.href} className="text-gray-600 text-sm hover:text-gray-900 transition-colors">
+                    <a
+                      href={link.href}
+                      className="text-gray-600 text-sm hover:text-gray-900 transition-colors"
+                    >
                       {link.name}
                     </a>
                   </li>
@@ -108,11 +127,16 @@ const NewsletterFooter = () => {
 
             {/* Help Links */}
             <div>
-              <h4 className="font-bold text-sm mb-4 uppercase tracking-wider">Help</h4>
+              <h4 className="font-bold text-sm mb-4 uppercase tracking-wider">
+                Help
+              </h4>
               <ul className="space-y-3">
                 {footerLinks.help.map((link) => (
                   <li key={link.name}>
-                    <a href={link.href} className="text-gray-600 text-sm hover:text-gray-900 transition-colors">
+                    <a
+                      href={link.href}
+                      className="text-gray-600 text-sm hover:text-gray-900 transition-colors"
+                    >
                       {link.name}
                     </a>
                   </li>
@@ -122,11 +146,16 @@ const NewsletterFooter = () => {
 
             {/* FAQ Links */}
             <div>
-              <h4 className="font-bold text-sm mb-4 uppercase tracking-wider">FAQ</h4>
+              <h4 className="font-bold text-sm mb-4 uppercase tracking-wider">
+                FAQ
+              </h4>
               <ul className="space-y-3">
                 {footerLinks.faq.map((link) => (
                   <li key={link.name}>
-                    <a href={link.href} className="text-gray-600 text-sm hover:text-gray-900 transition-colors">
+                    <a
+                      href={link.href}
+                      className="text-gray-600 text-sm hover:text-gray-900 transition-colors"
+                    >
                       {link.name}
                     </a>
                   </li>
@@ -136,11 +165,16 @@ const NewsletterFooter = () => {
 
             {/* Resources Links */}
             <div>
-              <h4 className="font-bold text-sm mb-4 uppercase tracking-wider">Resources</h4>
+              <h4 className="font-bold text-sm mb-4 uppercase tracking-wider">
+                Resources
+              </h4>
               <ul className="space-y-3">
                 {footerLinks.resources.map((link) => (
                   <li key={link.name}>
-                    <a href={link.href} className="text-gray-600 text-sm hover:text-gray-900 transition-colors">
+                    <a
+                      href={link.href}
+                      className="text-gray-600 text-sm hover:text-gray-900 transition-colors"
+                    >
                       {link.name}
                     </a>
                   </li>
