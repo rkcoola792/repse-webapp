@@ -10,17 +10,24 @@ import {
 } from "lucide-react";
 
 import { addItem } from "../store/cartSlice";
-import { removeFromFavorites, setFavoritesViewed } from "../store/favoritesSlice";
-import { triggerCartShake, setCartLoading, showLoginPrompt } from "../store/uiSlice";
+import {
+  removeFromFavorites,
+  setFavoritesViewed,
+} from "../store/favoritesSlice";
+import {
+  triggerCartShake,
+  setCartLoading,
+  showLoginPrompt,
+} from "../store/uiSlice";
 
 export default function Favourites() {
-   const dispatch = useDispatch();
-   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
 
-   const user = useSelector((state) => state.user.user);
-   const favorites = useSelector((state) => state.favorites.favorites);
+  const user = useSelector((state) => state.user.user);
+  const favorites = useSelector((state) => state.favorites.favorites);
 
-   const userEmail = user?.user?.email || user?.email;
+  const userEmail = user?.user?.email || user?.email;
 
   const [menuOpen, setMenuOpen] = useState(null);
   const [favoriteSizes, setFavoriteSizes] = useState({});
@@ -48,7 +55,9 @@ export default function Favourites() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <p className="text-gray-500 mb-4">Please log in to view your liked products.</p>
+          <p className="text-gray-500 mb-4">
+            Please log in to view your liked products.
+          </p>
         </div>
       </div>
     );
@@ -56,10 +65,12 @@ export default function Favourites() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-screen-2xl mx-auto px-6 sm:px-8 lg:px-12 py-8">
         {/* Header */}
-        <div className="mb-6 sm:mb-8 flex mt-14 items-baseline gap-2 sm:gap-3">
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Your Favourites</h1>
+        <div className="mb-6 sm:mb-8 flex items-baseline gap-2 sm:gap-3">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
+            Your Favourites
+          </h1>
 
           <p className="text-sm text-gray-600">
             ({favorites.length} {favorites.length === 1 ? "item" : "items"})
@@ -91,7 +102,7 @@ export default function Favourites() {
                 >
                   {/* Image */}
                   <div
-                    className="relative bg-gray-100 h-40 sm:h-48 overflow-hidden cursor-pointer"
+                    className="relative bg-gray-100 aspect-[5/4] sm:aspect-[1/1] overflow-hidden cursor-pointer"
                     onClick={() => navigate(`/product-details/${item.id}`)}
                   >
                     <img
@@ -110,6 +121,7 @@ export default function Favourites() {
                     {/* Menu */}
                     <div className="absolute top-3 right-3">
                       <button
+                        onMouseDown={(e) => e.stopPropagation()}
                         onClick={(e) => {
                           e.stopPropagation();
                           setMenuOpen(menuOpen === item.id ? null : item.id);
@@ -122,9 +134,15 @@ export default function Favourites() {
                       {menuOpen === item.id && (
                         <div
                           ref={menuRef}
-                          className="absolute right-0 mt-2 w-40 bg-white rounded-lg shadow-lg z-10"
+                          className="
+                        absolute right-0 mt-2 w-40
+                        bg-white rounded-lg shadow-lg z-10
+                        p-1 box-border
+                      "
+                          onMouseDown={(e) => e.stopPropagation()}
                           onClick={(e) => e.stopPropagation()}
                         >
+                          {/* Add to Cart */}
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
@@ -151,12 +169,23 @@ export default function Favourites() {
                                 400
                               );
                             }}
-                            className="w-full px-3 py-2 text-sm flex items-center rounded-lg gap-2 hover:bg-zinc-100 cursor-pointer"
+                            className="
+                             w-full box-border
+                             flex items-center gap-2
+                             px-3 py-2
+                             text-sm text-left
+                             rounded-md
+                             hover:bg-zinc-900
+                            hover:text-zinc-100
+                             transition-colors
+                             cursor-pointer
+                           "
                           >
                             <ShoppingCart className="w-4 h-4" />
                             Add to Cart
                           </button>
 
+                          {/* Remove */}
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
@@ -168,7 +197,18 @@ export default function Favourites() {
                               );
                               setMenuOpen(null);
                             }}
-                            className="w-full px-3 py-2 text-sm flex items-center gap-2 rounded-lg text-red-500 hover:bg-zinc-100 cursor-pointer"
+                            className="
+                            w-full box-border
+                            flex items-center gap-2
+                            px-3 py-2
+                            text-sm text-left
+                            rounded-md
+                            text-red-600
+                            hover:bg-red-600
+                            hover:text-white
+                            transition-colors
+                            cursor-pointer
+                          "
                           >
                             <Trash2 className="w-4 h-4" />
                             Remove
@@ -181,7 +221,7 @@ export default function Favourites() {
                   {/* Content */}
                   <div className="p-2 sm:p-3 space-y-2">
                     <h3
-                      className="text-sm font-semibold leading-snug cursor-pointer"
+                      className="text-sm font-semibold leading-snug cursor-pointer inline-block"
                       onClick={() => navigate(`/product-details/${item.id}`)}
                     >
                       {item.name}
@@ -213,9 +253,7 @@ export default function Favourites() {
                     <div className="relative pt-2">
                       <select
                         value={
-                          favoriteSizes[item.id] ||
-                          item.selectedSize ||
-                          ""
+                          favoriteSizes[item.id] || item.selectedSize || ""
                         }
                         onChange={(e) =>
                           setFavoriteSizes((prev) => ({
@@ -228,7 +266,7 @@ export default function Favourites() {
                         border border-gray-300 rounded-md
                         px-3 pr-10 py-2
                         text-sm bg-white     outline-none focus:outline-none
-    focus:ring-0 focus:border-gray-500
+                        focus:ring-0 focus:border-gray-500
                       "
                       >
                         <option value="Small">Small</option>

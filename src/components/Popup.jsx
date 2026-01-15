@@ -1,13 +1,15 @@
 import { useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import { hidePopup } from "../store/uiSlice";
 import { addToFavorites, removeFromFavorites } from "../store/favoritesSlice";
 
 const Popup = () => {
-  const { message, visible, undoAction, itemData } = useSelector(
+  const { message, visible, undoAction, itemData, viewAction } = useSelector(
     (state) => state.ui.popup
   );
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const user = useSelector((state) => state.user.user);
   const userEmail = user?.user?.email || user?.email;
 
@@ -20,15 +22,22 @@ const Popup = () => {
     dispatch(hidePopup());
   };
 
+  const handleView = () => {
+    if (viewAction === 'favorites') {
+      navigate('/favourites');
+    }
+    dispatch(hidePopup());
+  };
+
   useEffect(() => {
     if (visible) {
-      const timeout = undoAction ? 2000 : 1500;
+      const timeout = (undoAction || viewAction) ? 2000 : 1500;
       const timer = setTimeout(() => {
         dispatch(hidePopup());
       }, timeout);
       return () => clearTimeout(timer);
     }
-  }, [visible, undoAction, dispatch]);
+  }, [visible, undoAction, viewAction, dispatch]);
 
   return (
     <div
@@ -53,6 +62,14 @@ const Popup = () => {
               className="ml-4 text-blue-400 hover:text-blue-300 underline"
             >
               Undo
+            </button>
+          )}
+          {viewAction && (
+            <button
+              onClick={handleView}
+              className="ml-4 text-blue-400 hover:text-blue-300 underline"
+            >
+              View
             </button>
           )}
         </div>

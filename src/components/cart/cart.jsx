@@ -126,11 +126,11 @@ export default function CartSidebar({ isOpen, onClose }) {
       <div
         onClick={onClose}
         className={`
-    fixed inset-0 z-40
+    fixed inset-0 z-60
     transition-all duration-300
     ${
       isOpen
-        ? "bg-black/40 backdrop-blur-xs opacity-100"
+        ? "bg-black/80 opacity-100"
         : "opacity-0 pointer-events-none"
     }
   `}
@@ -139,7 +139,7 @@ export default function CartSidebar({ isOpen, onClose }) {
       {/* Sidebar */}
       <div
         className={`
-    fixed top-0 right-0 h-full w-full bg-white z-50
+    fixed top-0 right-0 h-full w-full bg-white z-70
     transform transition-transform duration-300 ease-in-out
     ${isOpen ? "translate-x-0" : "translate-x-full pointer-events-none"}
     md:max-w-md
@@ -170,7 +170,29 @@ export default function CartSidebar({ isOpen, onClose }) {
           {/* Cart Items */}
           <div className="flex-1 overflow-y-auto p-4 sm:p-6 bg-gray-50">
             {cartView === "wishlist" ? (
-              favorites.length === 0 ? (
+              (!user || Object.keys(user).length === 0) ? (
+                <div className="text-center py-12 px-4">
+                  <h2 className="text-lg font-semibold mb-4"> <Heart className="w-6 h-6 inline-block mr-2 fill-black" /> Save to wishlist</h2>
+                  <p className="text-gray-700 text-base leading-relaxed mb-8">
+                    Ever wish you could save all your fave fits & accessories in one
+                    place to come back to later? Almost like a ✨ wishlist ✨.
+                  </p>
+                  <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                    <button
+                      onClick={() => navigate("/register")}
+                      className="px-8 py-3 rounded-full bg-black text-white font-medium hover:bg-zinc-800 transition cursor-pointer"
+                    >
+                      Create account
+                    </button>
+                    <button
+                      onClick={() => navigate("/login")}
+                      className="px-8 py-3 rounded-full bg-gray-200 text-black font-medium hover:bg-gray-300 transition cursor-pointer"
+                    >
+                      Log In
+                    </button>
+                  </div>
+                </div>
+              ) : favorites.length === 0 ? (
                 <div className="text-center py-12">
                   <Heart className="w-16 h-16 mx-auto text-gray-300 mb-4" />
                   <p className="text-xl text-gray-500">
@@ -200,29 +222,31 @@ export default function CartSidebar({ isOpen, onClose }) {
                         </div>
 
                         <div className="flex-1 min-w-0">
-                          <div className="flex justify-between items-start mb-2">
+                          <div className="flex justify-between items-start">
                             <h3
-                              className="font-semibold text-sm truncate cursor-pointer"
+                              className="font-semibold text-sm truncate cursor-pointer inline-block"
                               onClick={() => navigate(`/product-details/${item.id}`)}
                             >
                               {item.name}
                             </h3>
                             <div className="relative">
                               <button
+                                onMouseDown={(e) => e.stopPropagation()}
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   setMenuOpen(
                                     menuOpen === item.id ? null : item.id
                                   );
                                 }}
-                                className="p-1 hover:bg-gray-100 rounded-full cursor-pointer"
+                                className="w-9 h-9 bg-transparent rounded-full flex items-center justify-center cursor-pointer"
                               >
                                 <MoreVertical className="w-4 h-4" />
                               </button>
                               {menuOpen === item.id && (
                                 <div
                                   ref={menuRef}
-                                  className="absolute right-0 mt-1 w-32 bg-white border border-gray-200 rounded-lg shadow-lg z-10"
+                                  className="absolute right-0  w-40 bg-white rounded-lg shadow z-10 p-1 box-border"
+                                  onMouseDown={(e) => e.stopPropagation()}
                                   onClick={(e) => e.stopPropagation()}
                                 >
                                   <button
@@ -251,7 +275,7 @@ export default function CartSidebar({ isOpen, onClose }) {
                                         500
                                       );
                                     }}
-                                    className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 flex items-center gap-2 cursor-pointer"
+                                    className="w-full box-border flex items-center gap-2 px-3 py-2 text-sm text-left rounded-md hover:bg-zinc-900 hover:text-zinc-100 transition-colors cursor-pointer"
                                   >
                                     <ShoppingCart className="w-4 h-4" />
                                     Add to Cart
@@ -264,7 +288,7 @@ export default function CartSidebar({ isOpen, onClose }) {
                                       );
                                       setMenuOpen(null);
                                     }}
-                                    className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 text-red-500 flex items-center gap-2 cursor-pointer"
+                                    className="w-full box-border flex items-center gap-2 px-3 py-2 text-sm text-left rounded-md text-red-600 hover:bg-red-600 hover:text-white transition-colors cursor-pointer"
                                   >
                                     <Trash2 className="w-4 h-4" />
                                     Remove
@@ -306,7 +330,7 @@ export default function CartSidebar({ isOpen, onClose }) {
                                 border border-gray-300 rounded-md
                                 px-3 pr-10 py-2
                                 text-sm bg-white     outline-none focus:outline-none
-    focus:ring-0 focus:border-gray-500
+                                focus:ring-0 focus:border-gray-500
                               "
                               >
                                 <option value="Small">Small</option>
@@ -412,9 +436,9 @@ export default function CartSidebar({ isOpen, onClose }) {
                             </div>
 
                             <div className="flex-1 min-w-0">
-                              <div className="flex justify-between items-start mb-2">
+                              <div className="flex justify-between items-start">
                                 <h3
-                                  className="font-semibold text-sm truncate flex-1 cursor-pointer"
+                                  className="font-semibold text-sm truncate cursor-pointer inline-block"
                                   onClick={() => navigate(`/product-details/${item.productId}`)}
                                 >
                                   {item.name}
@@ -432,12 +456,40 @@ export default function CartSidebar({ isOpen, onClose }) {
                                       }`}
                                     />
                                   </button>
-                                  <button
-                                    onClick={() => handleRemoveItem(item.id)}
-                                    className="text-red-500 hover:text-red-700 cursor-pointer p-1 rounded-full hover:bg-gray-100"
-                                  >
-                                    <Trash2 className="w-4 h-4" />
-                                  </button>
+                                  <div className="relative">
+                                    <button
+                                      onMouseDown={(e) => e.stopPropagation()}
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setMenuOpen(
+                                          menuOpen === `cart-${item.id}` ? null : `cart-${item.id}`
+                                        );
+                                      }}
+                                      className="w-9 h-9 bg-transparent rounded-full flex items-center justify-center cursor-pointer"
+                                    >
+                                      <MoreVertical className="w-4 h-4" />
+                                    </button>
+                                    {menuOpen === `cart-${item.id}` && (
+                                      <div
+                                        ref={menuRef}
+                                        className="absolute right-0 w-40 bg-white rounded-lg shadow-lg z-10 p-1 box-border"
+                                        onMouseDown={(e) => e.stopPropagation()}
+                                        onClick={(e) => e.stopPropagation()}
+                                      >
+                                        <button
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleRemoveItem(item.id);
+                                            setMenuOpen(null);
+                                          }}
+                                          className="w-full box-border flex items-center gap-2 px-3 py-2 text-sm text-left rounded-md text-red-600 hover:bg-red-600 hover:text-white transition-colors cursor-pointer"
+                                        >
+                                          <Trash2 className="w-4 h-4" />
+                                          Remove
+                                        </button>
+                                      </div>
+                                    )}
+                                  </div>
                                 </div>
                               </div>
 

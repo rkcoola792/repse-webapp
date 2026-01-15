@@ -10,7 +10,7 @@ import {
   Loader,
 } from "lucide-react";
 import { addItem } from "../../store/cartSlice";
-import { openCart, showPopup, setCartView, showLoginPrompt } from "../../store/uiSlice";
+import { openCart, showPopup, setCartView } from "../../store/uiSlice";
 import { addToFavorites, removeFromFavorites } from "../../store/favoritesSlice";
 import { triggerFavoritesShake } from "../../store/uiSlice";
 import axios from "axios";
@@ -23,14 +23,11 @@ export default function ProductDetails() {
   const dispatch = useDispatch();
   const cartItems = useSelector((state) => state.cart.cart);
   const favorites = useSelector((state) => state.favorites.favorites);
-  const user = useSelector((state) => state.user.user);
   const [selectedSize, setSelectedSize] = useState("Large");
   const [selectedColor, setSelectedColor] = useState("#2C3E50");
   const [quantity, setQuantity] = useState(1);
   const [activeTab, setActiveTab] = useState("reviews");
   const [selectedImage, setSelectedImage] = useState(0); // Track selected image index
-
-  const userEmail = user?.user?.email || user?.email;
 
   const sizes = ["Small", "Medium", "Large", "X-Large"];
   // const colors = ["#2C3E50", "#34495E", "#7F8C8D"];
@@ -116,9 +113,9 @@ export default function ProductDetails() {
   }
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="bg-white">
       {/* Breadcrumb */}
-      <div className="max-w-7xl mx-auto px-4 py-4">
+      <div className="max-w-screen-2xl mx-auto px-6 sm:px-8 lg:px-16 py-4">
         <div className="text-sm text-gray-500">
           Home / Shop / Men / T-shirts /{" "}
           <span className="text-black">{product.name}</span>
@@ -126,7 +123,7 @@ export default function ProductDetails() {
       </div>
 
       {/* Product Section */}
-      <div className="max-w-7xl mx-auto px-4 py-8">
+      <div className="max-w-screen-2xl mx-auto px-6 sm:px-8 lg:px-16 py-4">
         <div className="grid md:grid-cols-2 gap-8 md:gap-12">
           {/* Image Gallery */}
           <div className="flex gap-2 sm:gap-4">
@@ -147,7 +144,14 @@ export default function ProductDetails() {
                 </div>
               ))}
             </div>
-            <div className="flex-1 bg-gray-100 rounded-2xl flex items-center justify-center aspect-[4/3] sm:aspect-square overflow-hidden">
+            <div
+              className="bg-gray-100 rounded-2xl
+              flex items-center justify-center
+              aspect-[1/1]
+              max-w-[360px] sm:max-w-[480px]
+              mx-auto
+              overflow-hidden"
+            >
               <img
                 src={
                   product.images?.[selectedImage] ||
@@ -162,13 +166,19 @@ export default function ProductDetails() {
 
           {/* Product Details */}
           <div>
-            <h1 className="text-2xl sm:text-4xl font-bold mb-4">{product.name}</h1>
+            <h1 className="text-2xl sm:text-4xl font-bold mb-4">
+              {product.name}
+            </h1>
 
             <div className="flex items-center gap-3 mb-4">
-              <span className="text-xl sm:text-3xl font-bold">${product.price}</span>
+              <span className="text-xl sm:text-3xl font-bold">
+                ${product.price}
+              </span>
             </div>
 
-            <p className="text-sm sm:text-base text-gray-600 mb-6">{product.description}</p>
+            <p className="text-sm sm:text-base text-gray-600 mb-6">
+              {product.description}
+            </p>
 
             {/* Size Selection */}
             <div className="mb-6">
@@ -209,49 +219,52 @@ export default function ProductDetails() {
               </button>
               <button
                 onClick={() => {
-                  if (!user || Object.keys(user).length === 0) {
-                    dispatch(showLoginPrompt());
-                    return;
-                  }
                   if (isFavorite) {
-                    dispatch(removeFromFavorites({ id: product._id, userEmail }));
-                    dispatch(showPopup({
-                      message: "Item removed from the wishlist",
-                      undoAction: 'add',
-                      itemData: {
+                    dispatch(removeFromFavorites({ id: product._id }));
+                    dispatch(
+                      showPopup({
+                        message: "Item removed from the wishlist",
+                        undoAction: "add",
+                        itemData: {
+                          id: product._id,
+                          name: product.name,
+                          price: product.price,
+                          images: product.images,
+                          description: product.description,
+                          selectedColor,
+                          selectedSize,
+                        },
+                      })
+                    );
+                  } else {
+                    dispatch(
+                      addToFavorites({
                         id: product._id,
                         name: product.name,
                         price: product.price,
                         images: product.images,
                         description: product.description,
                         selectedColor,
-                        selectedSize
-                      }
-                    }));
-                  } else {
-                    dispatch(addToFavorites({
-                      id: product._id,
-                      name: product.name,
-                      price: product.price,
-                      images: product.images,
-                      description: product.description,
-                      selectedColor,
-                      selectedSize,
-                      userEmail
-                    }));
+                        selectedSize,
+                      })
+                    );
                     dispatch(triggerFavoritesShake());
-                    dispatch(showPopup({
-                      message: "Item added to wishlist",
-                      undoAction: 'remove',
-                      itemData: { id: product._id }
-                    }));
+                    dispatch(
+                      showPopup({
+                        message: "Item added to wishlist",
+                        undoAction: "remove",
+                        itemData: { id: product._id },
+                      })
+                    );
                   }
                 }}
                 className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center hover:bg-gray-200 transition cursor-pointer"
               >
                 <Heart
                   className={`w-5 h-5 ${
-                    isFavorite ? "fill-red-500 stroke-red-500" : "stroke-gray-600"
+                    isFavorite
+                      ? "fill-red-500 stroke-red-500"
+                      : "stroke-gray-600"
                   }`}
                 />
               </button>
