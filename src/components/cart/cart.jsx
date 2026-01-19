@@ -39,7 +39,7 @@ export default function CartSidebar({ isOpen, onClose }) {
   const [favoriteSizes, setFavoriteSizes] = useState({});
 
   const userEmail = user?.user?.email || user?.email;
-
+  console.log("cartItems", cartItems);
   const menuRef = useRef(null);
 
   useEffect(() => {
@@ -65,12 +65,13 @@ export default function CartSidebar({ isOpen, onClose }) {
 
   const subtotal = cartItems.reduce(
     (sum, item) => sum + item.price * item.quantity,
-    0
+    0,
   );
 
   const discount = subtotal > 0 ? subtotal * 0.2 : 0;
   const deliveryFee = subtotal > 0 ? 15 : 0;
   const totalAmount = subtotal - discount + deliveryFee;
+  console.log("user", user);
   const handleCheckout = async () => {
     if (!user || Object.keys(user).length === 0) {
       navigate("/login");
@@ -79,19 +80,28 @@ export default function CartSidebar({ isOpen, onClose }) {
     // Checkout logic to be implemented
     try {
       const createOrderOptions = {
-        amount: Math.round(totalAmount * 100), // Converts rupees to paise (e.g., 123.45 → 12345)
+        amount: Math.round(totalAmount), // Converts rupees to paise (e.g., 123.45 → 12345)
         currency: "INR",
         receipt: `receipt_${Date.now()}`,
         payment_capture: 1,
         notes: {
-          first_name: "John Doe",
-          email: "user@gmail.com",
+          first_name: user?.user?.name || user?.name || "Customer",
+          email: user?.user?.email || user?.userEmail || "user@gmail.com",
         },
+        items: cartItems.map((item) => ({
+          id: item.productId,
+          size: item.size,
+          name: item.name,
+          description: item.description,
+          quantity: item.quantity,
+          amount: Math.round(item.price * item.quantity),
+          currency: "INR",
+        })),
       };
       const order = await axios.post(
         import.meta.env.VITE_APP_BASE_URL + "/create-order",
         createOrderOptions,
-        { withCredentials: true }
+        { withCredentials: true },
       );
       console.log("Order created:", order.data);
       const { keyId, currency, amount, notes, orderId } = order.data;
@@ -102,14 +112,24 @@ export default function CartSidebar({ isOpen, onClose }) {
         name: "Repse",
         description: "Payment for your order",
         order_id: orderId, // This is the order_id created in the backend
-        // callback_url: "http://localhost:3000/payment-success", // Your success URL
+        handler: function (response) {
+          // This function handles successful payment
+          // Redirect to success page with payment details
+          window.location.href = `${window.location.origin}/payment-success?payment_id=${response.razorpay_payment_id}&order_id=${response.razorpay_order_id}&signature=${response.razorpay_signature}`;
+        },
         prefill: {
           name: notes.first_name,
           email: notes.email,
-          contact: "9999999999",
+          contact: notes.contact || "", // Optional
         },
         theme: {
           color: "#F37254",
+        },
+        modal: {
+          ondismiss: function () {
+            // Optional: Handle when user closes the payment modal
+            console.log("Payment cancelled by user");
+          },
         },
       };
       console.log("Options:", options);
@@ -128,11 +148,7 @@ export default function CartSidebar({ isOpen, onClose }) {
         className={`
     fixed inset-0 z-60
     transition-all duration-300
-    ${
-      isOpen
-        ? "bg-black/80 opacity-100"
-        : "opacity-0 pointer-events-none"
-    }
+    ${isOpen ? "bg-black/80 opacity-100" : "opacity-0 pointer-events-none"}
   `}
       />
 
@@ -170,12 +186,17 @@ export default function CartSidebar({ isOpen, onClose }) {
           {/* Cart Items */}
           <div className="flex-1 overflow-y-auto p-4 sm:p-6 bg-gray-50">
             {cartView === "wishlist" ? (
-              (!user || Object.keys(user).length === 0) ? (
+              !user || Object.keys(user).length === 0 ? (
                 <div className="text-center py-12 px-4">
-                  <h2 className="text-lg font-semibold mb-4"> <Heart className="w-6 h-6 inline-block mr-2 fill-black" /> Save to wishlist</h2>
+                  <h2 className="text-lg font-semibold mb-4">
+                    {" "}
+                    <Heart className="w-6 h-6 inline-block mr-2 fill-black" />{" "}
+                    Save to wishlist
+                  </h2>
                   <p className="text-gray-700 text-base leading-relaxed mb-8">
-                    Ever wish you could save all your fave fits & accessories in one
-                    place to come back to later? Almost like a ✨ wishlist ✨.
+                    Ever wish you could save all your fave fits & accessories in
+                    one place to come back to later? Almost like a ✨ wishlist
+                    ✨.
                   </p>
                   <div className="flex flex-col sm:flex-row gap-4 justify-center">
                     <button
@@ -212,7 +233,9 @@ export default function CartSidebar({ isOpen, onClose }) {
                       <div className="flex gap-4">
                         <div
                           className="bg-gray-100 rounded-xl w-20 h-20 sm:w-26 sm:h-28 flex items-center justify-center flex-shrink-0 overflow-hidden cursor-pointer"
-                          onClick={() => navigate(`/product-details/${item.id}`)}
+                          onClick={() =>
+                            navigate(`/product-details/${item.id}`)
+                          }
                         >
                           <img
                             src={item.images && item.images[0]}
@@ -225,7 +248,9 @@ export default function CartSidebar({ isOpen, onClose }) {
                           <div className="flex justify-between items-start">
                             <h3
                               className="font-semibold text-sm truncate cursor-pointer inline-block"
-                              onClick={() => navigate(`/product-details/${item.id}`)}
+                              onClick={() =>
+                                navigate(`/product-details/${item.id}`)
+                              }
                             >
                               {item.name}
                             </h3>
@@ -235,7 +260,7 @@ export default function CartSidebar({ isOpen, onClose }) {
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   setMenuOpen(
-                                    menuOpen === item.id ? null : item.id
+                                    menuOpen === item.id ? null : item.id,
                                   );
                                 }}
                                 className="w-9 h-9 bg-transparent rounded-full flex items-center justify-center cursor-pointer"
@@ -272,7 +297,7 @@ export default function CartSidebar({ isOpen, onClose }) {
                                       setMenuOpen(null);
                                       setTimeout(
                                         () => dispatch(setCartLoading(false)),
-                                        500
+                                        500,
                                       );
                                     }}
                                     className="w-full box-border flex items-center gap-2 px-3 py-2 text-sm text-left rounded-md hover:bg-zinc-900 hover:text-zinc-100 transition-colors cursor-pointer"
@@ -284,7 +309,10 @@ export default function CartSidebar({ isOpen, onClose }) {
                                     onClick={(e) => {
                                       e.stopPropagation();
                                       dispatch(
-                                        removeFromFavorites({ id: item.id, userEmail })
+                                        removeFromFavorites({
+                                          id: item.id,
+                                          userEmail,
+                                        }),
                                       );
                                       setMenuOpen(null);
                                     }}
@@ -399,7 +427,7 @@ export default function CartSidebar({ isOpen, onClose }) {
                   <div key={item.id} className="p-4 bg-white">
                     {(() => {
                       const isLiked = favorites.some(
-                        (fav) => fav.id === item.productId
+                        (fav) => fav.id === item.productId,
                       );
                       const handleToggleLike = () => {
                         if (!user || Object.keys(user).length === 0) {
@@ -407,7 +435,9 @@ export default function CartSidebar({ isOpen, onClose }) {
                           return;
                         }
                         if (isLiked) {
-                          dispatch(removeFromFavorites({ id: item.productId, userId }));
+                          dispatch(
+                            removeFromFavorites({ id: item.productId, userId }),
+                          );
                         } else {
                           const favItem = {
                             id: item.productId,
@@ -426,7 +456,9 @@ export default function CartSidebar({ isOpen, onClose }) {
                           <div className="flex gap-4">
                             <div
                               className="bg-gray-100 rounded-xl w-16 h-16 sm:w-22 sm:h-22 flex items-center justify-center flex-shrink-0 overflow-hidden cursor-pointer"
-                              onClick={() => navigate(`/product-details/${item.productId}`)}
+                              onClick={() =>
+                                navigate(`/product-details/${item.productId}`)
+                              }
                             >
                               <img
                                 src={item.image}
@@ -439,7 +471,11 @@ export default function CartSidebar({ isOpen, onClose }) {
                               <div className="flex justify-between items-start">
                                 <h3
                                   className="font-semibold text-sm truncate cursor-pointer inline-block"
-                                  onClick={() => navigate(`/product-details/${item.productId}`)}
+                                  onClick={() =>
+                                    navigate(
+                                      `/product-details/${item.productId}`,
+                                    )
+                                  }
                                 >
                                   {item.name}
                                 </h3>
@@ -462,7 +498,9 @@ export default function CartSidebar({ isOpen, onClose }) {
                                       onClick={(e) => {
                                         e.stopPropagation();
                                         setMenuOpen(
-                                          menuOpen === `cart-${item.id}` ? null : `cart-${item.id}`
+                                          menuOpen === `cart-${item.id}`
+                                            ? null
+                                            : `cart-${item.id}`,
                                         );
                                       }}
                                       className="w-9 h-9 bg-transparent rounded-full flex items-center justify-center cursor-pointer"
@@ -504,7 +542,7 @@ export default function CartSidebar({ isOpen, onClose }) {
 
                               <div className="flex justify-between items-center">
                                 <span className="text-lg font-bold">
-                                  ${item.price}
+                                  ₹{item.price}
                                 </span>
 
                                 <div className="flex items-center gap-2 bg-gray-100 rounded-full px-3 py-1">
@@ -512,7 +550,7 @@ export default function CartSidebar({ isOpen, onClose }) {
                                     onClick={() =>
                                       handleUpdateQuantity(
                                         item.id,
-                                        item.quantity - 1
+                                        item.quantity - 1,
                                       )
                                     }
                                     disabled={item.quantity <= 1}
@@ -527,7 +565,7 @@ export default function CartSidebar({ isOpen, onClose }) {
                                     onClick={() =>
                                       handleUpdateQuantity(
                                         item.id,
-                                        item.quantity + 1
+                                        item.quantity + 1,
                                       )
                                     }
                                     className="cursor-pointer"
@@ -556,19 +594,19 @@ export default function CartSidebar({ isOpen, onClose }) {
                 <div className="flex justify-between text-sm text-gray-600">
                   <span>Subtotal</span>
                   <span className="font-semibold text-black">
-                    ${subtotal.toFixed(2)}
+                    ₹{subtotal.toFixed(2)}
                   </span>
                 </div>
                 <div className="flex justify-between text-sm text-gray-600">
                   <span>Discount (-20%)</span>
                   <span className="font-semibold text-red-500">
-                    -${discount.toFixed(2)}
+                    -₹{discount.toFixed(2)}
                   </span>
                 </div>
                 <div className="flex justify-between text-sm text-gray-600">
                   <span>Delivery Fee</span>
                   <span className="font-semibold text-black">
-                    ${deliveryFee}
+                    ₹{deliveryFee}
                   </span>
                 </div>
               </div>
@@ -577,7 +615,7 @@ export default function CartSidebar({ isOpen, onClose }) {
                 <div className="flex justify-between text-lg">
                   <span className="font-semibold">Total</span>
                   <span className="font-bold text-2xl">
-                    ${totalAmount.toFixed(2)}
+                    ₹{totalAmount.toFixed(2)}
                   </span>
                 </div>
               </div>

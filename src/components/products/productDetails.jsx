@@ -172,7 +172,7 @@ export default function ProductDetails() {
 
             <div className="flex items-center gap-3 mb-4">
               <span className="text-xl sm:text-3xl font-bold">
-                ${product.price}
+                ₹{product.price}
               </span>
             </div>
 

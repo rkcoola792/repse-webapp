@@ -138,7 +138,7 @@ const NewsletterFooter = () => {
                     <p
                       // href={link.href}
                       onClick={() => navigate(link.href)}
-                      className="text-gray-600 text-sm hover:text-gray-900 transition-colors"
+                      className="text-gray-600 text-sm hover:text-gray-900 cursor-pointer transition-colors"
                     >
                       {link.name}
                     </p>

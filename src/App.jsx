@@ -23,6 +23,7 @@ import CancellationsAndRefunds from "./components/policies/cancellationsAndRefun
 import { Contact } from "lucide-react";
 import Shipping from "./components/policies/shipping";
 import ContactUs from "./components/policies/contactUs";
+import ThankYouPage from "./components/thankyouPage";
 
 function App() {
   const loginPromptVisible = useSelector(
@@ -53,6 +54,7 @@ function App() {
             <Route path="/shipping" element={<Shipping />} />
             <Route path="/contact" element={<ContactUs />} />
             <Route path="/refunds" element={<CancellationsAndRefunds />} />
+            <Route path="/payment-success" element={<ThankYouPage />} />
             <Route path="/product-details/:id" element={<ProductDetails />} />
           </Route>
           <Route
