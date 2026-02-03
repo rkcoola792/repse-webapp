@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
+
 import {
   ShoppingCart,
   Minus,
@@ -12,6 +13,7 @@ import {
   Heart,
   MoreVertical,
   ChevronDown,
+  MapPin,
 } from "lucide-react";
 import { removeItem, updateQuantity, addItem } from "../../store/cartSlice";
 import {
@@ -37,10 +39,38 @@ export default function CartSidebar({ isOpen, onClose }) {
   const [promoCode, setPromoCode] = useState("");
   const [menuOpen, setMenuOpen] = useState(null);
   const [favoriteSizes, setFavoriteSizes] = useState({});
+  const [showDeliveryPopup, setShowDeliveryPopup] = useState(false);
+
+  // FIX 1: addressForm state with the correct shape matching all form fields
+  const [addressForm, setAddressForm] = useState({
+    fullName: "",
+    street: "",
+    city: "",
+    state: "",
+    pincode: "",
+    phone: "",
+  });
+
+  // FIX 2: addressErrors state for form validation feedback
+  const [addressErrors, setAddressErrors] = useState({});
+  const [isPaymentLoading, setIsPaymentLoading] = useState(false);
+  const [paymentError, setPaymentError] = useState("");
 
   const userEmail = user?.user?.email || user?.email;
-  console.log("cartItems", cartItems);
+
   const menuRef = useRef(null);
+
+  // FIX A: Dynamically load Razorpay SDK script on mount so window.Razorpay is available
+  useEffect(() => {
+    if (document.getElementById("razorpay-sdk")) return; // already loaded
+    const script = document.createElement("script");
+    script.id = "razorpay-sdk";
+    script.src = "https://checkout.razorpay.com/v1/checkout.js";
+    script.async = true;
+    script.onload = () => console.log("Razorpay SDK loaded");
+    script.onerror = () => setPaymentError("Failed to load payment SDK. Please refresh.");
+    document.body.appendChild(script);
+  }, []);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -53,6 +83,31 @@ export default function CartSidebar({ isOpen, onClose }) {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
+
+  // FIX 3: handleAddressChange handler for the delivery form inputs
+  const handleAddressChange = (e) => {
+    const { name, value } = e.target;
+    setAddressForm((prev) => ({ ...prev, [name]: value }));
+    // Clear the error for the field being edited
+    if (addressErrors[name]) {
+      setAddressErrors((prev) => ({ ...prev, [name]: "" }));
+    }
+  };
+
+  // FIX 4: validation helper used before checkout
+  const validateAddressForm = () => {
+    const errors = {};
+    if (!addressForm.fullName.trim()) errors.fullName = "Full name is required";
+    if (!addressForm.street.trim()) errors.street = "Street address is required";
+    if (!addressForm.city.trim()) errors.city = "City is required";
+    if (!addressForm.state.trim()) errors.state = "State is required";
+    if (!addressForm.pincode.trim() || addressForm.pincode.length !== 6)
+      errors.pincode = "Enter a valid 6-digit pincode";
+    if (!addressForm.phone.trim() || addressForm.phone.length !== 10)
+      errors.phone = "Enter a valid 10-digit phone number";
+    setAddressErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
 
   const handleUpdateQuantity = (id, newQuantity) => {
     if (newQuantity < 1) return;
@@ -71,13 +126,22 @@ export default function CartSidebar({ isOpen, onClose }) {
   const discount = subtotal > 0 ? subtotal * 0.2 : 0;
   const deliveryFee = subtotal > 0 ? 15 : 0;
   const totalAmount = subtotal - discount + deliveryFee;
-  console.log("user", user);
+
   const handleCheckout = async () => {
     if (!user || Object.keys(user).length === 0) {
       navigate("/login");
       return;
     }
-    // Checkout logic to be implemented
+
+    // FIX C: Guard — make sure Razorpay SDK actually loaded before proceeding
+    if (!window.Razorpay) {
+      setPaymentError("Payment SDK not available. Please refresh the page and try again.");
+      return;
+    }
+
+    setIsPaymentLoading(true);
+    setPaymentError("");
+
     try {
       const createOrderOptions = {
         amount: Math.round(totalAmount), // Converts rupees to paise (e.g., 123.45 → 12345)
@@ -85,8 +149,10 @@ export default function CartSidebar({ isOpen, onClose }) {
         receipt: `receipt_${Date.now()}`,
         payment_capture: 1,
         notes: {
-          first_name: user?.user?.name || user?.name || "Customer",
-          email: user?.user?.email || user?.userEmail || "user@gmail.com",
+          first_name: addressForm.fullName,
+          email: user?.user?.email || user?.email || "user@gmail.com",
+          mobile: addressForm.phone,
+          address: `${addressForm.street}, ${addressForm.city}, ${addressForm.state} ${addressForm.pincode}`,
         },
         items: cartItems.map((item) => ({
           id: item.productId,
@@ -94,49 +160,64 @@ export default function CartSidebar({ isOpen, onClose }) {
           name: item.name,
           description: item.description,
           quantity: item.quantity,
-          amount: Math.round(item.price * item.quantity),
+          // FIX B: same paise conversion for per-item amounts
+          amount: Math.round(item.price * item.quantity * 100),
           currency: "INR",
         })),
       };
+
       const order = await axios.post(
         import.meta.env.VITE_APP_BASE_URL + "/create-order",
         createOrderOptions,
         { withCredentials: true },
       );
-      console.log("Order created:", order.data);
+
       const { keyId, currency, amount, notes, orderId } = order.data;
+
       const options = {
-        key: keyId, // Replace with your Razorpay key_id
+        key: keyId,
         amount,
         currency,
         name: "Repse",
         description: "Payment for your order",
-        order_id: orderId, // This is the order_id created in the backend
+        order_id: orderId,
         handler: function (response) {
-          // This function handles successful payment
-          // Redirect to success page with payment details
+          // FIX E: close popup before redirecting
+          setShowDeliveryPopup(false);
           window.location.href = `${window.location.origin}/payment-success?payment_id=${response.razorpay_payment_id}&order_id=${response.razorpay_order_id}&signature=${response.razorpay_signature}`;
         },
         prefill: {
           name: notes.first_name,
           email: notes.email,
-          contact: notes.contact || "", // Optional
+          contact: notes.mobile || "",
         },
         theme: {
           color: "#F37254",
         },
         modal: {
           ondismiss: function () {
-            // Optional: Handle when user closes the payment modal
-            console.log("Payment cancelled by user");
+            // Re-enable button when user closes modal without paying
+            setIsPaymentLoading(false);
           },
         },
       };
-      console.log("Options:", options);
+
       const rzp1 = new window.Razorpay(options);
       rzp1.open();
     } catch (error) {
       console.error("Error during checkout:", error);
+      // FIX D: show the actual error to the user instead of silently failing
+      setPaymentError(
+        error?.response?.data?.message || "Something went wrong. Please try again."
+      );
+      setIsPaymentLoading(false);
+    }
+  };
+
+  // FIX 6: handleProceedToPayment — validates form then calls handleCheckout
+  const handleProceedToPayment = () => {
+    if (validateAddressForm()) {
+      handleCheckout();
     }
   };
 
@@ -435,8 +516,9 @@ export default function CartSidebar({ isOpen, onClose }) {
                           return;
                         }
                         if (isLiked) {
+                          // FIX 7: was passing undefined `userId`, now uses `userEmail`
                           dispatch(
-                            removeFromFavorites({ id: item.productId, userId }),
+                            removeFromFavorites({ id: item.productId, userEmail }),
                           );
                         } else {
                           const favItem = {
@@ -643,7 +725,7 @@ export default function CartSidebar({ isOpen, onClose }) {
               <button
                 className="w-full bg-black text-white py-3 rounded-full font-medium hover:bg-gray-800 flex items-center justify-center gap-2 cursor-pointer disabled:bg-gray-300 disabled:cursor-not-allowed"
                 disabled={cartItems.length === 0}
-                onClick={handleCheckout}
+                onClick={() => setShowDeliveryPopup(true)}
               >
                 Go to Checkout
                 <ArrowRight className="w-4 h-4" />
@@ -652,6 +734,197 @@ export default function CartSidebar({ isOpen, onClose }) {
           )}
         </div>
       </div>
+
+      {showDeliveryPopup && (
+        <div className="fixed inset-0 z-[1000] flex items-end sm:items-center justify-center">
+          {/* backdrop */}
+          <div
+            className="absolute inset-0 bg-black/40 bg-opacity-50"
+            onClick={() => setShowDeliveryPopup(false)}
+          />
+
+          {/* modal card */}
+          <div className="relative w-full sm:max-w-md bg-white rounded-t-2xl sm:rounded-2xl shadow-xl z-10 max-h-[90vh] overflow-y-auto">
+            {/* header */}
+            <div className="flex items-center justify-between px-5 pt-5 pb-3 border-b sticky top-0 bg-white rounded-t-2xl sm:rounded-t-2xl">
+              <div className="flex items-center gap-2">
+                <MapPin size={20} />
+                <h3 className="text-base font-bold tracking-wide">
+                  Delivery Details
+                </h3>
+              </div>
+              <button
+                onClick={() => setShowDeliveryPopup(false)}
+                className="text-gray-400 hover:text-black transition"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            {/* body */}
+            <div className="px-5 py-5 flex flex-col gap-4">
+              {/* Full Name */}
+              <div>
+                <label className="block text-xs font-semibold text-gray-500 mb-1">
+                  Full Name
+                </label>
+                <input
+                  name="fullName"
+                  value={addressForm.fullName}
+                  onChange={handleAddressChange}
+                  placeholder="John Doe"
+                  className={`w-full border ${
+                    addressErrors.fullName
+                      ? "border-red-400"
+                      : "border-gray-300"
+                  } rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-black/10`}
+                />
+                {addressErrors.fullName && (
+                  <p className="text-xs text-red-500 mt-0.5">
+                    {addressErrors.fullName}
+                  </p>
+                )}
+              </div>
+
+              {/* Street */}
+              <div>
+                <label className="block text-xs font-semibold text-gray-500 mb-1">
+                  Street Address
+                </label>
+                <input
+                  name="street"
+                  value={addressForm.street}
+                  onChange={handleAddressChange}
+                  placeholder="123 Main St, Apt 4B"
+                  className={`w-full border ${
+                    addressErrors.street ? "border-red-400" : "border-gray-300"
+                  } rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-black/10`}
+                />
+                {addressErrors.street && (
+                  <p className="text-xs text-red-500 mt-0.5">
+                    {addressErrors.street}
+                  </p>
+                )}
+              </div>
+
+              {/* City + State */}
+              <div className="flex gap-3">
+                <div className="flex-1">
+                  <label className="block text-xs font-semibold text-gray-500 mb-1">
+                    City
+                  </label>
+                  <input
+                    name="city"
+                    value={addressForm.city}
+                    onChange={handleAddressChange}
+                    placeholder="Delhi"
+                    className={`w-full border ${
+                      addressErrors.city ? "border-red-400" : "border-gray-300"
+                    } rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-black/10`}
+                  />
+                  {addressErrors.city && (
+                    <p className="text-xs text-red-500 mt-0.5">
+                      {addressErrors.city}
+                    </p>
+                  )}
+                </div>
+                <div className="flex-1">
+                  <label className="block text-xs font-semibold text-gray-500 mb-1">
+                    State
+                  </label>
+                  <input
+                    name="state"
+                    value={addressForm.state}
+                    onChange={handleAddressChange}
+                    placeholder="Delhi"
+                    className={`w-full border ${
+                      addressErrors.state ? "border-red-400" : "border-gray-300"
+                    } rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-black/10`}
+                  />
+                  {addressErrors.state && (
+                    <p className="text-xs text-red-500 mt-0.5">
+                      {addressErrors.state}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              {/* Pincode + Phone */}
+              <div className="flex gap-3">
+                <div className="flex-1">
+                  <label className="block text-xs font-semibold text-gray-500 mb-1">
+                    Pincode
+                  </label>
+                  <input
+                    name="pincode"
+                    value={addressForm.pincode}
+                    onChange={handleAddressChange}
+                    placeholder="110001"
+                    maxLength={6}
+                    className={`w-full border ${
+                      addressErrors.pincode
+                        ? "border-red-400"
+                        : "border-gray-300"
+                    } rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-black/10`}
+                  />
+                  {addressErrors.pincode && (
+                    <p className="text-xs text-red-500 mt-0.5">
+                      {addressErrors.pincode}
+                    </p>
+                  )}
+                </div>
+                <div className="flex-1">
+                  <label className="block text-xs font-semibold text-gray-500 mb-1">
+                    Phone No.
+                  </label>
+                  <input
+                    name="phone"
+                    value={addressForm.phone}
+                    onChange={handleAddressChange}
+                    placeholder="9876543210"
+                    maxLength={10}
+                    className={`w-full border ${
+                      addressErrors.phone ? "border-red-400" : "border-gray-300"
+                    } rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-black/10`}
+                  />
+                  {addressErrors.phone && (
+                    <p className="text-xs text-red-500 mt-0.5">
+                      {addressErrors.phone}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              {/* Total reminder */}
+              <div className="flex justify-between items-center bg-gray-50 rounded-lg px-4 py-2 mt-2">
+                <span className="text-xs text-gray-500">
+                  You will be charged
+                </span>
+                <span className="text-sm font-bold">
+                  ₹{totalAmount.toFixed(2)}
+                </span>
+              </div>
+
+              {/* Error message */}
+              {paymentError && (
+                <p className="text-xs text-red-500 text-center -mb-2">
+                  {paymentError}
+                </p>
+              )}
+
+              {/* Confirm & Pay */}
+              <button
+                onClick={handleProceedToPayment}
+                disabled={isPaymentLoading}
+                className="w-full bg-black text-white py-3 rounded-full font-semibold hover:bg-zinc-800 transition cursor-pointer flex items-center justify-center gap-2 disabled:bg-gray-400 disabled:cursor-not-allowed"
+              >
+                {isPaymentLoading ? "Processing..." : "Confirm & Pay"}
+                {!isPaymentLoading && <ArrowRight size={18} />}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }
