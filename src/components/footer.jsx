@@ -75,7 +75,7 @@ const NewsletterFooter = () => {
           <div className="grid grid-cols-2 md:grid-cols-5 gap-8 mb-12">
             {/* Brand Column */}
             <div className="col-span-2 md:col-span-1">
-              <h3 className="text-3xl font-black mb-4">SHOP.CO</h3>
+              <h3 className="text-3xl font-black mb-4">REPSE.IN</h3>
               <p className="text-gray-600 text-sm mb-6 max-w-xs">
                 We have clothes that suits your style and which you're proud to
                 wear. From women to men.
@@ -189,7 +189,7 @@ const NewsletterFooter = () => {
           {/* Bottom Bar */}
           <div className="pt-8 border-t border-gray-300 flex flex-col md:flex-row justify-between items-center gap-4">
             <p className="text-gray-600 text-sm">
-              Shop.co © 2000-2023, All Rights Reserved
+              Repse.in © 2026, All Rights Reserved
             </p>
             <div className="flex gap-3">
               <div className="w-12 h-8 bg-white border border-gray-300 rounded flex items-center justify-center">

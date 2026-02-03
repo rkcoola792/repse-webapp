@@ -115,15 +115,15 @@ export default function ProductDetails() {
   return (
     <div className="bg-white">
       {/* Breadcrumb */}
-      <div className="max-w-screen-2xl mx-auto px-6 sm:px-8 lg:px-16 py-4">
+      {/* <div className="max-w-screen-2xl mx-auto px-6 sm:px-8 lg:px-16 py-4">
         <div className="text-sm text-gray-500">
           Home / Shop / Men / T-shirts /{" "}
           <span className="text-black">{product.name}</span>
         </div>
-      </div>
+      </div> */}
 
       {/* Product Section */}
-      <div className="max-w-screen-2xl mx-auto px-6 sm:px-8 lg:px-16 py-4">
+      <div className="max-w-screen-2xl mx-auto px-6 sm:px-8 lg:px-16 py-8">
         <div className="grid md:grid-cols-2 gap-8 md:gap-12">
           {/* Image Gallery */}
           <div className="flex gap-2 sm:gap-4">
@@ -188,7 +188,7 @@ export default function ProductDetails() {
                   <button
                     key={size}
                     onClick={() => setSelectedSize(size)}
-                    className={`px-3 py-2 sm:px-6 sm:py-3 text-xs sm:text-sm rounded-full border cursor-pointer ${
+                    className={`px-3 py-2 sm:px-6 sm:py-3 text-xs sm:text-sm rounded-full  cursor-pointer ${
                       selectedSize === size
                         ? "bg-black text-white"
                         : "bg-gray-100 hover:bg-gray-200"

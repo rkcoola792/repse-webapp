@@ -39,8 +39,8 @@ const Homepage = () => {
       <Hero />
       <NewArrivalsGrid products={newArrivals} />
       <TopSelling products={topSellingProducts} />
-      <BrowseByDressStyle />
-      <OurHappyCustomers />
+      {/* <BrowseByDressStyle /> */}
+      {/* <OurHappyCustomers /> */}
     </>
   );
 };

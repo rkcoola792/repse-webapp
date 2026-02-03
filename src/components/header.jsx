@@ -78,15 +78,15 @@ export default function Header({ onCartClick, isCartOpen }) {
               REPSE
             </div>
             <nav className="hidden md:flex items-center space-x-4 text-sm text-gray-600">
-              <a className="hover:text-gray-900 cursor-pointer">Shop</a>
+              {/* <a className="hover:text-gray-900 cursor-pointer">Shop</a>
               <a className="hover:text-gray-900 cursor-pointer">On Sale</a>
-              <a className="hover:text-gray-900 cursor-pointer">New Arrivals</a>
+              <a className="hover:text-gray-900 cursor-pointer">New Arrivals</a> */}
               {/* <a className="hover:text-gray-900">Brands</a> */}
             </nav>
           </div>
 
           <div className="flex-1 px-4 hidden sm:flex justify-center">
-            <div className="w-full max-w-xl">
+            {/* <div className="w-full max-w-xl">
               <label htmlFor="search" className="sr-only">
                 Search
               </label>
@@ -100,7 +100,7 @@ export default function Header({ onCartClick, isCartOpen }) {
                   <CiSearch />
                 </div>
               </div>
-            </div>
+            </div> */}
           </div>
 
           {/* Right: icons */}

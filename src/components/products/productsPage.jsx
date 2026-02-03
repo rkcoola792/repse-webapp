@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { ChevronRight, ChevronDown, SlidersHorizontal } from "lucide-react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import ProductCard from "./productCard";
 
 const products = [
   {
@@ -138,13 +139,13 @@ export default function ProductPage() {
 
   const toggleColor = (color) => {
     setSelectedColors((prev) =>
-      prev.includes(color) ? prev.filter((c) => c !== color) : [...prev, color]
+      prev.includes(color) ? prev.filter((c) => c !== color) : [...prev, color],
     );
   };
 
   const toggleSize = (size) => {
     setSelectedSizes((prev) =>
-      prev.includes(size) ? prev.filter((s) => s !== size) : [...prev, size]
+      prev.includes(size) ? prev.filter((s) => s !== size) : [...prev, size],
     );
   };
 
@@ -158,8 +159,8 @@ export default function ProductPage() {
               star <= Math.floor(rating)
                 ? "text-yellow-400"
                 : star - 0.5 <= rating
-                ? "text-yellow-400"
-                : "text-gray-300"
+                  ? "text-yellow-400"
+                  : "text-gray-300"
             }
           >
             ★
@@ -179,7 +180,7 @@ export default function ProductPage() {
         `${
           import.meta.env.VITE_APP_BASE_URL
         }/products?page=${page}&limit=${limit}`,
-        { withCredentials: true }
+        { withCredentials: true },
       );
       console.log("Products fetched:", response.data);
       setProducts(response.data);
@@ -190,172 +191,173 @@ export default function ProductPage() {
   useEffect(() => {
     getProducts();
   }, []);
+
+  //side bar code <div className="w-72 border-r border-gray-200 p-6 overflow-y-auto">
+  //   <div className="flex items-center justify-between mb-6">
+  //     <h2 className="text-xl font-bold">Filters</h2>
+  //     <SlidersHorizontal className="w-5 h-5 text-gray-400" />
+  //   </div>
+
+  //   {/* Filter Sections */}
+  //   <div className="space-y-6">
+  //     {/* Categories */}
+  //     <div>
+  //       {["T-shirts", "Shorts", "Shirts", "Hoodie", "Jeans"].map((cat) => (
+  //         <div
+  //           key={cat}
+  //           className="flex items-center justify-between py-2 text-gray-600 hover:text-black cursor-pointer"
+  //         >
+  //           <span>{cat}</span>
+  //           <ChevronRight className="w-4 h-4" />
+  //         </div>
+  //       ))}
+  //     </div>
+
+  //     {/* Price */}
+  //     <div className="border-t border-gray-200 pt-6">
+  //       <div
+  //         className="flex items-center justify-between mb-4 cursor-pointer"
+  //         onClick={() => toggleSection("price")}
+  //       >
+  //         <h3 className="font-bold">Price</h3>
+  //         {expandedSections.price ? (
+  //           <ChevronDown className="w-5 h-5" />
+  //         ) : (
+  //           <ChevronRight className="w-5 h-5" />
+  //         )}
+  //       </div>
+  //       {expandedSections.price && (
+  //         <div className="space-y-4">
+  //           <div className="relative pt-2">
+  //             <input
+  //               type="range"
+  //               min="0"
+  //               max="300"
+  //               value={priceRange[1]}
+  //               onChange={(e) =>
+  //                 setPriceRange([priceRange[0], parseInt(e.target.value)])
+  //               }
+  //               className="w-full"
+  //             />
+  //             <div className="flex justify-between text-sm mt-2">
+  //               <span>${priceRange[0]}</span>
+  //               <span>${priceRange[1]}</span>
+  //             </div>
+  //           </div>
+  //         </div>
+  //       )}
+  //     </div>
+
+  //     {/* Colors */}
+  //     <div className="border-t border-gray-200 pt-6">
+  //       <div
+  //         className="flex items-center justify-between mb-4 cursor-pointer"
+  //         onClick={() => toggleSection("colors")}
+  //       >
+  //         <h3 className="font-bold">Colors</h3>
+  //         {expandedSections.colors ? (
+  //           <ChevronDown className="w-5 h-5" />
+  //         ) : (
+  //           <ChevronRight className="w-5 h-5" />
+  //         )}
+  //       </div>
+  //       {expandedSections.colors && (
+  //         <div className="grid grid-cols-5 gap-3">
+  //           {colors.map((color) => (
+  //             <button
+  //               key={color.name}
+  //               onClick={() => toggleColor(color.name)}
+  //               className={`w-9 h-9 rounded-full ${color.class} ${
+  //                 selectedColors.includes(color.name)
+  //                   ? "ring-2 ring-black ring-offset-2"
+  //                   : ""
+  //               }`}
+  //             />
+  //           ))}
+  //         </div>
+  //       )}
+  //     </div>
+
+  //     {/* Size */}
+  //     <div className="border-t border-gray-200 pt-6">
+  //       <div
+  //         className="flex items-center justify-between mb-4 cursor-pointer"
+  //         onClick={() => toggleSection("size")}
+  //       >
+  //         <h3 className="font-bold">Size</h3>
+  //         {expandedSections.size ? (
+  //           <ChevronDown className="w-5 h-5" />
+  //         ) : (
+  //           <ChevronRight className="w-5 h-5" />
+  //         )}
+  //       </div>
+  //       {expandedSections.size && (
+  //         <div className="grid grid-cols-2 gap-2">
+  //           {sizes.map((size) => (
+  //             <button
+  //               key={size}
+  //               onClick={() => toggleSize(size)}
+  //               className={`px-4 py-2 text-sm rounded-full ${
+  //                 selectedSizes.includes(size)
+  //                   ? "bg-black text-white"
+  //                   : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+  //               }`}
+  //             >
+  //               {size}
+  //             </button>
+  //           ))}
+  //         </div>
+  //       )}
+  //     </div>
+
+  //     {/* Dress Style */}
+  //     <div className="border-t border-gray-200 pt-6">
+  //       <div
+  //         className="flex items-center justify-between mb-4 cursor-pointer"
+  //         onClick={() => toggleSection("dressStyle")}
+  //       >
+  //         <h3 className="font-bold">Dress Style</h3>
+  //         {expandedSections.dressStyle ? (
+  //           <ChevronDown className="w-5 h-5" />
+  //         ) : (
+  //           <ChevronRight className="w-5 h-5" />
+  //         )}
+  //       </div>
+  //       {expandedSections.dressStyle && (
+  //         <div>
+  //           {dressStyles.map((style) => (
+  //             <div
+  //               key={style}
+  //               className="flex items-center justify-between py-2 text-gray-600 hover:text-black cursor-pointer"
+  //             >
+  //               <span>{style}</span>
+  //               <ChevronRight className="w-4 h-4" />
+  //             </div>
+  //           ))}
+  //         </div>
+  //       )}
+  //     </div>
+
+  //     <button className="w-full bg-black text-white py-3 rounded-full font-medium hover:bg-gray-800">
+  //       Apply Filter
+  //     </button>
+  //   </div>
+  // </div>
   return (
-    <div className="flex min-h-screen bg-white">
+    <div className="flex min-h-screen bg-white max-w-screen-2xl mx-auto px-6 sm:px-8  py-12">
       {/* Sidebar */}
-      <div className="w-72 border-r border-gray-200 p-6 overflow-y-auto">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-bold">Filters</h2>
-          <SlidersHorizontal className="w-5 h-5 text-gray-400" />
-        </div>
-
-        {/* Filter Sections */}
-        <div className="space-y-6">
-          {/* Categories */}
-          <div>
-            {["T-shirts", "Shorts", "Shirts", "Hoodie", "Jeans"].map((cat) => (
-              <div
-                key={cat}
-                className="flex items-center justify-between py-2 text-gray-600 hover:text-black cursor-pointer"
-              >
-                <span>{cat}</span>
-                <ChevronRight className="w-4 h-4" />
-              </div>
-            ))}
-          </div>
-
-          {/* Price */}
-          <div className="border-t border-gray-200 pt-6">
-            <div
-              className="flex items-center justify-between mb-4 cursor-pointer"
-              onClick={() => toggleSection("price")}
-            >
-              <h3 className="font-bold">Price</h3>
-              {expandedSections.price ? (
-                <ChevronDown className="w-5 h-5" />
-              ) : (
-                <ChevronRight className="w-5 h-5" />
-              )}
-            </div>
-            {expandedSections.price && (
-              <div className="space-y-4">
-                <div className="relative pt-2">
-                  <input
-                    type="range"
-                    min="0"
-                    max="300"
-                    value={priceRange[1]}
-                    onChange={(e) =>
-                      setPriceRange([priceRange[0], parseInt(e.target.value)])
-                    }
-                    className="w-full"
-                  />
-                  <div className="flex justify-between text-sm mt-2">
-                    <span>${priceRange[0]}</span>
-                    <span>${priceRange[1]}</span>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Colors */}
-          <div className="border-t border-gray-200 pt-6">
-            <div
-              className="flex items-center justify-between mb-4 cursor-pointer"
-              onClick={() => toggleSection("colors")}
-            >
-              <h3 className="font-bold">Colors</h3>
-              {expandedSections.colors ? (
-                <ChevronDown className="w-5 h-5" />
-              ) : (
-                <ChevronRight className="w-5 h-5" />
-              )}
-            </div>
-            {expandedSections.colors && (
-              <div className="grid grid-cols-5 gap-3">
-                {colors.map((color) => (
-                  <button
-                    key={color.name}
-                    onClick={() => toggleColor(color.name)}
-                    className={`w-9 h-9 rounded-full ${color.class} ${
-                      selectedColors.includes(color.name)
-                        ? "ring-2 ring-black ring-offset-2"
-                        : ""
-                    }`}
-                  />
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Size */}
-          <div className="border-t border-gray-200 pt-6">
-            <div
-              className="flex items-center justify-between mb-4 cursor-pointer"
-              onClick={() => toggleSection("size")}
-            >
-              <h3 className="font-bold">Size</h3>
-              {expandedSections.size ? (
-                <ChevronDown className="w-5 h-5" />
-              ) : (
-                <ChevronRight className="w-5 h-5" />
-              )}
-            </div>
-            {expandedSections.size && (
-              <div className="grid grid-cols-2 gap-2">
-                {sizes.map((size) => (
-                  <button
-                    key={size}
-                    onClick={() => toggleSize(size)}
-                    className={`px-4 py-2 text-sm rounded-full ${
-                      selectedSizes.includes(size)
-                        ? "bg-black text-white"
-                        : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                    }`}
-                  >
-                    {size}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Dress Style */}
-          <div className="border-t border-gray-200 pt-6">
-            <div
-              className="flex items-center justify-between mb-4 cursor-pointer"
-              onClick={() => toggleSection("dressStyle")}
-            >
-              <h3 className="font-bold">Dress Style</h3>
-              {expandedSections.dressStyle ? (
-                <ChevronDown className="w-5 h-5" />
-              ) : (
-                <ChevronRight className="w-5 h-5" />
-              )}
-            </div>
-            {expandedSections.dressStyle && (
-              <div>
-                {dressStyles.map((style) => (
-                  <div
-                    key={style}
-                    className="flex items-center justify-between py-2 text-gray-600 hover:text-black cursor-pointer"
-                  >
-                    <span>{style}</span>
-                    <ChevronRight className="w-4 h-4" />
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          <button className="w-full bg-black text-white py-3 rounded-full font-medium hover:bg-gray-800">
-            Apply Filter
-          </button>
-        </div>
-      </div>
 
       {/* Main Content */}
       <div className="flex-1 p-8">
         {/* Header */}
         <div className="mb-6">
-          <div className="flex items-center text-sm text-gray-500 mb-4">
+          {/* <div className="flex items-center text-sm text-gray-500 mb-4">
             <span>Home</span>
             <ChevronRight className="w-4 h-4 mx-2" />
             <span className="text-black">Casual</span>
           </div>
-          <h1 className="text-3xl font-bold mb-4">Casual</h1>
-          <div className="flex items-center justify-between">
+          <h1 className="text-3xl font-bold mb-4">Casual</h1> */}
+          {/* <div className="flex items-center justify-between">
             <p className="text-gray-600">Showing 1-10 of 100 Products</p>
             <select className="border border-gray-300 rounded-lg px-4 py-2 text-sm">
               <option>Most Popular</option>
@@ -363,35 +365,18 @@ export default function ProductPage() {
               <option>Price: Low to High</option>
               <option>Price: High to Low</option>
             </select>
-          </div>
+          </div> */}
         </div>
 
         {/* Product Grid */}
-        <div className="grid grid-cols-3 gap-6">
+        <div className="grid xl:grid-cols-4  md:grid-cols-3 grid-cols-2 gap-6 ">
           {products?.map((product) => (
-            <div
-              key={product._id}
-              className="group cursor-pointer"
-              onClick={() => navigate(`/product-details/${product._id}`)}
-            >
-              <div className="bg-gray-100 rounded-xl overflow-hidden mb-3 aspect-square">
-                <img
-                  src={product.images[0]}
-                  alt={product.name}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                />
-              </div>
-              <h3 className="font-bold text-lg mb-2">{product.name}</h3>
-
-              <div className="flex items-center gap-2">
-                <span className="font-bold text-xl">${product.price}</span>
-              </div>
-            </div>
+            <ProductCard key={product.id} {...product} />
           ))}
         </div>
 
         {/* Pagination */}
-        <div className="flex items-center justify-between mt-8 pt-6 border-t border-gray-200">
+        {/* <div className="flex items-center justify-between mt-8 pt-6 border-t border-gray-200">
           <button className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
             <span>← Previous</span>
           </button>
@@ -410,7 +395,7 @@ export default function ProductPage() {
           <button className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
             <span>Next →</span>
           </button>
-        </div>
+        </div> */}
       </div>
     </div>
   );
