@@ -3,6 +3,7 @@ import { Eye, EyeOff, AlertCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { showPopup } from "../store/uiSlice";
+import axios from "axios"; // ← ADD THIS IMPORT
 
 export default function Register() {
   const navigate = useNavigate();
@@ -112,14 +113,22 @@ export default function Register() {
     try {
       setLoading(true);
 
-      const res = await fetch("http://localhost:3000/signup", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
-      });
+      const res = await axios.post(
+        import.meta.env.VITE_APP_BASE_URL + "/signup",
+        {
+          ...form,
+        },
+        { 
+          withCredentials: true,
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        }
+      );
 
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Signup failed");
+      // Axios automatically parses JSON and puts it in res.data
+      // Status codes 200-299 are successful, others throw errors
+      const data = res.data;
 
       if (data.token) localStorage.setItem("token", data.token);
       dispatch(showPopup({ message: "Account created successfully!" }));
@@ -127,10 +136,24 @@ export default function Register() {
         navigate("/login");
       }, 2000);
     } catch (err) {
-      let errorMessage = err.message;
+      // Axios puts server error responses in err.response
+      let errorMessage = "Signup failed";
+      
+      if (err.response) {
+        // Server responded with error status
+        errorMessage = err.response.data?.error || err.response.data?.message || "Signup failed";
+      } else if (err.request) {
+        // Request was made but no response (CORS or network error)
+        errorMessage = "Network error. Please check your connection.";
+      } else {
+        // Something else went wrong
+        errorMessage = err.message;
+      }
+
       if (errorMessage.toLowerCase().includes("email already in use")) {
         errorMessage = "Already have an account. Try login.";
       }
+      
       setErrors({ api: errorMessage });
     } finally {
       setLoading(false);
