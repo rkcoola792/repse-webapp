@@ -58,25 +58,25 @@ export default function ThankYouPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-black">
+    <div className="min-h-screen bg-white">
       {/* Confirmation */}
-      <section className="max-w-2xl mx-auto px-6 sm:px-8 pt-16 sm:pt-24 pb-14 text-center border-b border-white/10">
-        <div className="w-20 h-20 mx-auto mb-7 rounded-full border-2 border-white flex items-center justify-center">
-          <Check className="w-8 h-8 text-white" strokeWidth={2.5} />
+      <section className="max-w-2xl mx-auto px-6 sm:px-8 pt-16 sm:pt-24 pb-14 text-center border-b border-gray-200">
+        <div className="w-20 h-20 mx-auto mb-7 rounded-full border-2 border-black flex items-center justify-center">
+          <Check className="w-8 h-8 text-black" strokeWidth={2.5} />
         </div>
 
-        <p className="text-white/50 text-xs font-semibold tracking-[0.25em] uppercase mb-4">
+        <p className="text-gray-500 text-xs font-semibold tracking-[0.25em] uppercase mb-4">
           Order Confirmed
         </p>
 
         <h1
-          className="text-white uppercase text-4xl sm:text-5xl mb-4"
+          className="text-gray-900 uppercase text-4xl sm:text-5xl mb-4"
           style={{ fontFamily: ANTON }}
         >
           You&apos;re All Set
         </h1>
 
-        <p className="text-white/50 text-sm leading-relaxed max-w-md mx-auto mb-10">
+        <p className="text-gray-500 text-sm leading-relaxed max-w-md mx-auto mb-10">
           Your order has been placed. We&apos;ll send a shipping confirmation
           the moment it leaves the warehouse — usually within 2 business
           days.
@@ -84,26 +84,26 @@ export default function ThankYouPage() {
 
         <div className="flex flex-wrap justify-center gap-10 mb-10 text-left">
           <div>
-            <p className="text-white/40 text-[11px] tracking-wide uppercase mb-1.5">
+            <p className="text-gray-400 text-[11px] tracking-wide uppercase mb-1.5">
               Order Number
             </p>
-            <p className="text-white text-lg" style={{ fontFamily: ANTON }}>
+            <p className="text-gray-900 text-lg" style={{ fontFamily: ANTON }}>
               {orderId ? `#${orderId.slice(-8).toUpperCase()}` : "—"}
             </p>
           </div>
           <div>
-            <p className="text-white/40 text-[11px] tracking-wide uppercase mb-1.5">
+            <p className="text-gray-400 text-[11px] tracking-wide uppercase mb-1.5">
               Estimated Delivery
             </p>
-            <p className="text-white text-lg" style={{ fontFamily: ANTON }}>
+            <p className="text-gray-900 text-lg" style={{ fontFamily: ANTON }}>
               {estimatedDelivery}
             </p>
           </div>
           <div>
-            <p className="text-white/40 text-[11px] tracking-wide uppercase mb-1.5">
+            <p className="text-gray-400 text-[11px] tracking-wide uppercase mb-1.5">
               Payment
             </p>
-            <p className="text-white text-lg" style={{ fontFamily: ANTON }}>
+            <p className="text-gray-900 text-lg" style={{ fontFamily: ANTON }}>
               Razorpay
             </p>
           </div>
@@ -112,13 +112,13 @@ export default function ThankYouPage() {
         <div className="flex flex-wrap justify-center gap-4">
           <button
             onClick={() => navigate("/profile")}
-            className="px-8 py-3.5 bg-white text-black rounded-full text-sm font-semibold uppercase tracking-wide hover:bg-gray-200 transition-colors cursor-pointer flex items-center gap-2"
+            className="px-8 py-3.5 bg-black text-white rounded-full text-sm font-semibold uppercase tracking-wide hover:bg-gray-800 transition-colors cursor-pointer flex items-center gap-2"
           >
             Track Your Order <ArrowRight className="w-4 h-4" />
           </button>
           <button
             onClick={() => navigate("/products")}
-            className="px-8 py-3.5 border border-white/25 text-white rounded-full text-sm font-semibold uppercase tracking-wide hover:border-white/50 transition-colors cursor-pointer"
+            className="px-8 py-3.5 border border-gray-300 text-gray-900 rounded-full text-sm font-semibold uppercase tracking-wide hover:border-gray-500 transition-colors cursor-pointer"
           >
             Continue Shopping
           </button>
@@ -129,7 +129,7 @@ export default function ThankYouPage() {
       {orderItems.length > 0 && (
         <section className="max-w-2xl mx-auto px-6 sm:px-8 py-14">
           <h2
-            className="text-white uppercase text-xl mb-6"
+            className="text-gray-900 uppercase text-xl mb-6"
             style={{ fontFamily: ANTON }}
           >
             Order Summary
@@ -139,9 +139,9 @@ export default function ThankYouPage() {
             {orderItems.map((item) => (
               <div
                 key={item.id}
-                className="grid grid-cols-[64px_1fr_auto] gap-4 sm:gap-5 items-center py-4 border-b border-white/10"
+                className="grid grid-cols-[64px_1fr_auto] gap-4 sm:gap-5 items-center py-4 border-b border-gray-200"
               >
-                <div className="w-16 h-[76px] bg-white/5 overflow-hidden shrink-0">
+                <div className="w-16 h-[76px] bg-gray-100 overflow-hidden shrink-0">
                   {item.image && (
                     <img
                       src={item.image}
@@ -152,18 +152,18 @@ export default function ThankYouPage() {
                 </div>
                 <div className="min-w-0">
                   <p
-                    className="text-white uppercase text-sm mb-1 truncate"
+                    className="text-gray-900 uppercase text-sm mb-1 truncate"
                     style={{ fontFamily: ANTON }}
                   >
                     {item.name}
                   </p>
-                  <p className="text-white/40 text-xs">
+                  <p className="text-gray-400 text-xs">
                     {[item.color, item.size, `Qty ${item.quantity}`]
                       .filter(Boolean)
                       .join(" — ")}
                   </p>
                 </div>
-                <p className="text-white text-sm" style={{ fontFamily: ANTON }}>
+                <p className="text-gray-900 text-sm" style={{ fontFamily: ANTON }}>
                   ₹{item.price * item.quantity}
                 </p>
               </div>
@@ -171,21 +171,21 @@ export default function ThankYouPage() {
           </div>
 
           <div className="mt-5 space-y-1">
-            <div className="flex justify-between text-white/60 text-sm py-1.5">
+            <div className="flex justify-between text-gray-600 text-sm py-1.5">
               <span>Subtotal</span>
               <span>₹{subtotal.toFixed(0)}</span>
             </div>
             {discount > 0 && (
-              <div className="flex justify-between text-white/60 text-sm py-1.5">
+              <div className="flex justify-between text-gray-600 text-sm py-1.5">
                 <span>Discount</span>
                 <span>−₹{discount.toFixed(0)}</span>
               </div>
             )}
-            <div className="flex justify-between text-white/60 text-sm py-1.5">
+            <div className="flex justify-between text-gray-600 text-sm py-1.5">
               <span>Shipping</span>
               <span>{deliveryFee > 0 ? `₹${deliveryFee}` : "Free"}</span>
             </div>
-            <div className="flex justify-between items-center text-white text-sm pt-3.5 mt-2 border-t border-white/10">
+            <div className="flex justify-between items-center text-gray-900 text-sm pt-3.5 mt-2 border-t border-gray-200">
               <span>Total Paid</span>
               <span className="text-lg" style={{ fontFamily: ANTON }}>
                 ₹{totalPaid.toFixed(0)}
@@ -194,11 +194,11 @@ export default function ThankYouPage() {
           </div>
 
           {address && (
-            <div className="mt-9 p-5 border border-white/10">
-              <p className="text-white/40 text-[11px] tracking-wide uppercase mb-2.5">
+            <div className="mt-9 p-5 border border-gray-200">
+              <p className="text-gray-400 text-[11px] tracking-wide uppercase mb-2.5">
                 Shipping To
               </p>
-              <p className="text-white/60 text-sm leading-relaxed">
+              <p className="text-gray-600 text-sm leading-relaxed">
                 {address.fullName}
                 <br />
                 {address.street}

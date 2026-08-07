@@ -71,6 +71,7 @@ export default function Login() {
         { email, password },
         { withCredentials: true }
       );
+
       if (rememberMe) {
         localStorage.setItem(REMEMBER_KEY, email);
       } else {
