@@ -1,16 +1,18 @@
 import React, { useEffect } from "react";
 import Hero from "./hero";
+import FeaturedProduct from "./featuredProduct";
 import NewArrivalsGrid from "./newArrival";
 import TopSelling from "./topSelling";
-import BrowseByDressStyle from "./dressStyleComponent";
-import OurHappyCustomers from "./reviews";
+import Statement from "./statement";
 import axios from "axios";
 import { useState } from "react";
 const Homepage = () => {
   const [page, setPage] = useState(1);
   const limit = 20;
   const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
   const getProducts = async () => {
+    setLoading(true);
     try {
       const response = await axios.get(
         `${
@@ -18,10 +20,11 @@ const Homepage = () => {
         }/products?page=${page}&limit=${limit}`,
         { withCredentials: true }
       );
-      console.log("Products fetched:", response.data);
       setProducts(response.data);
     } catch (error) {
       console.error("Error fetching products:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -31,16 +34,18 @@ const Homepage = () => {
   const topSellingProducts = products?.filter(
     (product) => product.topSelling === true
   );
+  const featuredProduct =
+    topSellingProducts?.[0] || newArrivals?.[0] || products?.[0];
   useEffect(() => {
     getProducts();
   }, []);
   return (
     <>
       <Hero />
-      <NewArrivalsGrid products={newArrivals} />
-      <TopSelling products={topSellingProducts} />
-      {/* <BrowseByDressStyle /> */}
-      {/* <OurHappyCustomers /> */}
+      <NewArrivalsGrid products={newArrivals} loading={loading} />
+      <FeaturedProduct product={featuredProduct} loading={loading} />
+      <TopSelling products={topSellingProducts} loading={loading} />
+      <Statement />
     </>
   );
 };

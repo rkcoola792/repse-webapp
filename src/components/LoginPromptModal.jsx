@@ -39,42 +39,25 @@ const LoginPromptModal = () => {
 
   return (
     <div className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center px-4">
-      <div className="bg-white w-full max-w-2xl rounded-xl overflow-hidden shadow-xl relative">
+      <div className="bg-white w-full max-w-md rounded-2xl overflow-hidden shadow-xl relative">
         {/* Header */}
-        <div className="relative px-6 py-9 border-b">
-          {/* Center title */}
-          <div
-            className="absolute inset-0 flex items-center justify-center gap-2
-                  font-bold text-xl tracking-wider pointer-events-none"
-          >
-            LOGIN REQUIRED
+        <div className="relative px-6 py-8 border-b flex items-center justify-center">
+          <div className="w-14 h-14 rounded-full bg-gray-100 flex items-center justify-center">
+            <Heart className="w-6 h-6" strokeWidth={1.7} />
           </div>
 
           {/* Close button */}
           <button
             onClick={handleClose}
-            className="absolute right-6 top-1/2 -translate-y-1/2"
+            className="absolute right-6 top-1/2 -translate-y-1/2 cursor-pointer"
           >
-            <X className="text-gray-500 hover:text-black cursor-pointer" />
+            <X className="text-gray-500 hover:text-black" />
           </button>
-        </div>
-
-        {/* Images */}
-        <div className="grid grid-cols-2">
-          <img
-            src="https://images.unsplash.com/photo-1533681904393-9ab6eee7e408?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-            alt="fitness woman"
-            className="h-52 w-full object-cover"
-          />
-          <img
-            src="https://images.unsplash.com/photo-1605296867304-46d5465a13f1"
-            alt="fitness man"
-            className="h-52 w-full object-cover"
-          />
         </div>
 
         {/* Content */}
         <div className="px-8 py-8 text-center">
+          <h2 className="font-bold text-xl tracking-wide mb-3">LOGIN REQUIRED</h2>
           <p className="text-gray-700 text-base leading-relaxed mb-8">
             Ever wish you could save all your fave fits & accessories in one
             place to come back to later? Almost like a ✨ wishlist ✨.

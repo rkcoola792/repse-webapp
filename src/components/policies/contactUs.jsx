@@ -1,12 +1,11 @@
 import React from "react";
 
 const ContactUs = () => {
-    console.log("Rendering Contact Us component");
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-3xl mx-auto">
         <div className="bg-white rounded-lg shadow-md p-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Contact Us</h1>
+          <h1 className="text-3xl sm:text-4xl font-black uppercase tracking-tight text-gray-900 mb-3">Contact Us</h1>
           <p className="text-gray-600 mb-8">
             We're here to help! Reach out to us using the information below.
           </p>

@@ -3,6 +3,7 @@ import { Outlet } from 'react-router-dom'
 import Header from './components/header'
 import NewsletterFooter from './components/footer'
 import CartSidebar from './components/cart/cart'
+import AnnouncementBar from './components/discountBanner'
 import { useSelector, useDispatch } from 'react-redux'
 import { toggleCart, closeCart } from './store/uiSlice'
 
@@ -37,8 +38,9 @@ const Body = () => {
 
   return (
       <div className="min-h-screen">
+         <AnnouncementBar />
          <Header onCartClick={handleToggleCart} />
-         <main className="pt-16">
+         <main>
            <Outlet />
          </main>
          <NewsletterFooter/>

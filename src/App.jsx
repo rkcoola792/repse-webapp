@@ -6,7 +6,6 @@ import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
 import Body from "./body";
 import Homepage from "./components/homepage";
 import ProductsPage from "./components/products/productsPage";
-import PracticeLayout from "./components/products/practiceLayout";
 import ProductDetails from "./components/products/productDetails";
 import Login from "./components/Login";
 import Register from "./components/Register";
@@ -20,7 +19,6 @@ import { loadFavoritesForUser } from "./store/favoritesSlice";
 import TermsAndConditions from "./components/policies/termsAndConditions";
 import Privacy from "./components/policies/privacy";
 import CancellationsAndRefunds from "./components/policies/cancellationsAndRefunds";
-import { Contact } from "lucide-react";
 import Shipping from "./components/policies/shipping";
 import ContactUs from "./components/policies/contactUs";
 import ThankYouPage from "./components/thankyouPage";
@@ -44,9 +42,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Body />}>
             <Route index element={<Homepage />} />
-            {/* Add more routes here as needed */}
             <Route path="/products" element={<ProductsPage />} />
-            <Route path="/practice" element={<PracticeLayout />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/favourites" element={<Favourites />} />
             <Route path="/terms" element={<TermsAndConditions />} />

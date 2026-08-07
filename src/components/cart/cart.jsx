@@ -14,6 +14,10 @@ import {
   MoreVertical,
   ChevronDown,
   MapPin,
+  User,
+  Home,
+  Phone,
+  ShieldCheck,
 } from "lucide-react";
 import { removeItem, updateQuantity, addItem } from "../../store/cartSlice";
 import {
@@ -28,6 +32,32 @@ import {
 } from "../../store/uiSlice";
 import CartLikeToggle from "./CartToggle";
 import axios from "axios";
+
+function AddressField({ icon: Icon, label, error, className = "", ...inputProps }) {
+  return (
+    <div className={className}>
+      <label className="block text-xs font-semibold text-gray-500 mb-1.5">
+        {label}
+      </label>
+      <div className="relative">
+        {Icon && (
+          <Icon className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+        )}
+        <input
+          {...inputProps}
+          className={`w-full border ${
+            error
+              ? "border-red-400 focus:ring-red-100"
+              : "border-gray-200 focus:ring-black/10"
+          } rounded-xl ${
+            Icon ? "pl-10" : "pl-3.5"
+          } pr-3.5 py-2.5 text-sm outline-none focus:ring-2 transition-all`}
+        />
+      </div>
+      {error && <p className="text-xs text-red-500 mt-1">{error}</p>}
+    </div>
+  );
+}
 
 export default function CartSidebar({ isOpen, onClose }) {
   const dispatch = useDispatch();
@@ -184,6 +214,10 @@ export default function CartSidebar({ isOpen, onClose }) {
         handler: function (response) {
           // FIX E: close popup before redirecting
           setShowDeliveryPopup(false);
+          sessionStorage.setItem(
+            "repse_last_order",
+            JSON.stringify({ address: addressForm })
+          );
           window.location.href = `${window.location.origin}/payment-success?payment_id=${response.razorpay_payment_id}&order_id=${response.razorpay_order_id}&signature=${response.razorpay_signature}`;
         },
         prefill: {
@@ -739,168 +773,111 @@ export default function CartSidebar({ isOpen, onClose }) {
         <div className="fixed inset-0 z-[1000] flex items-end sm:items-center justify-center">
           {/* backdrop */}
           <div
-            className="absolute inset-0 bg-black/40 bg-opacity-50"
+            className="absolute inset-0 bg-black/50"
             onClick={() => setShowDeliveryPopup(false)}
           />
 
           {/* modal card */}
-          <div className="relative w-full sm:max-w-md bg-white rounded-t-2xl sm:rounded-2xl shadow-xl z-10 max-h-[90vh] overflow-y-auto">
+          <div className="relative w-full sm:max-w-md bg-white rounded-t-3xl sm:rounded-3xl shadow-xl z-10 max-h-[90vh] overflow-y-auto">
             {/* header */}
-            <div className="flex items-center justify-between px-5 pt-5 pb-3 border-b sticky top-0 bg-white rounded-t-2xl sm:rounded-t-2xl">
-              <div className="flex items-center gap-2">
-                <MapPin size={20} />
-                <h3 className="text-base font-bold tracking-wide">
-                  Delivery Details
-                </h3>
+            <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b sticky top-0 bg-white rounded-t-3xl sm:rounded-t-3xl">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-black flex items-center justify-center flex-shrink-0">
+                  <MapPin size={18} className="text-white" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold tracking-tight">
+                    Delivery Details
+                  </h3>
+                  <p className="text-xs text-gray-500">
+                    Where should we send your order?
+                  </p>
+                </div>
               </div>
               <button
                 onClick={() => setShowDeliveryPopup(false)}
-                className="text-gray-400 hover:text-black transition"
+                className="p-2 -mr-2 rounded-full text-gray-400 hover:text-black hover:bg-gray-100 transition cursor-pointer"
               >
                 <X size={20} />
               </button>
             </div>
 
             {/* body */}
-            <div className="px-5 py-5 flex flex-col gap-4">
-              {/* Full Name */}
-              <div>
-                <label className="block text-xs font-semibold text-gray-500 mb-1">
-                  Full Name
-                </label>
-                <input
-                  name="fullName"
-                  value={addressForm.fullName}
-                  onChange={handleAddressChange}
-                  placeholder="John Doe"
-                  className={`w-full border ${
-                    addressErrors.fullName
-                      ? "border-red-400"
-                      : "border-gray-300"
-                  } rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-black/10`}
-                />
-                {addressErrors.fullName && (
-                  <p className="text-xs text-red-500 mt-0.5">
-                    {addressErrors.fullName}
-                  </p>
-                )}
-              </div>
+            <div className="px-6 py-6 flex flex-col gap-4">
+              <AddressField
+                icon={User}
+                label="Full Name"
+                name="fullName"
+                value={addressForm.fullName}
+                onChange={handleAddressChange}
+                placeholder="John Doe"
+                error={addressErrors.fullName}
+              />
 
-              {/* Street */}
-              <div>
-                <label className="block text-xs font-semibold text-gray-500 mb-1">
-                  Street Address
-                </label>
-                <input
-                  name="street"
-                  value={addressForm.street}
-                  onChange={handleAddressChange}
-                  placeholder="123 Main St, Apt 4B"
-                  className={`w-full border ${
-                    addressErrors.street ? "border-red-400" : "border-gray-300"
-                  } rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-black/10`}
-                />
-                {addressErrors.street && (
-                  <p className="text-xs text-red-500 mt-0.5">
-                    {addressErrors.street}
-                  </p>
-                )}
-              </div>
+              <AddressField
+                icon={Home}
+                label="Street Address"
+                name="street"
+                value={addressForm.street}
+                onChange={handleAddressChange}
+                placeholder="123 Main St, Apt 4B"
+                error={addressErrors.street}
+              />
 
-              {/* City + State */}
               <div className="flex gap-3">
-                <div className="flex-1">
-                  <label className="block text-xs font-semibold text-gray-500 mb-1">
-                    City
-                  </label>
-                  <input
-                    name="city"
-                    value={addressForm.city}
-                    onChange={handleAddressChange}
-                    placeholder="Delhi"
-                    className={`w-full border ${
-                      addressErrors.city ? "border-red-400" : "border-gray-300"
-                    } rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-black/10`}
-                  />
-                  {addressErrors.city && (
-                    <p className="text-xs text-red-500 mt-0.5">
-                      {addressErrors.city}
-                    </p>
-                  )}
-                </div>
-                <div className="flex-1">
-                  <label className="block text-xs font-semibold text-gray-500 mb-1">
-                    State
-                  </label>
-                  <input
-                    name="state"
-                    value={addressForm.state}
-                    onChange={handleAddressChange}
-                    placeholder="Delhi"
-                    className={`w-full border ${
-                      addressErrors.state ? "border-red-400" : "border-gray-300"
-                    } rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-black/10`}
-                  />
-                  {addressErrors.state && (
-                    <p className="text-xs text-red-500 mt-0.5">
-                      {addressErrors.state}
-                    </p>
-                  )}
-                </div>
+                <AddressField
+                  className="flex-1"
+                  label="City"
+                  name="city"
+                  value={addressForm.city}
+                  onChange={handleAddressChange}
+                  placeholder="Delhi"
+                  error={addressErrors.city}
+                />
+                <AddressField
+                  className="flex-1"
+                  label="State"
+                  name="state"
+                  value={addressForm.state}
+                  onChange={handleAddressChange}
+                  placeholder="Delhi"
+                  error={addressErrors.state}
+                />
               </div>
 
-              {/* Pincode + Phone */}
               <div className="flex gap-3">
-                <div className="flex-1">
-                  <label className="block text-xs font-semibold text-gray-500 mb-1">
-                    Pincode
-                  </label>
-                  <input
-                    name="pincode"
-                    value={addressForm.pincode}
-                    onChange={handleAddressChange}
-                    placeholder="110001"
-                    maxLength={6}
-                    className={`w-full border ${
-                      addressErrors.pincode
-                        ? "border-red-400"
-                        : "border-gray-300"
-                    } rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-black/10`}
-                  />
-                  {addressErrors.pincode && (
-                    <p className="text-xs text-red-500 mt-0.5">
-                      {addressErrors.pincode}
-                    </p>
-                  )}
-                </div>
-                <div className="flex-1">
-                  <label className="block text-xs font-semibold text-gray-500 mb-1">
-                    Phone No.
-                  </label>
-                  <input
-                    name="phone"
-                    value={addressForm.phone}
-                    onChange={handleAddressChange}
-                    placeholder="9876543210"
-                    maxLength={10}
-                    className={`w-full border ${
-                      addressErrors.phone ? "border-red-400" : "border-gray-300"
-                    } rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-black/10`}
-                  />
-                  {addressErrors.phone && (
-                    <p className="text-xs text-red-500 mt-0.5">
-                      {addressErrors.phone}
-                    </p>
-                  )}
-                </div>
+                <AddressField
+                  className="flex-1"
+                  label="Pincode"
+                  name="pincode"
+                  value={addressForm.pincode}
+                  onChange={handleAddressChange}
+                  placeholder="110001"
+                  maxLength={6}
+                  error={addressErrors.pincode}
+                />
+                <AddressField
+                  className="flex-1"
+                  icon={Phone}
+                  label="Phone No."
+                  name="phone"
+                  value={addressForm.phone}
+                  onChange={handleAddressChange}
+                  placeholder="9876543210"
+                  maxLength={10}
+                  error={addressErrors.phone}
+                />
               </div>
 
-              {/* Total reminder */}
-              <div className="flex justify-between items-center bg-gray-50 rounded-lg px-4 py-2 mt-2">
-                <span className="text-xs text-gray-500">
-                  You will be charged
-                </span>
-                <span className="text-sm font-bold">
+              {/* Order total */}
+              <div className="flex justify-between items-center bg-gray-50 border border-gray-100 rounded-2xl px-4 py-3 mt-2">
+                <div>
+                  <p className="text-xs text-gray-500">
+                    {cartItems.length} {cartItems.length === 1 ? "item" : "items"}
+                  </p>
+                  <p className="text-xs text-gray-500">You will be charged</p>
+                </div>
+                <span className="text-lg font-bold">
                   ₹{totalAmount.toFixed(2)}
                 </span>
               </div>
@@ -916,11 +893,16 @@ export default function CartSidebar({ isOpen, onClose }) {
               <button
                 onClick={handleProceedToPayment}
                 disabled={isPaymentLoading}
-                className="w-full bg-black text-white py-3 rounded-full font-semibold hover:bg-zinc-800 transition cursor-pointer flex items-center justify-center gap-2 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                className="w-full bg-black text-white py-3.5 rounded-full font-semibold hover:bg-zinc-800 transition cursor-pointer flex items-center justify-center gap-2 disabled:bg-gray-400 disabled:cursor-not-allowed"
               >
                 {isPaymentLoading ? "Processing..." : "Confirm & Pay"}
                 {!isPaymentLoading && <ArrowRight size={18} />}
               </button>
+
+              <p className="flex items-center justify-center gap-1.5 text-[11px] text-gray-400 -mt-2">
+                <ShieldCheck className="w-3.5 h-3.5" />
+                Secure checkout powered by Razorpay
+              </p>
             </div>
           </div>
         </div>

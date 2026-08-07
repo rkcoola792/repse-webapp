@@ -1,180 +1,32 @@
-import React, { useEffect, useState } from "react";
-import { ChevronRight, ChevronDown, SlidersHorizontal } from "lucide-react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
+import { X, ChevronDown, Check } from "lucide-react";
 import ProductCard from "./productCard";
+import ProductCardSkeleton from "./productCardSkeleton";
+import { CATEGORIES } from "../../constants/categories";
 
-const products = [
-  {
-    id: 1,
-    name: "Gradient Graphic T-shirt",
-    price: 145,
-    rating: 3.5,
-    reviews: 4.5,
-    image:
-      "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&h=400&fit=crop",
-  },
-  {
-    id: 2,
-    name: "Polo with Tipping Details",
-    price: 180,
-    rating: 4.5,
-    reviews: 4.5,
-    image:
-      "https://images.unsplash.com/photo-1586790170083-2f9ceadc732d?w=400&h=400&fit=crop",
-  },
-  {
-    id: 3,
-    name: "Black Striped T-shirt",
-    price: 120,
-    originalPrice: 160,
-    discount: 30,
-    rating: 5.0,
-    reviews: 5.0,
-    image:
-      "https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?w=400&h=400&fit=crop",
-  },
-  {
-    id: 4,
-    name: "Skinny Fit Jeans",
-    price: 240,
-    originalPrice: 260,
-    discount: 20,
-    rating: 3.5,
-    reviews: 3.5,
-    image:
-      "https://images.unsplash.com/photo-1542272604-787c3835535d?w=400&h=400&fit=crop",
-  },
-  {
-    id: 5,
-    name: "Checkered Shirt",
-    price: 180,
-    rating: 4.5,
-    reviews: 4.5,
-    image:
-      "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=400&h=400&fit=crop",
-  },
-  {
-    id: 6,
-    name: "Sleeve Striped T-shirt",
-    price: 130,
-    originalPrice: 160,
-    discount: 30,
-    rating: 4.5,
-    reviews: 4.5,
-    image:
-      "https://images.unsplash.com/photo-1576566588028-4147f3842f27?w=400&h=400&fit=crop",
-  },
-  {
-    id: 7,
-    name: "Vertical Striped Shirt",
-    price: 212,
-    originalPrice: 232,
-    discount: 20,
-    rating: 5.0,
-    reviews: 5.0,
-    image:
-      "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=400&h=400&fit=crop",
-  },
-  {
-    id: 8,
-    name: "Courage Graphic T-shirt",
-    price: 145,
-    rating: 4.0,
-    reviews: 4.0,
-    image:
-      "https://images.unsplash.com/photo-1618354691373-d851c5c3a990?w=400&h=400&fit=crop",
-  },
-  {
-    id: 9,
-    name: "Loose Fit Bermuda Shorts",
-    price: 80,
-    rating: 3.0,
-    reviews: 3.0,
-    image:
-      "https://images.unsplash.com/photo-1591195853828-11db59a44f6b?w=400&h=400&fit=crop",
-  },
+const SORT_OPTIONS = [
+  { value: "popular", label: "Most Popular" },
+  { value: "price-asc", label: "Price: Low to High" },
+  { value: "price-desc", label: "Price: High to Low" },
 ];
 
 export default function ProductPage() {
-  const [priceRange, setPriceRange] = useState([50, 200]);
-  const [selectedColors, setSelectedColors] = useState([]);
-  const [selectedSizes, setSelectedSizes] = useState([]);
-  const [expandedSections, setExpandedSections] = useState({
-    price: true,
-    colors: true,
-    size: true,
-    dressStyle: true,
-  });
-
-  const colors = [
-    { name: "green", class: "bg-green-500" },
-    { name: "red", class: "bg-red-500" },
-    { name: "yellow", class: "bg-yellow-400" },
-    { name: "orange", class: "bg-orange-500" },
-    { name: "cyan", class: "bg-cyan-400" },
-    { name: "blue", class: "bg-blue-600" },
-    { name: "purple", class: "bg-purple-500" },
-    { name: "pink", class: "bg-pink-500" },
-    { name: "white", class: "bg-white border border-gray-300" },
-    { name: "black", class: "bg-black" },
-  ];
-
-  const sizes = [
-    "XX-Small",
-    "X-Small",
-    "Small",
-    "Medium",
-    "Large",
-    "X-Large",
-    "XX-Large",
-    "3X-Large",
-    "4X-Large",
-  ];
-  const dressStyles = ["Casual", "Formal", "Party", "Gym"];
-
-  const toggleSection = (section) => {
-    setExpandedSections((prev) => ({ ...prev, [section]: !prev[section] }));
-  };
-
-  const toggleColor = (color) => {
-    setSelectedColors((prev) =>
-      prev.includes(color) ? prev.filter((c) => c !== color) : [...prev, color],
-    );
-  };
-
-  const toggleSize = (size) => {
-    setSelectedSizes((prev) =>
-      prev.includes(size) ? prev.filter((s) => s !== size) : [...prev, size],
-    );
-  };
-
-  const renderStars = (rating) => {
-    return (
-      <div className="flex gap-1">
-        {[1, 2, 3, 4, 5].map((star) => (
-          <span
-            key={star}
-            className={
-              star <= Math.floor(rating)
-                ? "text-yellow-400"
-                : star - 0.5 <= rating
-                  ? "text-yellow-400"
-                  : "text-gray-300"
-            }
-          >
-            ★
-          </span>
-        ))}
-      </div>
-    );
-  };
-
-  const [page, setPage] = useState(1);
+  const [page] = useState(1);
   const limit = 20;
-  const navigate = useNavigate();
   const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [sortBy, setSortBy] = useState("popular");
+  const [isSortOpen, setIsSortOpen] = useState(false);
+  const sortRef = useRef(null);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const categorySlug = searchParams.get("category");
+  const category = CATEGORIES.find((c) => c.slug === categorySlug);
+  const activeSort = SORT_OPTIONS.find((opt) => opt.value === sortBy);
+
   const getProducts = async () => {
+    setLoading(true);
     try {
       const response = await axios.get(
         `${
@@ -182,220 +34,183 @@ export default function ProductPage() {
         }/products?page=${page}&limit=${limit}`,
         { withCredentials: true },
       );
-      console.log("Products fetched:", response.data);
       setProducts(response.data);
     } catch (error) {
       console.error("Error fetching products:", error);
+    } finally {
+      setLoading(false);
     }
   };
+
   useEffect(() => {
     getProducts();
   }, []);
 
-  //side bar code <div className="w-72 border-r border-gray-200 p-6 overflow-y-auto">
-  //   <div className="flex items-center justify-between mb-6">
-  //     <h2 className="text-xl font-bold">Filters</h2>
-  //     <SlidersHorizontal className="w-5 h-5 text-gray-400" />
-  //   </div>
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (sortRef.current && !sortRef.current.contains(e.target)) {
+        setIsSortOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
-  //   {/* Filter Sections */}
-  //   <div className="space-y-6">
-  //     {/* Categories */}
-  //     <div>
-  //       {["T-shirts", "Shorts", "Shirts", "Hoodie", "Jeans"].map((cat) => (
-  //         <div
-  //           key={cat}
-  //           className="flex items-center justify-between py-2 text-gray-600 hover:text-black cursor-pointer"
-  //         >
-  //           <span>{cat}</span>
-  //           <ChevronRight className="w-4 h-4" />
-  //         </div>
-  //       ))}
-  //     </div>
+  const filteredProducts = useMemo(() => {
+    if (!products) return [];
+    if (!category) return products;
+    const keyword = category.label.toLowerCase();
+    return products.filter((p) =>
+      `${p.name || ""} ${p.description || ""} ${p.category || ""}`
+        .toLowerCase()
+        .includes(keyword),
+    );
+  }, [products, category]);
 
-  //     {/* Price */}
-  //     <div className="border-t border-gray-200 pt-6">
-  //       <div
-  //         className="flex items-center justify-between mb-4 cursor-pointer"
-  //         onClick={() => toggleSection("price")}
-  //       >
-  //         <h3 className="font-bold">Price</h3>
-  //         {expandedSections.price ? (
-  //           <ChevronDown className="w-5 h-5" />
-  //         ) : (
-  //           <ChevronRight className="w-5 h-5" />
-  //         )}
-  //       </div>
-  //       {expandedSections.price && (
-  //         <div className="space-y-4">
-  //           <div className="relative pt-2">
-  //             <input
-  //               type="range"
-  //               min="0"
-  //               max="300"
-  //               value={priceRange[1]}
-  //               onChange={(e) =>
-  //                 setPriceRange([priceRange[0], parseInt(e.target.value)])
-  //               }
-  //               className="w-full"
-  //             />
-  //             <div className="flex justify-between text-sm mt-2">
-  //               <span>${priceRange[0]}</span>
-  //               <span>${priceRange[1]}</span>
-  //             </div>
-  //           </div>
-  //         </div>
-  //       )}
-  //     </div>
+  const sortedProducts = useMemo(() => {
+    const list = [...filteredProducts];
+    if (sortBy === "popular") {
+      list.sort((a, b) => (b.topSelling === true) - (a.topSelling === true));
+    }
+    if (sortBy === "price-asc") list.sort((a, b) => a.price - b.price);
+    if (sortBy === "price-desc") list.sort((a, b) => b.price - a.price);
+    return list;
+  }, [filteredProducts, sortBy]);
 
-  //     {/* Colors */}
-  //     <div className="border-t border-gray-200 pt-6">
-  //       <div
-  //         className="flex items-center justify-between mb-4 cursor-pointer"
-  //         onClick={() => toggleSection("colors")}
-  //       >
-  //         <h3 className="font-bold">Colors</h3>
-  //         {expandedSections.colors ? (
-  //           <ChevronDown className="w-5 h-5" />
-  //         ) : (
-  //           <ChevronRight className="w-5 h-5" />
-  //         )}
-  //       </div>
-  //       {expandedSections.colors && (
-  //         <div className="grid grid-cols-5 gap-3">
-  //           {colors.map((color) => (
-  //             <button
-  //               key={color.name}
-  //               onClick={() => toggleColor(color.name)}
-  //               className={`w-9 h-9 rounded-full ${color.class} ${
-  //                 selectedColors.includes(color.name)
-  //                   ? "ring-2 ring-black ring-offset-2"
-  //                   : ""
-  //               }`}
-  //             />
-  //           ))}
-  //         </div>
-  //       )}
-  //     </div>
+  const clearCategory = () => {
+    const next = new URLSearchParams(searchParams);
+    next.delete("category");
+    setSearchParams(next);
+  };
 
-  //     {/* Size */}
-  //     <div className="border-t border-gray-200 pt-6">
-  //       <div
-  //         className="flex items-center justify-between mb-4 cursor-pointer"
-  //         onClick={() => toggleSection("size")}
-  //       >
-  //         <h3 className="font-bold">Size</h3>
-  //         {expandedSections.size ? (
-  //           <ChevronDown className="w-5 h-5" />
-  //         ) : (
-  //           <ChevronRight className="w-5 h-5" />
-  //         )}
-  //       </div>
-  //       {expandedSections.size && (
-  //         <div className="grid grid-cols-2 gap-2">
-  //           {sizes.map((size) => (
-  //             <button
-  //               key={size}
-  //               onClick={() => toggleSize(size)}
-  //               className={`px-4 py-2 text-sm rounded-full ${
-  //                 selectedSizes.includes(size)
-  //                   ? "bg-black text-white"
-  //                   : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-  //               }`}
-  //             >
-  //               {size}
-  //             </button>
-  //           ))}
-  //         </div>
-  //       )}
-  //     </div>
-
-  //     {/* Dress Style */}
-  //     <div className="border-t border-gray-200 pt-6">
-  //       <div
-  //         className="flex items-center justify-between mb-4 cursor-pointer"
-  //         onClick={() => toggleSection("dressStyle")}
-  //       >
-  //         <h3 className="font-bold">Dress Style</h3>
-  //         {expandedSections.dressStyle ? (
-  //           <ChevronDown className="w-5 h-5" />
-  //         ) : (
-  //           <ChevronRight className="w-5 h-5" />
-  //         )}
-  //       </div>
-  //       {expandedSections.dressStyle && (
-  //         <div>
-  //           {dressStyles.map((style) => (
-  //             <div
-  //               key={style}
-  //               className="flex items-center justify-between py-2 text-gray-600 hover:text-black cursor-pointer"
-  //             >
-  //               <span>{style}</span>
-  //               <ChevronRight className="w-4 h-4" />
-  //             </div>
-  //           ))}
-  //         </div>
-  //       )}
-  //     </div>
-
-  //     <button className="w-full bg-black text-white py-3 rounded-full font-medium hover:bg-gray-800">
-  //       Apply Filter
-  //     </button>
-  //   </div>
-  // </div>
   return (
-    <div className="flex min-h-screen bg-white max-w-screen-2xl mx-auto px-6 sm:px-8  py-12">
-      {/* Sidebar */}
-
-      {/* Main Content */}
-      <div className="flex-1 p-8">
-        {/* Header */}
-        <div className="mb-6">
-          {/* <div className="flex items-center text-sm text-gray-500 mb-4">
-            <span>Home</span>
-            <ChevronRight className="w-4 h-4 mx-2" />
-            <span className="text-black">Casual</span>
-          </div>
-          <h1 className="text-3xl font-bold mb-4">Casual</h1> */}
-          {/* <div className="flex items-center justify-between">
-            <p className="text-gray-600">Showing 1-10 of 100 Products</p>
-            <select className="border border-gray-300 rounded-lg px-4 py-2 text-sm">
-              <option>Most Popular</option>
-              <option>Newest</option>
-              <option>Price: Low to High</option>
-              <option>Price: High to Low</option>
-            </select>
-          </div> */}
+    <div className="min-h-screen bg-white">
+      {/* Page banner */}
+      <div className="bg-black py-10 sm:py-14">
+        <div className="max-w-screen-2xl mx-auto px-6 sm:px-8 lg:px-16">
+          <p className="flex items-center gap-3 text-white/60 text-xs sm:text-sm font-semibold tracking-[0.3em] uppercase mb-3">
+            <span className="w-8 h-px bg-white/60" />
+            Shop
+          </p>
+          <h1 className="text-white font-black uppercase tracking-tight text-3xl sm:text-5xl">
+            {category ? category.label : "All Products"}
+          </h1>
         </div>
+      </div>
 
-        {/* Product Grid */}
-        <div className="grid xl:grid-cols-4  md:grid-cols-3 grid-cols-2 gap-6 ">
-          {products?.map((product) => (
-            <ProductCard key={product.id} {...product} />
+      <div className="max-w-screen-2xl mx-auto px-6 sm:px-8 lg:px-16 py-8 sm:py-12">
+        {/* Category chips */}
+        <div className="flex flex-wrap gap-2 mb-6">
+          {CATEGORIES.map((c) => (
+            <button
+              key={c.slug}
+              onClick={() =>
+                setSearchParams(
+                  categorySlug === c.slug ? {} : { category: c.slug },
+                )
+              }
+              className={`px-4 py-2 rounded-full text-sm font-medium border cursor-pointer transition-colors ${
+                categorySlug === c.slug
+                  ? "bg-black text-white border-black"
+                  : "border-gray-200 text-gray-700 hover:bg-gray-50"
+              }`}
+            >
+              {c.label}
+            </button>
           ))}
         </div>
 
-        {/* Pagination */}
-        {/* <div className="flex items-center justify-between mt-8 pt-6 border-t border-gray-200">
-          <button className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
-            <span>← Previous</span>
-          </button>
-          <div className="flex gap-2">
-            {[1, 2, 3, "...", 8, 9, 10].map((page, idx) => (
+        {/* Header */}
+        <div className="flex flex-wrap items-center justify-between mb-6 gap-3">
+          <div className="flex items-center gap-2 text-gray-600 text-sm sm:text-base">
+            <span>
+              {loading
+                ? "Loading products..."
+                : `Showing ${sortedProducts.length} ${
+                    sortedProducts.length === 1 ? "product" : "products"
+                  }${category ? ` in "${category.label}"` : ""}`}
+            </span>
+            {category && (
               <button
-                key={idx}
-                className={`w-10 h-10 rounded-lg ${
-                  page === 1 ? "bg-black text-white" : "hover:bg-gray-100"
-                }`}
+                onClick={clearCategory}
+                className="flex items-center gap-1 text-xs bg-gray-100 hover:bg-gray-200 rounded-full px-2 py-1 cursor-pointer transition-colors"
               >
-                {page}
+                Clear <X className="w-3 h-3" />
               </button>
-            ))}
+            )}
           </div>
-          <button className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
-            <span>Next →</span>
-          </button>
-        </div> */}
+          <div className="relative" ref={sortRef}>
+            <button
+              onClick={() => setIsSortOpen((open) => !open)}
+              aria-expanded={isSortOpen}
+              className="flex items-center gap-2 border border-gray-300 rounded-lg px-3.5 py-2 text-sm font-medium text-gray-700 cursor-pointer hover:border-gray-400 transition-colors"
+            >
+              {activeSort?.label}
+              <ChevronDown
+                className={`w-4 h-4 text-gray-400 transition-transform ${
+                  isSortOpen ? "rotate-180" : ""
+                }`}
+              />
+            </button>
+
+            {isSortOpen && (
+              <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-100 py-2 z-20">
+                {SORT_OPTIONS.map((opt) => (
+                  <button
+                    key={opt.value}
+                    onClick={() => {
+                      setSortBy(opt.value);
+                      setIsSortOpen(false);
+                    }}
+                    className="w-full flex items-center justify-between gap-2 px-4 py-2 text-sm text-left hover:bg-gray-50 cursor-pointer"
+                  >
+                    <span
+                      className={
+                        opt.value === sortBy
+                          ? "text-black font-medium"
+                          : "text-gray-600"
+                      }
+                    >
+                      {opt.label}
+                    </span>
+                    {opt.value === sortBy && (
+                      <Check className="w-4 h-4 text-black" />
+                    )}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Product Grid */}
+        {!loading && sortedProducts.length === 0 ? (
+          <div className="text-center py-20">
+            <p className="text-gray-500 mb-4">
+              {category
+                ? `No products found in "${category.label}" yet.`
+                : "No products available right now."}
+            </p>
+            {category && (
+              <button
+                onClick={clearCategory}
+                className="px-6 py-2 border-2 border-gray-200 rounded-full text-sm font-medium hover:bg-gray-50 transition-colors cursor-pointer"
+              >
+                View all products
+              </button>
+            )}
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-px bg-gray-200">
+            {loading
+              ? Array.from({ length: limit }).map((_, i) => (
+                  <ProductCardSkeleton key={i} />
+                ))
+              : sortedProducts.map((product) => (
+                  <ProductCard key={product.id || product._id} {...product} />
+                ))}
+          </div>
+        )}
       </div>
     </div>
   );

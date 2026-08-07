@@ -25,3 +25,8 @@
 .animate-marquee {
   animation: marquee 15s linear infinite;
 }
+
+.text-stroke {
+  -webkit-text-stroke: 2px #ffffff;
+  color: transparent;
+}

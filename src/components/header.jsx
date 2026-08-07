@@ -1,8 +1,5 @@
-import React, { useEffect, useState } from "react";
-import { CiSearch } from "react-icons/ci";
+import React, { useEffect, useRef, useState } from "react";
 import { CiShoppingCart } from "react-icons/ci";
-import { CgProfile } from "react-icons/cg";
-import Face5Icon from "@mui/icons-material/Face5";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
 import {
@@ -11,34 +8,46 @@ import {
   setCartLoading,
   showLoginPrompt,
 } from "../store/uiSlice";
+import { removeUser } from "../store/userSlice";
+import { clearFavorites, saveFavoritesForUser } from "../store/favoritesSlice";
 import { useDispatch } from "react-redux";
-import { Heart, User, Loader } from "lucide-react";
+import { Heart, User, Loader, Menu, X, ChevronDown, LogOut } from "lucide-react";
+import { CATEGORIES } from "../constants/categories";
 
 export default function Header({ onCartClick, isCartOpen }) {
   const navigate = useNavigate();
   const location = useLocation();
   const dispatch = useDispatch();
   const user = useSelector((state) => state.user.user);
+  const isLoggedIn = Boolean(user?.user?.email);
   const cartItems = useSelector((state) => state.cart.cart); // Redux cart state
   const cartCount = cartItems.reduce((acc, item) => acc + item.quantity, 0); // total items
   const favorites = useSelector((state) => state.favorites.favorites);
   const favoritesCount = favorites.length;
   const favoritesViewed = useSelector((state) => state.favorites.viewed);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isShopOpen, setIsShopOpen] = useState(false);
+  const [isMobileShopOpen, setIsMobileShopOpen] = useState(false);
+  const [isAccountOpen, setIsAccountOpen] = useState(false);
   const shakeCart = useSelector((state) => state.ui.shakeCart);
 
   const [shake, setShake] = useState(false);
   const [shakeFav, setShakeFav] = useState(false);
   const shakeFavorites = useSelector((state) => state.ui.shakeFavorites);
   const cartLoading = useSelector((state) => state.ui.cartLoading);
-  console.log("user",user.user);
-  const handleProfileClick = () => {
-    if (user?.user) {
-      navigate("/profile");
-    } else {
-      navigate("/login");
-    }
+
+  const shopRef = useRef(null);
+  const accountRef = useRef(null);
+
+  const handleLogout = () => {
+    const userEmail = user?.user?.email || user?.email;
+    if (userEmail) dispatch(saveFavoritesForUser(userEmail));
+    dispatch(removeUser());
+    dispatch(clearFavorites());
+    setIsAccountOpen(false);
+    navigate("/");
   };
+
   useEffect(() => {
     if (shakeCart) {
       setShake(true);
@@ -65,49 +74,100 @@ export default function Header({ onCartClick, isCartOpen }) {
     }
   }, [shakeFavorites]);
 
+  useEffect(() => {
+    setIsMenuOpen(false);
+    setIsMobileShopOpen(false);
+    setIsShopOpen(false);
+    setIsAccountOpen(false);
+  }, [location.pathname, location.search]);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (shopRef.current && !shopRef.current.contains(e.target)) {
+        setIsShopOpen(false);
+      }
+      if (accountRef.current && !accountRef.current.contains(e.target)) {
+        setIsAccountOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   return (
-    <header className="bg-white shadow-sm border-b border-gray-200 fixed top-0 z-50 w-full">
+    <header className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50 w-full">
       <div className="max-w-screen-2xl mx-auto px-6 sm:px-8 lg:px-16">
         <div className="flex items-center justify-between h-16">
           {/* Left: logo + nav */}
           <div className="flex items-center space-x-6">
+            <button
+              type="button"
+              className="md:hidden p-2 -ml-2 rounded-full hover:bg-gray-100 cursor-pointer"
+              onClick={() => setIsMenuOpen((open) => !open)}
+              aria-label={isMenuOpen ? "Close menu" : "Open menu"}
+              aria-expanded={isMenuOpen}
+            >
+              {isMenuOpen ? <X /> : <Menu />}
+            </button>
             <div
               className="text-2xl font-extrabold tracking-tight cursor-pointer"
               onClick={() => navigate("/")}
             >
               REPSE
             </div>
-            <nav className="hidden md:flex items-center space-x-4 text-sm text-gray-600">
-              {/* <a className="hover:text-gray-900 cursor-pointer">Shop</a>
-              <a className="hover:text-gray-900 cursor-pointer">On Sale</a>
-              <a className="hover:text-gray-900 cursor-pointer">New Arrivals</a> */}
-              {/* <a className="hover:text-gray-900">Brands</a> */}
+            <nav className="hidden md:flex items-center space-x-6 text-sm text-gray-600">
+              <a
+                onClick={() => navigate("/")}
+                className={`cursor-pointer hover:text-gray-900 transition-colors ${
+                  location.pathname === "/" ? "text-gray-900 font-medium" : ""
+                }`}
+              >
+                Home
+              </a>
+
+              {/* Shop dropdown */}
+              <div className="relative" ref={shopRef}>
+                <button
+                  onClick={() => setIsShopOpen((open) => !open)}
+                  className={`flex items-center gap-1 cursor-pointer hover:text-gray-900 transition-colors ${
+                    location.pathname === "/products" ? "text-gray-900 font-medium" : ""
+                  }`}
+                  aria-expanded={isShopOpen}
+                >
+                  Shop
+                  <ChevronDown
+                    className={`w-3.5 h-3.5 transition-transform ${isShopOpen ? "rotate-180" : ""}`}
+                  />
+                </button>
+
+                {isShopOpen && (
+                  <div className="absolute left-0 top-full mt-3 w-56 bg-white rounded-xl shadow-lg border border-gray-100 py-2 z-50">
+                    <a
+                      onClick={() => navigate("/products")}
+                      className="block px-4 py-2 text-sm font-medium text-gray-900 hover:bg-gray-50 cursor-pointer"
+                    >
+                      All Products
+                    </a>
+                    <div className="my-1 border-t border-gray-100" />
+                    {CATEGORIES.map((c) => (
+                      <a
+                        key={c.slug}
+                        onClick={() => navigate(`/products?category=${c.slug}`)}
+                        className="block px-4 py-2 text-sm text-gray-600 hover:bg-gray-50 hover:text-gray-900 cursor-pointer"
+                      >
+                        {c.label}
+                      </a>
+                    ))}
+                  </div>
+                )}
+              </div>
             </nav>
           </div>
 
-          <div className="flex-1 px-4 hidden sm:flex justify-center">
-            {/* <div className="w-full max-w-xl">
-              <label htmlFor="search" className="sr-only">
-                Search
-              </label>
-              <div className="relative">
-                <input
-                  id="search"
-                  className="w-full border border-gray-200 rounded-full py-2 pl-4 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
-                  placeholder="Search for products..."
-                />
-                <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400">
-                  <CiSearch />
-                </div>
-              </div>
-            </div> */}
-          </div>
+          <div className="flex-1" />
 
           {/* Right: icons */}
           <div className="flex items-center space-x-4">
-            {/* <button className="hidden sm:inline-block text-sm px-3 py-1 border rounded-md cursor-pointer">
-              Sign in
-            </button> */}
             <div className="flex items-center space-x-3">
               <button
                 onClick={() => {
@@ -117,9 +177,9 @@ export default function Header({ onCartClick, isCartOpen }) {
                     navigate('/favourites');
                   }
                 }}
-                className={`relative cursor-pointer ${
+                className={`relative cursor-pointer hover:bg-gray-100 rounded-full p-2 ${
                   shakeFav ? "animate-cart-shake" : ""
-                }hover:bg-gray-100 rounded-full p-2`}
+                }`}
               >
                 {location.pathname === '/favourites' ? <Heart fill="black" /> : <Heart strokeWidth={1.7} />}
                 {favoritesCount > 0 && !favoritesViewed && (
@@ -127,9 +187,9 @@ export default function Header({ onCartClick, isCartOpen }) {
                 )}
               </button>
               <button
-                className={`relative cursor-pointer ${
+                className={`relative cursor-pointer hover:bg-gray-100 rounded-full p-2 ${
                   shake ? "animate-cart-shake" : ""
-                }hover:bg-gray-100 rounded-full p-2`}
+                }`}
                 onClick={() => {
                   dispatch(setCartLoading(true));
                   onCartClick();
@@ -143,7 +203,7 @@ export default function Header({ onCartClick, isCartOpen }) {
                 )}
                 {cartCount > 0 && (
                   <span
-                    className="absolute top-4 right-2 transform translate-x-1/2 -translate-y-1/2 
+                    className="absolute top-4 right-2 transform translate-x-1/2 -translate-y-1/2
                      bg-black text-white rounded-full w-4 h-4 text-xs flex items-center justify-center
                      pointer-events-none"
                   >
@@ -151,42 +211,123 @@ export default function Header({ onCartClick, isCartOpen }) {
                   </span>
                 )}
               </button>
-              <button
-                className="p-2 rounded-full hover:bg-gray-100 cursor-pointer"
-                onClick={handleProfileClick}
-              >
-                <User strokeWidth={1.5} />
-              </button>
+
+              {/* Account dropdown */}
+              <div className="relative" ref={accountRef}>
+                <button
+                  className="p-2 rounded-full hover:bg-gray-100 cursor-pointer"
+                  onClick={() => setIsAccountOpen((open) => !open)}
+                  aria-expanded={isAccountOpen}
+                  aria-label="Account menu"
+                >
+                  <User strokeWidth={1.5} />
+                </button>
+
+                {isAccountOpen && (
+                  <div className="absolute right-0 top-full mt-3 w-56 bg-white rounded-xl shadow-lg border border-gray-100 py-2 z-50">
+                    {isLoggedIn ? (
+                      <>
+                        <div className="px-4 py-2 border-b border-gray-100 mb-1">
+                          <p className="text-xs text-gray-400">Signed in as</p>
+                          <p className="text-sm font-medium text-gray-900 truncate">
+                            {user.user.name || user.user.email}
+                          </p>
+                        </div>
+                        <a
+                          onClick={() => navigate("/profile")}
+                          className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer"
+                        >
+                          <User className="w-4 h-4" /> Profile & Orders
+                        </a>
+                        <a
+                          onClick={() => navigate("/favourites")}
+                          className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer"
+                        >
+                          <Heart className="w-4 h-4" /> Favourites
+                        </a>
+                        <div className="my-1 border-t border-gray-100" />
+                        <button
+                          onClick={handleLogout}
+                          className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 cursor-pointer text-left"
+                        >
+                          <LogOut className="w-4 h-4" /> Log out
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <a
+                          onClick={() => navigate("/login")}
+                          className="block px-4 py-2 text-sm font-medium text-gray-900 hover:bg-gray-50 cursor-pointer"
+                        >
+                          Log in
+                        </a>
+                        <a
+                          onClick={() => navigate("/register")}
+                          className="block px-4 py-2 text-sm text-gray-600 hover:bg-gray-50 hover:text-gray-900 cursor-pointer"
+                        >
+                          Create account
+                        </a>
+                      </>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
       </div>
+
+      {/* Mobile nav panel */}
+      <div
+        className={`md:hidden overflow-hidden transition-all duration-200 ease-in-out border-t border-gray-200 ${
+          isMenuOpen ? "max-h-96" : "max-h-0 border-t-0"
+        }`}
+      >
+        <nav className="flex flex-col px-6 py-3 text-sm text-gray-700">
+          <a
+            onClick={() => navigate("/")}
+            className={`py-2 cursor-pointer hover:text-gray-900 ${
+              location.pathname === "/" ? "text-gray-900 font-medium" : ""
+            }`}
+          >
+            Home
+          </a>
+
+          <button
+            onClick={() => setIsMobileShopOpen((open) => !open)}
+            className="flex items-center justify-between py-2 cursor-pointer hover:text-gray-900"
+            aria-expanded={isMobileShopOpen}
+          >
+            Shop
+            <ChevronDown
+              className={`w-4 h-4 transition-transform ${isMobileShopOpen ? "rotate-180" : ""}`}
+            />
+          </button>
+          <div
+            className={`overflow-hidden transition-all duration-200 ${
+              isMobileShopOpen ? "max-h-72" : "max-h-0"
+            }`}
+          >
+            <div className="flex flex-col pl-4 border-l border-gray-200 ml-1 mb-2">
+              <a
+                onClick={() => navigate("/products")}
+                className="py-1.5 cursor-pointer text-gray-900 font-medium"
+              >
+                All Products
+              </a>
+              {CATEGORIES.map((c) => (
+                <a
+                  key={c.slug}
+                  onClick={() => navigate(`/products?category=${c.slug}`)}
+                  className="py-1.5 cursor-pointer text-gray-600 hover:text-gray-900"
+                >
+                  {c.label}
+                </a>
+              ))}
+            </div>
+          </div>
+        </nav>
+      </div>
     </header>
   );
 }
-
-// File: src/components/Hero.jsx
-
-// // File: src/App.jsx
-// import React from 'react';
-// import Banner from './components/Banner';
-// import Header from './components/Header';
-// import Hero from './components/Hero';
-
-// export default function App() {
-//   return (
-//     <div className="min-h-screen bg-white">
-//       <Banner />
-//       <Header />
-//       <main>
-//         <Hero />
-//       </main>
-//     </div>
-//   );
-// }
-
-// Notes:
-// 1) This project expects Tailwind CSS to be configured in your React app (create-react-app or Vite).
-// 2) Place an appropriate hero image at public/hero-placeholder.jpg or import a local image and set <img src={hero} /> instead.
-// 3) The layout is responsive: Header nav collapses on small screens; hero stacks vertically on small devices.
-// 4) Copy each component into separate files as named above (src/components/...).
