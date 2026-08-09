@@ -303,7 +303,7 @@ export default function ProductDetails() {
                 className="flex-1 bg-black text-white py-3 sm:py-4 rounded-full font-medium hover:bg-gray-800 transition cursor-pointer flex items-center justify-center gap-2 truncate"
                 onClick={handleAddToCart}
               >
-                Add to Cart — ₹{product.price * quantity}
+                Add to Cart
               </button>
               <button
                 onClick={handleToggleFavorite}

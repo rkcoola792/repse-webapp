@@ -33,7 +33,13 @@ import {
 import CartLikeToggle from "./CartToggle";
 import axios from "axios";
 
-function AddressField({ icon: Icon, label, error, className = "", ...inputProps }) {
+function AddressField({
+  icon: Icon,
+  label,
+  error,
+  className = "",
+  ...inputProps
+}) {
   return (
     <div className={className}>
       <label className="block text-xs font-semibold text-gray-500 mb-1.5">
@@ -98,7 +104,8 @@ export default function CartSidebar({ isOpen, onClose }) {
     script.src = "https://checkout.razorpay.com/v1/checkout.js";
     script.async = true;
     script.onload = () => console.log("Razorpay SDK loaded");
-    script.onerror = () => setPaymentError("Failed to load payment SDK. Please refresh.");
+    script.onerror = () =>
+      setPaymentError("Failed to load payment SDK. Please refresh.");
     document.body.appendChild(script);
   }, []);
 
@@ -128,7 +135,8 @@ export default function CartSidebar({ isOpen, onClose }) {
   const validateAddressForm = () => {
     const errors = {};
     if (!addressForm.fullName.trim()) errors.fullName = "Full name is required";
-    if (!addressForm.street.trim()) errors.street = "Street address is required";
+    if (!addressForm.street.trim())
+      errors.street = "Street address is required";
     if (!addressForm.city.trim()) errors.city = "City is required";
     if (!addressForm.state.trim()) errors.state = "State is required";
     if (!addressForm.pincode.trim() || addressForm.pincode.length !== 6)
@@ -156,7 +164,7 @@ export default function CartSidebar({ isOpen, onClose }) {
   const discount = subtotal > 0 ? subtotal * 0.2 : 0;
   const deliveryFee = subtotal > 0 ? 15 : 0;
   const totalAmount = subtotal - discount + deliveryFee;
-
+  console.log("cart items", cartItems);
   const handleCheckout = async () => {
     if (!user || Object.keys(user).length === 0) {
       navigate("/login");
@@ -165,7 +173,9 @@ export default function CartSidebar({ isOpen, onClose }) {
 
     // FIX C: Guard — make sure Razorpay SDK actually loaded before proceeding
     if (!window.Razorpay) {
-      setPaymentError("Payment SDK not available. Please refresh the page and try again.");
+      setPaymentError(
+        "Payment SDK not available. Please refresh the page and try again.",
+      );
       return;
     }
 
@@ -186,9 +196,12 @@ export default function CartSidebar({ isOpen, onClose }) {
         },
         items: cartItems.map((item) => ({
           id: item.productId,
+          productId: item.productId,
           size: item.size,
           name: item.name,
           description: item.description,
+          image: item.image,
+          price: item.price,
           quantity: item.quantity,
           // FIX B: same paise conversion for per-item amounts
           amount: Math.round(item.price * item.quantity * 100),
@@ -216,7 +229,7 @@ export default function CartSidebar({ isOpen, onClose }) {
           setShowDeliveryPopup(false);
           sessionStorage.setItem(
             "repse_last_order",
-            JSON.stringify({ address: addressForm })
+            JSON.stringify({ address: addressForm }),
           );
           window.location.href = `${window.location.origin}/payment-success?payment_id=${response.razorpay_payment_id}&order_id=${response.razorpay_order_id}&signature=${response.razorpay_signature}`;
         },
@@ -242,7 +255,8 @@ export default function CartSidebar({ isOpen, onClose }) {
       console.error("Error during checkout:", error);
       // FIX D: show the actual error to the user instead of silently failing
       setPaymentError(
-        error?.response?.data?.message || "Something went wrong. Please try again."
+        error?.response?.data?.message ||
+          "Something went wrong. Please try again.",
       );
       setIsPaymentLoading(false);
     }
@@ -552,7 +566,10 @@ export default function CartSidebar({ isOpen, onClose }) {
                         if (isLiked) {
                           // FIX 7: was passing undefined `userId`, now uses `userEmail`
                           dispatch(
-                            removeFromFavorites({ id: item.productId, userEmail }),
+                            removeFromFavorites({
+                              id: item.productId,
+                              userEmail,
+                            }),
                           );
                         } else {
                           const favItem = {
@@ -873,7 +890,8 @@ export default function CartSidebar({ isOpen, onClose }) {
               <div className="flex justify-between items-center bg-gray-50 border border-gray-100 rounded-2xl px-4 py-3 mt-2">
                 <div>
                   <p className="text-xs text-gray-500">
-                    {cartItems.length} {cartItems.length === 1 ? "item" : "items"}
+                    {cartItems.length}{" "}
+                    {cartItems.length === 1 ? "item" : "items"}
                   </p>
                   <p className="text-xs text-gray-500">You will be charged</p>
                 </div>

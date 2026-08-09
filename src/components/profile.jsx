@@ -44,7 +44,7 @@ export default function Profile() {
   const [orders, setOrders] = useState([]);
   const [ordersLoading, setOrdersLoading] = useState(true);
   const [ordersError, setOrdersError] = useState("");
-
+  console.log("order", orders);
   const [selectedOrderId, setSelectedOrderId] = useState(null);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [orderDetailLoading, setOrderDetailLoading] = useState(false);
@@ -61,12 +61,12 @@ export default function Profile() {
       try {
         const res = await axios.get(
           `${import.meta.env.VITE_APP_BASE_URL}/my-orders`,
-          { withCredentials: true }
+          { withCredentials: true },
         );
         setOrders(res.data || []);
       } catch (error) {
         setOrdersError(
-          error.response?.data?.error || "Couldn't load your orders."
+          error.response?.data?.error || "Couldn't load your orders.",
         );
       } finally {
         setOrdersLoading(false);
@@ -83,12 +83,12 @@ export default function Profile() {
     try {
       const res = await axios.get(
         `${import.meta.env.VITE_APP_BASE_URL}/order/${orderId}`,
-        { withCredentials: true }
+        { withCredentials: true },
       );
       setSelectedOrder(res.data);
     } catch (error) {
       setOrderDetailError(
-        error.response?.data?.error || "Couldn't load this order."
+        error.response?.data?.error || "Couldn't load this order.",
       );
     } finally {
       setOrderDetailLoading(false);
@@ -112,8 +112,10 @@ export default function Profile() {
 
   const statusBadgeClass = (status) => {
     const s = (status || "pending").toLowerCase();
-    if (s === "delivered") return "bg-green-50 text-green-700 border border-green-200";
-    if (s === "cancelled") return "bg-gray-100 text-gray-400 border border-gray-200";
+    if (s === "delivered")
+      return "bg-green-50 text-green-700 border border-green-200";
+    if (s === "cancelled")
+      return "bg-gray-100 text-gray-400 border border-gray-200";
     if (s === "shipped" || s === "in transit" || s === "in-transit")
       return "bg-blue-50 text-blue-700 border border-blue-200";
     return "bg-amber-50 text-amber-700 border border-amber-200";
@@ -137,7 +139,7 @@ export default function Profile() {
     dispatch(
       showPopup({
         message: "Profile editing isn't connected to your account yet.",
-      })
+      }),
     );
   };
 
@@ -145,7 +147,7 @@ export default function Profile() {
     dispatch(
       showPopup({
         message: "Account deletion isn't available yet — contact support.",
-      })
+      }),
     );
   };
 
@@ -266,8 +268,8 @@ export default function Profile() {
                         ? "—"
                         : orders.filter((o) =>
                             ["shipped", "in transit", "in-transit"].includes(
-                              (o.deliveryStatus || "").toLowerCase()
-                            )
+                              (o.deliveryStatus || "").toLowerCase(),
+                            ),
                           ).length}
                     </div>
                     <div className="text-xs uppercase tracking-wide text-gray-500 mt-1">
@@ -279,7 +281,9 @@ export default function Profile() {
                 {/* Recent orders */}
                 <div>
                   <div className="flex items-baseline justify-between mb-4">
-                    <h2 className="text-lg font-semibold text-gray-900">Recent Orders</h2>
+                    <h2 className="text-lg font-semibold text-gray-900">
+                      Recent Orders
+                    </h2>
                     {orders.length > 0 && (
                       <button
                         onClick={() => setActiveTab("orders")}
@@ -292,16 +296,21 @@ export default function Profile() {
 
                   {ordersLoading && (
                     <div className="bg-white rounded-lg shadow-sm p-8">
-                      <p className="text-sm text-gray-500 text-center">Loading your orders…</p>
+                      <p className="text-sm text-gray-500 text-center">
+                        Loading your orders…
+                      </p>
                     </div>
                   )}
 
                   {!ordersLoading && orders.length === 0 && (
                     <div className="bg-white rounded-lg shadow-sm p-8 sm:p-12 text-center">
                       <ShoppingBag className="w-10 h-10 mx-auto text-gray-300 mb-4" />
-                      <h2 className="font-semibold text-gray-900 mb-1">No orders yet</h2>
+                      <h2 className="font-semibold text-gray-900 mb-1">
+                        No orders yet
+                      </h2>
                       <p className="text-sm text-gray-500 mb-6">
-                        Your recent orders will show up here once you make a purchase.
+                        Your recent orders will show up here once you make a
+                        purchase.
                       </p>
                       <button
                         onClick={() => navigate("/products")}
@@ -323,7 +332,15 @@ export default function Profile() {
                           }}
                           className="w-full grid grid-cols-[56px_1fr_auto_auto] gap-4 items-center py-4 text-left cursor-pointer"
                         >
-                          <div className="w-14 h-16 bg-gray-100 rounded overflow-hidden shrink-0" />
+                          <div className="w-14 h-16 bg-gray-100 rounded overflow-hidden shrink-0">
+                            {order.items?.[0]?.image && (
+                              <img
+                                src={order.items[0].image}
+                                alt={order.items[0].name || "Order"}
+                                className="w-full h-full object-cover"
+                              />
+                            )}
+                          </div>
                           <div className="min-w-0">
                             <p className="text-sm font-medium text-gray-900 truncate">
                               {order.items?.[0]?.name || "Order"}
@@ -332,13 +349,15 @@ export default function Profile() {
                             </p>
                             <p className="text-xs text-gray-500 mt-0.5">
                               Order #
-                              {(order.orderId || order._id)?.slice(-8).toUpperCase()} —
-                              Placed {formatOrderDate(order.createdAt)}
+                              {(order.orderId || order._id)
+                                ?.slice(-8)
+                                .toUpperCase()}{" "}
+                              — Placed {formatOrderDate(order.createdAt)}
                             </p>
                           </div>
                           <span
                             className={`px-3 py-1 rounded-full text-[11px] font-medium uppercase tracking-wide whitespace-nowrap ${statusBadgeClass(
-                              order.deliveryStatus
+                              order.deliveryStatus,
                             )}`}
                           >
                             {order.deliveryStatus || "Pending"}
@@ -375,7 +394,9 @@ export default function Profile() {
                           </span>
                         </div>
                         <div className="flex justify-between text-sm py-1 border-b border-gray-100 gap-4">
-                          <span className="text-gray-500 shrink-0">Address</span>
+                          <span className="text-gray-500 shrink-0">
+                            Address
+                          </span>
                           <span className="text-gray-900 text-right">
                             {orders[0].notes.address}
                           </span>
@@ -389,7 +410,8 @@ export default function Profile() {
                       </div>
                     ) : (
                       <p className="text-sm text-gray-500">
-                        No saved address yet — it'll appear here after your first order.
+                        No saved address yet — it'll appear here after your
+                        first order.
                       </p>
                     )}
                   </div>
@@ -409,7 +431,9 @@ export default function Profile() {
                     <div className="space-y-2.5">
                       <div className="flex justify-between text-sm py-1 border-b border-gray-100">
                         <span className="text-gray-500">Email</span>
-                        <span className="text-gray-900 text-right">{displayEmail || "—"}</span>
+                        <span className="text-gray-900 text-right">
+                          {displayEmail || "—"}
+                        </span>
                       </div>
                       <div className="flex justify-between text-sm py-1 border-b border-gray-100">
                         <span className="text-gray-500">Cart Items</span>
@@ -417,7 +441,9 @@ export default function Profile() {
                       </div>
                       <div className="flex justify-between text-sm py-1">
                         <span className="text-gray-500">Favourites</span>
-                        <span className="text-gray-900">{favorites.length}</span>
+                        <span className="text-gray-900">
+                          {favorites.length}
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -483,7 +509,7 @@ export default function Profile() {
                           </div>
                           <span
                             className={`px-3 py-1.5 rounded-full text-[11px] font-medium uppercase tracking-wide whitespace-nowrap ${statusBadgeClass(
-                              selectedOrder.deliveryStatus
+                              selectedOrder.deliveryStatus,
                             )}`}
                           >
                             {selectedOrder.deliveryStatus || "Pending"}
@@ -498,7 +524,15 @@ export default function Profile() {
                                   key={item.id || idx}
                                   className="grid grid-cols-[56px_1fr_auto] gap-4 items-center py-3.5 border-b border-gray-100"
                                 >
-                                  <div className="w-14 h-16 bg-gray-100 rounded overflow-hidden shrink-0" />
+                                  <div className="w-14 h-16 bg-gray-100 rounded overflow-hidden shrink-0">
+                                    {item.image && (
+                                      <img
+                                        src={item.image}
+                                        alt={item.name}
+                                        className="w-full h-full object-cover"
+                                      />
+                                    )}
+                                  </div>
                                   <div className="min-w-0">
                                     <p className="text-sm font-medium text-gray-900 truncate">
                                       {item.name}
@@ -510,7 +544,7 @@ export default function Profile() {
                                     </p>
                                   </div>
                                   <p className="text-sm text-gray-600">
-                                    ₹{((item.amount || 0) / 100).toFixed(0)}
+                                    ₹{((item.price || 0)).toFixed(0)}
                                   </p>
                                 </div>
                               ))}
@@ -568,7 +602,8 @@ export default function Profile() {
                           No orders yet
                         </h2>
                         <p className="text-sm text-gray-500 mb-6">
-                          Once you place an order, you'll be able to track it here.
+                          Once you place an order, you'll be able to track it
+                          here.
                         </p>
                         <button
                           onClick={() => navigate("/products")}
@@ -619,7 +654,7 @@ export default function Profile() {
                               </div>
                               <span
                                 className={`px-3 py-1.5 rounded-full text-[11px] font-medium uppercase tracking-wide whitespace-nowrap ${statusBadgeClass(
-                                  order.deliveryStatus
+                                  order.deliveryStatus,
                                 )}`}
                               >
                                 {order.deliveryStatus || "Pending"}
@@ -633,7 +668,15 @@ export default function Profile() {
                                   key={item.id || idx}
                                   className="grid grid-cols-[56px_1fr_auto] gap-4 items-center py-3.5 border-b border-gray-100 last:border-b-0"
                                 >
-                                  <div className="w-14 h-16 bg-gray-100 rounded overflow-hidden shrink-0" />
+                                  <div className="w-14 h-16 bg-gray-100 rounded overflow-hidden shrink-0">
+                                    {item.image && (
+                                      <img
+                                        src={item.image}
+                                        alt={item.name}
+                                        className="w-full h-full object-cover"
+                                      />
+                                    )}
+                                  </div>
                                   <div className="min-w-0">
                                     <p className="text-sm font-medium text-gray-900 truncate">
                                       {item.name}

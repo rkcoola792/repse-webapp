@@ -23,7 +23,6 @@ const NewsletterFooter = () => {
       { name: "About", href: "#" },
       { name: "Features", href: "#" },
       { name: "Works", href: "#" },
-      { name: "Career", href: "#" },
     ],
     help: [
       { name: "Cancellation/Returns", href: "/refunds" },
@@ -38,12 +37,7 @@ const NewsletterFooter = () => {
       { name: "Orders", href: "#" },
       { name: "Payments", href: "#" },
     ],
-    resources: [
-      { name: "Free eBooks", href: "#" },
-      { name: "Development Tutorial", href: "#" },
-      { name: "How to - Blog", href: "#" },
-      { name: "Youtube Playlist", href: "#" },
-    ],
+ 
   };
 
   return (
@@ -144,7 +138,7 @@ const NewsletterFooter = () => {
                 Company
               </h4>
               <ul className="space-y-3">
-                {footerLinks.company.map((link) => (
+                {footerLinks?.company.map((link) => (
                   <li key={link.name}>
                     <a
                       href={link.href}
@@ -195,24 +189,7 @@ const NewsletterFooter = () => {
               </ul>
             </div>
 
-            {/* Resources Links */}
-            <div>
-              <h4 className="text-white font-bold text-sm mb-4 uppercase tracking-wider">
-                Resources
-              </h4>
-              <ul className="space-y-3">
-                {footerLinks.resources.map((link) => (
-                  <li key={link.name}>
-                    <a
-                      href={link.href}
-                      className="text-white/50 text-sm hover:text-white transition-colors"
-                    >
-                      {link.name}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
+          
           </div>
 
           {/* Bottom Bar */}
