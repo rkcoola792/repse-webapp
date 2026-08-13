@@ -688,7 +688,7 @@ export default function Profile() {
                                     </p>
                                   </div>
                                   <p className="text-sm text-gray-600">
-                                    ₹{((item.amount || 0) / 100).toFixed(0)}
+                                    ₹{((item.price || 0) ).toFixed(0)}
                                   </p>
                                 </div>
                               ))}

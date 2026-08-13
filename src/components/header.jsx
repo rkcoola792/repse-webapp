@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import axios from "axios";
 import { CiShoppingCart } from "react-icons/ci";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
@@ -11,7 +12,7 @@ import {
 import { removeUser } from "../store/userSlice";
 import { clearFavorites, saveFavoritesForUser } from "../store/favoritesSlice";
 import { useDispatch } from "react-redux";
-import { Heart, User, Loader, Menu, X, ChevronDown, LogOut } from "lucide-react";
+import { Heart, User, Loader, Menu, X, ChevronDown, LogOut, Search } from "lucide-react";
 import { CATEGORIES } from "../constants/categories";
 
 export default function Header({ onCartClick, isCartOpen }) {
@@ -29,6 +30,10 @@ export default function Header({ onCartClick, isCartOpen }) {
   const [isShopOpen, setIsShopOpen] = useState(false);
   const [isMobileShopOpen, setIsMobileShopOpen] = useState(false);
   const [isAccountOpen, setIsAccountOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [suggestions, setSuggestions] = useState([]);
+  const [suggestionsLoading, setSuggestionsLoading] = useState(false);
   const shakeCart = useSelector((state) => state.ui.shakeCart);
 
   const [shake, setShake] = useState(false);
@@ -38,6 +43,20 @@ export default function Header({ onCartClick, isCartOpen }) {
 
   const shopRef = useRef(null);
   const accountRef = useRef(null);
+  const searchRef = useRef(null);
+  const searchInputRef = useRef(null);
+
+  const runSearch = (query) => {
+    const trimmed = query.trim();
+    if (!trimmed) return;
+    setIsSearchOpen(false);
+    navigate(`/products?search=${encodeURIComponent(trimmed)}`);
+  };
+
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    runSearch(searchQuery);
+  };
 
   const handleLogout = () => {
     const userEmail = user?.user?.email || user?.email;
@@ -79,6 +98,7 @@ export default function Header({ onCartClick, isCartOpen }) {
     setIsMobileShopOpen(false);
     setIsShopOpen(false);
     setIsAccountOpen(false);
+    setIsSearchOpen(false);
   }, [location.pathname, location.search]);
 
   useEffect(() => {
@@ -89,10 +109,43 @@ export default function Header({ onCartClick, isCartOpen }) {
       if (accountRef.current && !accountRef.current.contains(e.target)) {
         setIsAccountOpen(false);
       }
+      if (searchRef.current && !searchRef.current.contains(e.target)) {
+        setIsSearchOpen(false);
+      }
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  useEffect(() => {
+    if (isSearchOpen) {
+      searchInputRef.current?.focus();
+    }
+  }, [isSearchOpen]);
+
+  useEffect(() => {
+    const trimmed = searchQuery.trim();
+    if (!trimmed) {
+      setSuggestions([]);
+      setSuggestionsLoading(false);
+      return;
+    }
+    setSuggestionsLoading(true);
+    const timeout = setTimeout(async () => {
+      try {
+        const res = await axios.get(
+          `${import.meta.env.VITE_APP_BASE_URL}/products/search-suggestions`,
+          { params: { q: trimmed } },
+        );
+        setSuggestions(res.data);
+      } catch (error) {
+        console.error("Error fetching search suggestions:", error);
+      } finally {
+        setSuggestionsLoading(false);
+      }
+    }, 250);
+    return () => clearTimeout(timeout);
+  }, [searchQuery]);
 
   return (
     <header className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50 w-full">
@@ -169,6 +222,87 @@ export default function Header({ onCartClick, isCartOpen }) {
           {/* Right: icons */}
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-3">
+              {/* Search */}
+              <div className="relative" ref={searchRef}>
+                <button
+                  onClick={() => setIsSearchOpen((open) => !open)}
+                  className="p-2 rounded-full hover:bg-gray-100 cursor-pointer"
+                  aria-label="Search"
+                  aria-expanded={isSearchOpen}
+                >
+                  <Search strokeWidth={1.7} className="w-[22px] h-[22px]" />
+                </button>
+
+                {isSearchOpen && (
+                  <div className="absolute right-0 top-full mt-3 w-80 sm:w-96 bg-white rounded-xl shadow-lg border border-gray-100 z-50">
+                    <form onSubmit={handleSearchSubmit} className="p-3 border-b border-gray-100">
+                      <div className="relative">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                        <input
+                          ref={searchInputRef}
+                          type="text"
+                          value={searchQuery}
+                          onChange={(e) => setSearchQuery(e.target.value)}
+                          placeholder="Search products..."
+                          className="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+                        />
+                      </div>
+                    </form>
+
+                    {searchQuery.trim() && (
+                      <div className="max-h-80 overflow-y-auto py-2">
+                        {suggestionsLoading ? (
+                          <p className="px-4 py-3 text-sm text-gray-400">Searching...</p>
+                        ) : suggestions.length === 0 ? (
+                          <p className="px-4 py-3 text-sm text-gray-400">
+                            No products found for "{searchQuery.trim()}"
+                          </p>
+                        ) : (
+                          <>
+                            {suggestions.map((product) => (
+                              <a
+                                key={product._id}
+                                onClick={() => {
+                                  setIsSearchOpen(false);
+                                  navigate(`/product-details/${product._id}`);
+                                }}
+                                className="flex items-center gap-3 px-4 py-2 hover:bg-gray-50 cursor-pointer"
+                              >
+                                <div className="w-10 h-10 bg-gray-100 rounded overflow-hidden flex-shrink-0">
+                                  {product.images?.[0] && (
+                                    <img
+                                      src={product.images[0]}
+                                      alt={product.name}
+                                      className="w-full h-full object-cover"
+                                    />
+                                  )}
+                                </div>
+                                <div className="min-w-0 flex-1">
+                                  <p className="text-sm font-medium text-gray-900 truncate">
+                                    {product.name}
+                                  </p>
+                                  <p className="text-xs text-gray-400">{product.category}</p>
+                                </div>
+                                <p className="text-sm font-semibold text-gray-900">
+                                  ₹{product.price}
+                                </p>
+                              </a>
+                            ))}
+                            <div className="my-1 border-t border-gray-100" />
+                            <button
+                              onClick={() => runSearch(searchQuery)}
+                              className="w-full text-left px-4 py-2 text-sm font-medium text-gray-900 hover:bg-gray-50 cursor-pointer"
+                            >
+                              See all results for "{searchQuery.trim()}"
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
               <button
                 onClick={() => {
                   if (!user || Object.keys(user).length === 0) {

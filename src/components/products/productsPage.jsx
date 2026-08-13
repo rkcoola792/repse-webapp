@@ -1,7 +1,7 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import axios from "axios";
 import { useSearchParams } from "react-router-dom";
-import { X, ChevronDown, Check } from "lucide-react";
+import { X, ChevronDown, Check, Search } from "lucide-react";
 import ProductCard from "./productCard";
 import ProductCardSkeleton from "./productCardSkeleton";
 import { CATEGORIES } from "../../constants/categories";
@@ -12,39 +12,119 @@ const SORT_OPTIONS = [
   { value: "price-desc", label: "Price: High to Low" },
 ];
 
+const PAGE_SIZE = 20;
+
 export default function ProductPage() {
-  const [page] = useState(1);
-  const limit = 20;
   const [products, setProducts] = useState([]);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [sortBy, setSortBy] = useState("popular");
   const [isSortOpen, setIsSortOpen] = useState(false);
   const sortRef = useRef(null);
+  const sentinelRef = useRef(null);
   const [searchParams, setSearchParams] = useSearchParams();
   const categorySlug = searchParams.get("category");
   const category = CATEGORIES.find((c) => c.slug === categorySlug);
   const activeSort = SORT_OPTIONS.find((opt) => opt.value === sortBy);
+  const searchQuery = searchParams.get("search") || "";
+  const [searchInput, setSearchInput] = useState(searchQuery);
 
-  const getProducts = async () => {
-    setLoading(true);
-    try {
-      const response = await axios.get(
-        `${
-          import.meta.env.VITE_APP_BASE_URL
-        }/products?page=${page}&limit=${limit}`,
-        { withCredentials: true },
-      );
-      setProducts(response.data);
-    } catch (error) {
-      console.error("Error fetching products:", error);
-    } finally {
-      setLoading(false);
-    }
+  const fetchPage = async (pageNum, search) => {
+    const response = await axios.get(
+      `${import.meta.env.VITE_APP_BASE_URL}/products`,
+      {
+        params: {
+          page: pageNum,
+          limit: PAGE_SIZE,
+          search: search || undefined,
+        },
+        withCredentials: true,
+      },
+    );
+    return response.data;
   };
 
+  // Initial load, and reset whenever the search query changes
   useEffect(() => {
-    getProducts();
-  }, []);
+    let cancelled = false;
+    const loadFirstPage = async () => {
+      setLoading(true);
+      setHasMore(true);
+      try {
+        const data = await fetchPage(1, searchQuery);
+        if (cancelled) return;
+        setProducts(data);
+        setPage(1);
+        setHasMore(data.length === PAGE_SIZE);
+      } catch (error) {
+        console.error("Error fetching products:", error);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    };
+    loadFirstPage();
+    return () => {
+      cancelled = true;
+    };
+  }, [searchQuery]);
+
+  useEffect(() => {
+    setSearchInput(searchQuery);
+  }, [searchQuery]);
+
+  const loadMore = useCallback(async () => {
+    if (loading || loadingMore || !hasMore) return;
+    setLoadingMore(true);
+    try {
+      const nextPage = page + 1;
+      const data = await fetchPage(nextPage, searchQuery);
+      setProducts((prev) => [...prev, ...data]);
+      setPage(nextPage);
+      setHasMore(data.length === PAGE_SIZE);
+    } catch (error) {
+      console.error("Error fetching more products:", error);
+    } finally {
+      setLoadingMore(false);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loading, loadingMore, hasMore, page, searchQuery]);
+
+  // Infinite scroll: load the next page once the sentinel enters the viewport
+  useEffect(() => {
+    const sentinel = sentinelRef.current;
+    if (!sentinel) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          loadMore();
+        }
+      },
+      { rootMargin: "600px 0px" },
+    );
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [loadMore]);
+
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    const trimmed = searchInput.trim();
+    const next = new URLSearchParams(searchParams);
+    if (trimmed) {
+      next.set("search", trimmed);
+    } else {
+      next.delete("search");
+    }
+    setSearchParams(next);
+  };
+
+  const clearSearch = () => {
+    setSearchInput("");
+    const next = new URLSearchParams(searchParams);
+    next.delete("search");
+    setSearchParams(next);
+  };
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -93,22 +173,48 @@ export default function ProductPage() {
             Shop
           </p>
           <h1 className="text-white font-black uppercase tracking-tight text-3xl sm:text-5xl">
-            {category ? category.label : "All Products"}
+            {searchQuery
+              ? `Search: "${searchQuery}"`
+              : category
+                ? category.label
+                : "All Products"}
           </h1>
         </div>
       </div>
 
       <div className="max-w-screen-2xl mx-auto px-6 sm:px-8 lg:px-16 py-8 sm:py-12">
+        {/* Search bar */}
+        <form onSubmit={handleSearchSubmit} className="relative mb-6 max-w-lg">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <input
+            type="text"
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            placeholder="Search products..."
+            className="w-full pl-11 pr-24 py-3 border border-gray-200 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+          />
+          <button
+            type="submit"
+            className="absolute right-1.5 top-1/2 -translate-y-1/2 px-4 py-1.5 bg-black text-white text-xs font-semibold rounded-full hover:bg-gray-800 cursor-pointer transition-colors"
+          >
+            Search
+          </button>
+        </form>
+
         {/* Category chips */}
         <div className="flex flex-wrap gap-2 mb-6">
           {CATEGORIES.map((c) => (
             <button
               key={c.slug}
-              onClick={() =>
-                setSearchParams(
-                  categorySlug === c.slug ? {} : { category: c.slug },
-                )
-              }
+              onClick={() => {
+                const next = new URLSearchParams(searchParams);
+                if (categorySlug === c.slug) {
+                  next.delete("category");
+                } else {
+                  next.set("category", c.slug);
+                }
+                setSearchParams(next);
+              }}
               className={`px-4 py-2 rounded-full text-sm font-medium border cursor-pointer transition-colors ${
                 categorySlug === c.slug
                   ? "bg-black text-white border-black"
@@ -128,14 +234,24 @@ export default function ProductPage() {
                 ? "Loading products..."
                 : `Showing ${sortedProducts.length} ${
                     sortedProducts.length === 1 ? "product" : "products"
-                  }${category ? ` in "${category.label}"` : ""}`}
+                  }${category ? ` in "${category.label}"` : ""}${
+                    searchQuery ? ` for "${searchQuery}"` : ""
+                  }`}
             </span>
             {category && (
               <button
                 onClick={clearCategory}
                 className="flex items-center gap-1 text-xs bg-gray-100 hover:bg-gray-200 rounded-full px-2 py-1 cursor-pointer transition-colors"
               >
-                Clear <X className="w-3 h-3" />
+                Category <X className="w-3 h-3" />
+              </button>
+            )}
+            {searchQuery && (
+              <button
+                onClick={clearSearch}
+                className="flex items-center gap-1 text-xs bg-gray-100 hover:bg-gray-200 rounded-full px-2 py-1 cursor-pointer transition-colors"
+              >
+                Search <X className="w-3 h-3" />
               </button>
             )}
           </div>
@@ -187,13 +303,15 @@ export default function ProductPage() {
         {!loading && sortedProducts.length === 0 ? (
           <div className="text-center py-20">
             <p className="text-gray-500 mb-4">
-              {category
-                ? `No products found in "${category.label}" yet.`
-                : "No products available right now."}
+              {searchQuery
+                ? `No products found for "${searchQuery}".`
+                : category
+                  ? `No products found in "${category.label}" yet.`
+                  : "No products available right now."}
             </p>
-            {category && (
+            {(category || searchQuery) && (
               <button
-                onClick={clearCategory}
+                onClick={() => setSearchParams({})}
                 className="px-6 py-2 border-2 border-gray-200 rounded-full text-sm font-medium hover:bg-gray-50 transition-colors cursor-pointer"
               >
                 View all products
@@ -201,15 +319,32 @@ export default function ProductPage() {
             )}
           </div>
         ) : (
-          <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-px bg-gray-200">
-            {loading
-              ? Array.from({ length: limit }).map((_, i) => (
-                  <ProductCardSkeleton key={i} />
-                ))
-              : sortedProducts.map((product) => (
-                  <ProductCard key={product.id || product._id} {...product} />
+          <>
+            <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-px bg-gray-200">
+              {loading
+                ? Array.from({ length: PAGE_SIZE }).map((_, i) => (
+                    <ProductCardSkeleton key={i} />
+                  ))
+                : sortedProducts.map((product) => (
+                    <ProductCard key={product.id || product._id} {...product} />
+                  ))}
+              {loadingMore &&
+                Array.from({ length: 4 }).map((_, i) => (
+                  <ProductCardSkeleton key={`more-${i}`} />
                 ))}
-          </div>
+            </div>
+
+            {/* Infinite scroll sentinel */}
+            {!loading && hasMore && (
+              <div ref={sentinelRef} className="h-1 w-full" />
+            )}
+
+            {!loading && !hasMore && sortedProducts.length > 0 && (
+              <p className="text-center text-sm text-gray-400 py-10">
+                You've reached the end — that's every product{searchQuery ? ` matching "${searchQuery}"` : ""}.
+              </p>
+            )}
+          </>
         )}
       </div>
     </div>
