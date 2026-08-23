@@ -4,7 +4,7 @@ import FeaturedProduct from "./featuredProduct";
 import NewArrivalsGrid from "./newArrival";
 import TopSelling from "./topSelling";
 import Statement from "./statement";
-import axios from "axios";
+import api from "../api/axios";
 import { useState } from "react";
 const Homepage = () => {
   const [page, setPage] = useState(1);
@@ -14,12 +14,9 @@ const Homepage = () => {
   const getProducts = async () => {
     setLoading(true);
     try {
-      const response = await axios.get(
-        `${
-          import.meta.env.VITE_APP_BASE_URL
-        }/products?page=${page}&limit=${limit}`,
-        { withCredentials: true }
-      );
+      const response = await api.get("/products", {
+        params: { page, limit },
+      });
       setProducts(response.data);
     } catch (error) {
       console.error("Error fetching products:", error);

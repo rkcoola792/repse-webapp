@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import axios from "axios";
+import api from "../api/axios";
 import { CiShoppingCart } from "react-icons/ci";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
@@ -58,9 +58,14 @@ export default function Header({ onCartClick, isCartOpen }) {
     runSearch(searchQuery);
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     const userEmail = user?.user?.email || user?.email;
     if (userEmail) dispatch(saveFavoritesForUser(userEmail));
+    try {
+      await api.post("/signout");
+    } catch (error) {
+      console.error("Signout failed:", error);
+    }
     dispatch(removeUser());
     dispatch(clearFavorites());
     setIsAccountOpen(false);
@@ -133,10 +138,9 @@ export default function Header({ onCartClick, isCartOpen }) {
     setSuggestionsLoading(true);
     const timeout = setTimeout(async () => {
       try {
-        const res = await axios.get(
-          `${import.meta.env.VITE_APP_BASE_URL}/products/search-suggestions`,
-          { params: { q: trimmed } },
-        );
+        const res = await api.get("/products/search-suggestions", {
+          params: { q: trimmed },
+        });
         setSuggestions(res.data);
       } catch (error) {
         console.error("Error fetching search suggestions:", error);

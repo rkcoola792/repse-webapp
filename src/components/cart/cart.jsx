@@ -31,7 +31,7 @@ import {
   showLoginPrompt,
 } from "../../store/uiSlice";
 import CartLikeToggle from "./CartToggle";
-import axios from "axios";
+import api from "../../api/axios";
 
 function AddressField({
   icon: Icon,
@@ -91,10 +91,45 @@ export default function CartSidebar({ isOpen, onClose }) {
   const [addressErrors, setAddressErrors] = useState({});
   const [isPaymentLoading, setIsPaymentLoading] = useState(false);
   const [paymentError, setPaymentError] = useState("");
+  const [stockMap, setStockMap] = useState({});
 
   const userEmail = user?.user?.email || user?.email;
 
   const menuRef = useRef(null);
+
+  // Fetch current variant stock for whatever's in the cart, so items that have
+  // sold out since being added can be greyed out instead of silently failing at checkout.
+  useEffect(() => {
+    const productIds = [...new Set(cartItems.map((item) => item.productId))].filter(
+      Boolean,
+    );
+    if (productIds.length === 0) return;
+
+    let cancelled = false;
+    Promise.all(
+      productIds.map((id) =>
+        api
+          .get(`/product/${id}`)
+          .then((res) => [id, res.data.variants])
+          .catch(() => [id, null]),
+      ),
+    ).then((entries) => {
+      if (cancelled) return;
+      setStockMap(Object.fromEntries(entries));
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [cartItems]);
+
+  const getItemVariant = (item) =>
+    stockMap[item.productId]?.find((v) => v.size === item.size);
+  const isItemOutOfStock = (item) => {
+    const variant = getItemVariant(item);
+    return !!variant && variant.stock === 0;
+  };
+  const hasOutOfStockItems = cartItems.some(isItemOutOfStock);
 
   // FIX A: Dynamically load Razorpay SDK script on mount so window.Razorpay is available
   useEffect(() => {
@@ -183,6 +218,8 @@ export default function CartSidebar({ isOpen, onClose }) {
     setPaymentError("");
 
     try {
+      const userEmail = user?.user?.email || user?.email;
+
       const createOrderOptions = {
         amount: Math.round(totalAmount), // Converts rupees to paise (e.g., 123.45 → 12345)
         currency: "INR",
@@ -190,7 +227,7 @@ export default function CartSidebar({ isOpen, onClose }) {
         payment_capture: 1,
         notes: {
           first_name: addressForm.fullName,
-          email: user?.user?.email || user?.email || "user@gmail.com",
+          ...(userEmail ? { email: userEmail } : {}),
           mobile: addressForm.phone,
           address: `${addressForm.street}, ${addressForm.city}, ${addressForm.state} ${addressForm.pincode}`,
         },
@@ -209,11 +246,7 @@ export default function CartSidebar({ isOpen, onClose }) {
         })),
       };
 
-      const order = await axios.post(
-        import.meta.env.VITE_APP_BASE_URL + "/create-order",
-        createOrderOptions,
-        { withCredentials: true },
-      );
+      const order = await api.post("/create-order", createOrderOptions);
 
       const { keyId, currency, amount, notes, orderId } = order.data;
 
@@ -255,7 +288,8 @@ export default function CartSidebar({ isOpen, onClose }) {
       console.error("Error during checkout:", error);
       // FIX D: show the actual error to the user instead of silently failing
       setPaymentError(
-        error?.response?.data?.message ||
+        error?.response?.data?.error ||
+          error?.response?.data?.message ||
           "Something went wrong. Please try again.",
       );
       setIsPaymentLoading(false);
@@ -553,8 +587,12 @@ export default function CartSidebar({ isOpen, onClose }) {
             ) : (
               <div className="space-y-4">
                 {cartItems.map((item) => (
-                  <div key={item.id} className="p-4 bg-white">
+                  <div
+                    key={item.id}
+                    className={`p-4 bg-white ${isItemOutOfStock(item) ? "opacity-60" : ""}`}
+                  >
                     {(() => {
+                      const outOfStock = isItemOutOfStock(item);
                       const isLiked = favorites.some(
                         (fav) => fav.id === item.productId,
                       );
@@ -596,7 +634,7 @@ export default function CartSidebar({ isOpen, onClose }) {
                               <img
                                 src={item.image}
                                 alt={item.name}
-                                className="w-full h-full object-cover"
+                                className={`w-full h-full object-cover ${outOfStock ? "grayscale" : ""}`}
                               />
                             </div>
 
@@ -672,6 +710,11 @@ export default function CartSidebar({ isOpen, onClose }) {
                                 Color:{" "}
                                 <span className="text-black">{item.color}</span>
                               </p>
+                              {outOfStock && (
+                                <p className="text-xs font-semibold uppercase tracking-wide text-red-600 mb-2">
+                                  Out of Stock
+                                </p>
+                              )}
 
                               <div className="flex justify-between items-center">
                                 <span className="text-lg font-bold">
@@ -686,8 +729,8 @@ export default function CartSidebar({ isOpen, onClose }) {
                                         item.quantity - 1,
                                       )
                                     }
-                                    disabled={item.quantity <= 1}
-                                    className="cursor-pointer"
+                                    disabled={outOfStock || item.quantity <= 1}
+                                    className="cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
                                   >
                                     <Minus className="w-3 h-3" />
                                   </button>
@@ -701,7 +744,8 @@ export default function CartSidebar({ isOpen, onClose }) {
                                         item.quantity + 1,
                                       )
                                     }
-                                    className="cursor-pointer"
+                                    disabled={outOfStock}
+                                    className="cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
                                   >
                                     <Plus className="w-3 h-3" />
                                   </button>
@@ -772,10 +816,16 @@ export default function CartSidebar({ isOpen, onClose }) {
                 </div>
               </div>
 
+              {hasOutOfStockItems && (
+                <p className="text-xs text-red-600 text-center mb-2">
+                  Remove out-of-stock items to continue to checkout
+                </p>
+              )}
+
               {/* Checkout Button */}
               <button
                 className="w-full bg-black text-white py-3 rounded-full font-medium hover:bg-gray-800 flex items-center justify-center gap-2 cursor-pointer disabled:bg-gray-300 disabled:cursor-not-allowed"
-                disabled={cartItems.length === 0}
+                disabled={cartItems.length === 0 || hasOutOfStockItems}
                 onClick={() => setShowDeliveryPopup(true)}
               >
                 Go to Checkout

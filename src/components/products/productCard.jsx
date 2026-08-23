@@ -12,7 +12,7 @@ const ProductCard = ({
   originalPrice,
   category,
   newArrival,
-  stock,
+  variants,
   _id,
   description,
 }) => {
@@ -24,13 +24,14 @@ const ProductCard = ({
   const [isProcessing, setIsProcessing] = useState(false);
 
   const userEmail = user?.user?.email || user?.email;
+  const stock = variants?.reduce((sum, v) => sum + v.stock, 0);
   const isSoldOut = stock === 0;
   const isLowStock = typeof stock === "number" && stock > 0 && stock <= 5;
   const hasDiscount = originalPrice > price;
 
   return (
     <div
-      className={`group bg-white text-left pb-6 ${isSoldOut ? "" : "cursor-pointer"}`}
+      className={`group bg-white text-left pb-6 ${isSoldOut ? "opacity-60" : "cursor-pointer"}`}
       onClick={() => !isSoldOut && navigate(`/product-details/${_id}`)}
     >
       {/* Image Container */}
@@ -50,7 +51,7 @@ const ProductCard = ({
           alt={name}
           loading="lazy"
           className={`w-full h-full object-cover transition-transform duration-300 ${
-            isSoldOut ? "opacity-50 grayscale" : "group-hover:scale-105"
+            isSoldOut ? "grayscale" : "group-hover:scale-105"
           }`}
         />
 

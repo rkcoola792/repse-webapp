@@ -11,7 +11,7 @@ import {
   LayoutGrid,
   ChevronLeft,
 } from "lucide-react";
-import axios from "axios";
+import api from "../api/axios";
 import { useNavigate } from "react-router-dom";
 
 const SIDEBAR_ITEMS = [
@@ -59,10 +59,7 @@ export default function Profile() {
       setOrdersLoading(true);
       setOrdersError("");
       try {
-        const res = await axios.get(
-          `${import.meta.env.VITE_APP_BASE_URL}/my-orders`,
-          { withCredentials: true },
-        );
+        const res = await api.get("/my-orders");
         setOrders(res.data || []);
       } catch (error) {
         setOrdersError(
@@ -81,10 +78,7 @@ export default function Profile() {
     setOrderDetailError("");
     setOrderDetailLoading(true);
     try {
-      const res = await axios.get(
-        `${import.meta.env.VITE_APP_BASE_URL}/order/${orderId}`,
-        { withCredentials: true },
-      );
+      const res = await api.get(`/order/${orderId}`);
       setSelectedOrder(res.data);
     } catch (error) {
       setOrderDetailError(
@@ -157,7 +151,7 @@ export default function Profile() {
       dispatch(saveFavoritesForUser(userEmail));
     }
     try {
-      await axios.post(`${import.meta.env.VITE_APP_BASE_URL}/signout`);
+      await api.post("/signout");
     } catch (error) {
       console.error(error);
     }

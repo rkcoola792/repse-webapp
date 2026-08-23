@@ -9,12 +9,15 @@ import {
   setFavoritesViewed,
 } from "../store/favoritesSlice";
 import { triggerCartShake, showLoginPrompt } from "../store/uiSlice";
+import api from "../api/axios";
 
 const SIDEBAR_ITEMS = [
   { label: "Overview", icon: LayoutGrid, to: "/profile" },
   { label: "Orders", icon: Package, to: "/profile" },
   { label: "Account Settings", icon: Settings, to: "/profile" },
 ];
+
+const SIZE_LABELS = { S: "Small", M: "Medium", L: "Large" };
 
 export default function Favourites() {
   const dispatch = useDispatch();
@@ -26,12 +29,37 @@ export default function Favourites() {
   const userEmail = user?.user?.email || user?.email;
 
   const [favoriteSizes, setFavoriteSizes] = useState({});
+  const [variantsMap, setVariantsMap] = useState({});
 
   useEffect(() => {
     if (userEmail) {
       dispatch(setFavoritesViewed(userEmail));
     }
   }, [dispatch, userEmail]);
+
+  // Favorites are a point-in-time snapshot (name/price/images at the moment they
+  // were liked), so stock has to be fetched fresh to know what's still available.
+  useEffect(() => {
+    const ids = [...new Set(favorites.map((item) => item.id))];
+    if (ids.length === 0) return;
+
+    let cancelled = false;
+    Promise.all(
+      ids.map((id) =>
+        api
+          .get(`/product/${id}`)
+          .then((res) => [id, res.data.variants])
+          .catch(() => [id, null]),
+      ),
+    ).then((entries) => {
+      if (cancelled) return;
+      setVariantsMap(Object.fromEntries(entries));
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [favorites]);
 
   if (!user || Object.keys(user).length === 0) {
     dispatch(showLoginPrompt());
@@ -116,22 +144,39 @@ export default function Favourites() {
               /* Grid */
               <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-px bg-gray-200">
                 {favorites.map((item) => {
-                  const selectedSize = favoriteSizes[item.id] || item.selectedSize;
+                  const variants = variantsMap[item.id];
+                  const totalStock = variants?.reduce((sum, v) => sum + v.stock, 0);
+                  const isSoldOut = variants && totalStock === 0;
+                  const selectedSize =
+                    favoriteSizes[item.id] ||
+                    (variants?.find((v) => v.size === item.selectedSize)
+                      ? item.selectedSize
+                      : "");
 
                   return (
-                    <div key={item.id} className="bg-white pb-6">
+                    <div
+                      key={item.id}
+                      className={`bg-white pb-6 ${isSoldOut ? "opacity-60" : ""}`}
+                    >
                       {/* Image */}
                       <div
                         className="relative bg-gray-100 aspect-4/5 overflow-hidden cursor-pointer"
                         onClick={() => navigate(`/product-details/${item.id}`)}
                       >
+                        {isSoldOut && (
+                          <span className="absolute top-3 left-3 z-10 bg-gray-500 text-white text-[11px] font-bold uppercase tracking-wide px-2.5 py-1">
+                            Sold Out
+                          </span>
+                        )}
                         <img
                           src={item.images?.[0]}
                           alt={item.name}
-                          className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+                          className={`w-full h-full object-cover transition-transform duration-300 ${
+                            isSoldOut ? "grayscale" : "hover:scale-105"
+                          }`}
                         />
 
-                        {item.originalPrice > item.price && (
+                        {!isSoldOut && item.originalPrice > item.price && (
                           <span className="absolute bottom-3 left-3 bg-black text-white text-[11px] font-bold uppercase tracking-wide px-2.5 py-1">
                             Sale
                           </span>
@@ -180,31 +225,32 @@ export default function Favourites() {
                         {/* Size */}
                         <div className="relative mt-3">
                           <select
-                            value={
-                              favoriteSizes[item.id] || item.selectedSize || ""
-                            }
+                            value={selectedSize}
+                            disabled={isSoldOut}
                             onChange={(e) =>
                               setFavoriteSizes((prev) => ({
                                 ...prev,
                                 [item.id]: e.target.value,
                               }))
                             }
-                            className="appearance-none w-full border border-gray-300 rounded-md px-3 pr-10 py-2 text-sm bg-white outline-none focus:outline-none focus:ring-0 focus:border-gray-500 cursor-pointer"
+                            className="appearance-none w-full border border-gray-300 rounded-md px-3 pr-10 py-2 text-sm bg-white outline-none focus:outline-none focus:ring-0 focus:border-gray-500 cursor-pointer disabled:bg-gray-50 disabled:cursor-not-allowed"
                           >
                             <option value="" disabled>
-                              Select size
+                              {variants ? "Select size" : "Loading sizes..."}
                             </option>
-                            <option value="Small">Small</option>
-                            <option value="Medium">Medium</option>
-                            <option value="Large">Large</option>
-                            <option value="X-Large">X-Large</option>
+                            {variants?.map((v) => (
+                              <option key={v.size} value={v.size} disabled={v.stock === 0}>
+                                {SIZE_LABELS[v.size] || v.size}
+                                {v.stock === 0 ? " (Out of stock)" : ""}
+                              </option>
+                            ))}
                           </select>
                           <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
                         </div>
 
                         {/* Add to cart */}
                         <button
-                          disabled={!selectedSize}
+                          disabled={!selectedSize || isSoldOut}
                           onClick={() => {
                             dispatch(
                               addItem({
@@ -222,7 +268,7 @@ export default function Favourites() {
                           }}
                           className="w-full h-10 mt-3 rounded-full bg-black text-white text-sm font-medium disabled:bg-gray-300 disabled:cursor-not-allowed cursor-pointer hover:bg-gray-800 transition-colors"
                         >
-                          Add to Cart
+                          {isSoldOut ? "Out of Stock" : "Add to Cart"}
                         </button>
                       </div>
                     </div>

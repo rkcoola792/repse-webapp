@@ -1,11 +1,12 @@
 import { useState, useRef } from "react";
 import { Eye, EyeOff, AlertCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import api from "../api/axios";
 import { useDispatch } from "react-redux";
 import { addUser } from "../store/userSlice";
 import { loadFavoritesForUser } from "../store/favoritesSlice";
 import { showPopup } from "../store/uiSlice";
+import GoogleLogin from "./GoogleLogin";
 
 const REMEMBER_KEY = "repse_remember_email";
 const ANTON = "'Anton', sans-serif";
@@ -66,11 +67,7 @@ export default function Login() {
     }
     // handle login
     try {
-      const user = await axios.post(
-        `${import.meta.env.VITE_APP_BASE_URL}/signin`,
-        { email, password },
-        { withCredentials: true }
-      );
+      const user = await api.post("/signin", { email, password });
 
       if (rememberMe) {
         localStorage.setItem(REMEMBER_KEY, email);
@@ -239,13 +236,9 @@ export default function Login() {
               <span className="flex-1 h-px bg-white/15" />
             </div>
 
-            <button
-              type="button"
-              onClick={() => handleSocialLogin("Google")}
-              className="w-full flex items-center justify-center gap-2.5 border border-white/25 text-white py-3 mb-3 text-sm font-semibold hover:border-white/50 transition-colors cursor-pointer"
-            >
-              Continue with Google
-            </button>
+            <div className="flex justify-center mb-3">
+              <GoogleLogin />
+            </div>
             <button
               type="button"
               onClick={() => handleSocialLogin("Apple")}

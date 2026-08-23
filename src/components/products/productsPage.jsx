@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import axios from "axios";
+import api from "../../api/axios";
 import { useSearchParams } from "react-router-dom";
 import { X, ChevronDown, Check, Search } from "lucide-react";
 import ProductCard from "./productCard";
@@ -32,17 +32,13 @@ export default function ProductPage() {
   const [searchInput, setSearchInput] = useState(searchQuery);
 
   const fetchPage = async (pageNum, search) => {
-    const response = await axios.get(
-      `${import.meta.env.VITE_APP_BASE_URL}/products`,
-      {
-        params: {
-          page: pageNum,
-          limit: PAGE_SIZE,
-          search: search || undefined,
-        },
-        withCredentials: true,
+    const response = await api.get("/products", {
+      params: {
+        page: pageNum,
+        limit: PAGE_SIZE,
+        search: search || undefined,
       },
-    );
+    });
     return response.data;
   };
 

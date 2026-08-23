@@ -3,7 +3,8 @@ import { Eye, EyeOff, AlertCircle, ChevronDown } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { showPopup } from "../store/uiSlice";
-import axios from "axios";
+import api from "../api/axios";
+import GoogleLogin from "./GoogleLogin";
 
 const ANTON = "'Anton', sans-serif";
 const ARCHIVO = "'Archivo', sans-serif";
@@ -138,18 +139,7 @@ export default function Register() {
     try {
       setLoading(true);
 
-      const res = await axios.post(
-        import.meta.env.VITE_APP_BASE_URL + "/signup",
-        {
-          ...form,
-        },
-        {
-          withCredentials: true,
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      const res = await api.post("/signup", { ...form });
 
       const data = res.data;
 
@@ -502,13 +492,9 @@ export default function Register() {
               <span className="flex-1 h-px bg-white/15" />
             </div>
 
-            <button
-              type="button"
-              onClick={() => handleSocialSignup("Google")}
-              className="w-full flex items-center justify-center gap-2.5 border border-white/25 text-white py-3 mb-3 text-sm font-semibold hover:border-white/50 transition-colors cursor-pointer"
-            >
-              Continue with Google
-            </button>
+            <div className="flex justify-center mb-3">
+              <GoogleLogin />
+            </div>
             <button
               type="button"
               onClick={() => handleSocialSignup("Apple")}

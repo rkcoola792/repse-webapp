@@ -3,6 +3,7 @@ import { Check, ArrowRight } from "lucide-react";
 import { clearCart } from "../store/cartSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import api from "../api/axios";
 
 const ANTON = "'Anton', sans-serif";
 
@@ -52,6 +53,16 @@ export default function ThankYouPage() {
   const orderId = searchParams.get("order_id");
 
   useEffect(() => {
+    const paymentId = searchParams.get("payment_id");
+    const signature = searchParams.get("signature");
+    if (orderId && paymentId && signature) {
+      api
+        .post("/verify-payment", { orderId, paymentId, signature })
+        .catch((error) => {
+          console.error("Payment verification failed:", error);
+        });
+    }
+
     sessionStorage.removeItem("repse_last_order");
     dispatch(clearCart());
     // eslint-disable-next-line react-hooks/exhaustive-deps

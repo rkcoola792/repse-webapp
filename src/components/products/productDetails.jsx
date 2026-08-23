@@ -16,16 +16,16 @@ import { addItem } from "../../store/cartSlice";
 import { openCart, showPopup, setCartView } from "../../store/uiSlice";
 import { addToFavorites, removeFromFavorites } from "../../store/favoritesSlice";
 import { triggerFavoritesShake, triggerCartShake } from "../../store/uiSlice";
-import axios from "axios";
+import api from "../../api/axios";
 import ProductCard from "./productCard";
 
-const SIZES = ["Small", "Medium", "Large", "X-Large"];
+const SIZE_LABELS = { S: "Small", M: "Medium", L: "Large" };
 
 export default function ProductDetails() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const favorites = useSelector((state) => state.favorites.favorites);
-  const [selectedSize, setSelectedSize] = useState("Large");
+  const [selectedSize, setSelectedSize] = useState("");
   const [selectedColor] = useState("#2C3E50");
   const [quantity, setQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState(0);
@@ -42,10 +42,31 @@ export default function ProductDetails() {
     ? Math.round(100 - (product.price / product.originalPrice) * 100)
     : 0;
 
+  const selectedVariant = product?.variants?.find((v) => v.size === selectedSize);
+  const selectedStock = selectedVariant?.stock ?? 0;
+  const isSizeSoldOut = !!selectedVariant && selectedStock === 0;
+  const canAddToCart = !!selectedVariant && selectedStock > 0;
+
+  // Default to the first in-stock size once the product loads (falling back to
+  // the first size at all if every size is sold out, so something is selected).
+  useEffect(() => {
+    if (!product?.variants?.length) return;
+    const firstInStock = product.variants.find((v) => v.stock > 0);
+    setSelectedSize((firstInStock || product.variants[0]).size);
+    setQuantity(1);
+  }, [product]);
+
+  useEffect(() => {
+    if (selectedStock > 0 && quantity > selectedStock) {
+      setQuantity(selectedStock);
+    }
+  }, [selectedStock, quantity]);
+
   const toggleSection = (key) =>
     setOpenSection((prev) => (prev === key ? null : key));
 
   const handleAddToCart = () => {
+    if (!canAddToCart) return;
     const cartItem = {
       id: `${product._id}-${selectedSize}-${selectedColor}`,
       productId: product._id,
@@ -53,7 +74,7 @@ export default function ProductDetails() {
       price: product.price,
       size: selectedSize,
       color: selectedColor,
-      quantity,
+      quantity: Math.min(quantity, selectedStock),
       image: product.images?.[0],
     };
 
@@ -107,9 +128,7 @@ export default function ProductDetails() {
   const getProductDetails = async () => {
     setLoading(true);
     try {
-      const response = await axios.get(
-        `${import.meta.env.VITE_APP_BASE_URL}/product/${id}`
-      );
+      const response = await api.get(`/product/${id}`);
       setProduct(response.data);
     } catch (error) {
       console.error("Error fetching product details:", error);
@@ -119,10 +138,9 @@ export default function ProductDetails() {
   };
   const getProducts = async () => {
     try {
-      const response = await axios.get(
-        `${import.meta.env.VITE_APP_BASE_URL}/products?page=1&limit=20`,
-        { withCredentials: true }
-      );
+      const response = await api.get("/products", {
+        params: { page: 1, limit: 20 },
+      });
       setSuggestionProducts(
         response.data
           .filter((prod) => prod._id !== id)
@@ -269,22 +287,35 @@ export default function ProductDetails() {
             {/* Size Selection */}
             <div className="mb-6">
               <p className="text-sm font-medium mb-3">
-                Size: <span className="text-gray-500">{selectedSize}</span>
+                Size:{" "}
+                <span className="text-gray-500">
+                  {SIZE_LABELS[selectedSize] || selectedSize}
+                </span>
+                {selectedVariant && selectedStock > 0 && selectedStock <= 5 && (
+                  <span className="text-red-600 ml-2">Only {selectedStock} left</span>
+                )}
               </p>
               <div className="flex flex-wrap gap-2 sm:gap-3">
-                {SIZES.map((size) => (
-                  <button
-                    key={size}
-                    onClick={() => setSelectedSize(size)}
-                    className={`min-w-12 px-3 py-2 sm:px-4 sm:py-2.5 text-xs sm:text-sm font-medium border rounded-lg cursor-pointer transition-colors ${
-                      selectedSize === size
-                        ? "bg-black text-white border-black"
-                        : "bg-white text-gray-700 border-gray-300 hover:border-black"
-                    }`}
-                  >
-                    {size}
-                  </button>
-                ))}
+                {product.variants?.map((variant) => {
+                  const soldOut = variant.stock === 0;
+                  return (
+                    <button
+                      key={variant.size}
+                      onClick={() => !soldOut && setSelectedSize(variant.size)}
+                      disabled={soldOut}
+                      title={soldOut ? "Out of stock" : undefined}
+                      className={`min-w-12 px-3 py-2 sm:px-4 sm:py-2.5 text-xs sm:text-sm font-medium border rounded-lg transition-colors ${
+                        soldOut
+                          ? "bg-gray-50 text-gray-300 border-gray-200 line-through cursor-not-allowed"
+                          : selectedSize === variant.size
+                            ? "bg-black text-white border-black cursor-pointer"
+                            : "bg-white text-gray-700 border-gray-300 hover:border-black cursor-pointer"
+                      }`}
+                    >
+                      {SIZE_LABELS[variant.size] || variant.size}
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
@@ -295,15 +326,20 @@ export default function ProductDetails() {
                   <Minus className="w-4 h-4 cursor-pointer" />
                 </button>
                 <span className="w-8 text-center">{quantity}</span>
-                <button onClick={() => setQuantity(quantity + 1)}>
+                <button
+                  onClick={() => setQuantity(Math.min(selectedStock, quantity + 1))}
+                  disabled={quantity >= selectedStock}
+                  className="disabled:opacity-30 disabled:cursor-not-allowed"
+                >
                   <Plus className="w-4 h-4 cursor-pointer" />
                 </button>
               </div>
               <button
-                className="flex-1 bg-black text-white py-3 sm:py-4 rounded-full font-medium hover:bg-gray-800 transition cursor-pointer flex items-center justify-center gap-2 truncate"
+                className="flex-1 bg-black text-white py-3 sm:py-4 rounded-full font-medium hover:bg-gray-800 transition cursor-pointer flex items-center justify-center gap-2 truncate disabled:bg-gray-300 disabled:cursor-not-allowed"
                 onClick={handleAddToCart}
+                disabled={!canAddToCart}
               >
-                Add to Cart
+                {isSizeSoldOut ? "Out of Stock" : "Add to Cart"}
               </button>
               <button
                 onClick={handleToggleFavorite}
