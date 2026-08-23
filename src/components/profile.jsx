@@ -110,9 +110,15 @@ export default function Profile() {
       return "bg-green-50 text-green-700 border border-green-200";
     if (s === "cancelled")
       return "bg-gray-100 text-gray-400 border border-gray-200";
-    if (s === "shipped" || s === "in transit" || s === "in-transit")
+    if (s === "shipped" || s === "intransit" || s === "in transit" || s === "in-transit")
       return "bg-blue-50 text-blue-700 border border-blue-200";
     return "bg-amber-50 text-amber-700 border border-amber-200";
+  };
+
+  const statusLabel = (status) => {
+    const s = (status || "pending").toLowerCase();
+    if (s === "intransit" || s === "in-transit") return "In Transit";
+    return s.charAt(0).toUpperCase() + s.slice(1);
   };
 
   const [formData, setFormData] = useState({
@@ -354,7 +360,7 @@ export default function Profile() {
                               order.deliveryStatus,
                             )}`}
                           >
-                            {order.deliveryStatus || "Pending"}
+                            {statusLabel(order.deliveryStatus)}
                           </span>
                           <p className="text-sm font-semibold text-gray-900 whitespace-nowrap">
                             ₹{order.amount ?? 0}
@@ -506,7 +512,7 @@ export default function Profile() {
                               selectedOrder.deliveryStatus,
                             )}`}
                           >
-                            {selectedOrder.deliveryStatus || "Pending"}
+                            {statusLabel(selectedOrder.deliveryStatus)}
                           </span>
                         </div>
 
@@ -651,7 +657,7 @@ export default function Profile() {
                                   order.deliveryStatus,
                                 )}`}
                               >
-                                {order.deliveryStatus || "Pending"}
+                                {statusLabel(order.deliveryStatus)}
                               </span>
                             </div>
 
