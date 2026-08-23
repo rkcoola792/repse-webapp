@@ -10,6 +10,8 @@ import { toggleCart, closeCart } from './store/uiSlice'
 const Body = () => {
   const dispatch = useDispatch();
   const isCartOpen = useSelector(state => state.ui.isCartOpen);
+  const user = useSelector(state => state.user.user);
+  const isLoggedIn = !!user && Object.keys(user).length > 0;
   const scrollTopRef = useRef(0);
 
   const handleToggleCart = () => dispatch(toggleCart());
@@ -38,7 +40,7 @@ const Body = () => {
 
   return (
       <div className="min-h-screen">
-         <AnnouncementBar />
+         {!isLoggedIn && <AnnouncementBar />}
          <Header onCartClick={handleToggleCart} />
          <main>
            <Outlet />

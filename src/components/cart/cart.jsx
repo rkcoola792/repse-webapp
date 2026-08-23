@@ -702,14 +702,11 @@ export default function CartSidebar({ isOpen, onClose }) {
                                 </div>
                               </div>
 
-                              <p className="text-xs text-gray-500 mb-1">
-                                Size:{" "}
-                                <span className="text-black">{item.size}</span>
-                              </p>
-                              <p className="text-xs text-gray-500 mb-2">
-                                Color:{" "}
-                                <span className="text-black">{item.color}</span>
-                              </p>
+                              {item.description && (
+                                <p className="text-xs text-gray-500 mb-2 line-clamp-2">
+                                  {item.description}
+                                </p>
+                              )}
                               {outOfStock && (
                                 <p className="text-xs font-semibold uppercase tracking-wide text-red-600 mb-2">
                                   Out of Stock
@@ -826,7 +823,14 @@ export default function CartSidebar({ isOpen, onClose }) {
               <button
                 className="w-full bg-black text-white py-3 rounded-full font-medium hover:bg-gray-800 flex items-center justify-center gap-2 cursor-pointer disabled:bg-gray-300 disabled:cursor-not-allowed"
                 disabled={cartItems.length === 0 || hasOutOfStockItems}
-                onClick={() => setShowDeliveryPopup(true)}
+                onClick={() => {
+                  if (!user || Object.keys(user).length === 0) {
+                    onClose();
+                    navigate("/login");
+                    return;
+                  }
+                  setShowDeliveryPopup(true);
+                }}
               >
                 Go to Checkout
                 <ArrowRight className="w-4 h-4" />

@@ -15,6 +15,9 @@ import { useDispatch } from "react-redux";
 import { Heart, User, Loader, Menu, X, ChevronDown, LogOut, Search } from "lucide-react";
 import { CATEGORIES } from "../constants/categories";
 
+// Search UI is hidden for now — flip this back on to re-enable it.
+const SEARCH_ENABLED = false;
+
 export default function Header({ onCartClick, isCartOpen }) {
   const navigate = useNavigate();
   const location = useLocation();
@@ -225,8 +228,9 @@ export default function Header({ onCartClick, isCartOpen }) {
 
           {/* Right: icons */}
           <div className="flex items-center space-x-4">
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-0.5 sm:space-x-3">
               {/* Search */}
+              {SEARCH_ENABLED && (
               <div className="relative" ref={searchRef}>
                 <button
                   onClick={() => setIsSearchOpen((open) => !open)}
@@ -306,6 +310,7 @@ export default function Header({ onCartClick, isCartOpen }) {
                   </div>
                 )}
               </div>
+              )}
 
               <button
                 onClick={() => {
