@@ -139,11 +139,8 @@ export default function Register() {
     try {
       setLoading(true);
 
-      const res = await api.post("/signup", { ...form });
+      await api.post("/signup", { ...form });
 
-      const data = res.data;
-
-      if (data.token) localStorage.setItem("token", data.token);
       dispatch(showPopup({ message: "Account created successfully!" }));
       setTimeout(() => {
         navigate("/login");

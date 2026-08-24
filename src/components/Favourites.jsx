@@ -142,7 +142,7 @@ export default function Favourites() {
               </div>
             ) : (
               /* Grid */
-              <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-px bg-gray-200">
+              <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-4">
                 {favorites.map((item) => {
                   const variants = variantsMap[item.id];
                   const totalStock = variants?.reduce((sum, v) => sum + v.stock, 0);
@@ -171,6 +171,7 @@ export default function Favourites() {
                         <img
                           src={item.images?.[0]}
                           alt={item.name}
+                          loading="lazy"
                           className={`w-full h-full object-cover transition-transform duration-300 ${
                             isSoldOut ? "grayscale" : "hover:scale-105"
                           }`}

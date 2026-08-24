@@ -687,8 +687,8 @@ export default function Profile() {
                                         .join(" — ")}
                                     </p>
                                   </div>
-                                  <p className="text-sm text-gray-600">
-                                    ₹{((item.price || 0) ).toFixed(0)}
+                                  <p className="text-sm text-gray-900 font-semibold whitespace-nowrap">
+                                    ₹{((item.price || 0) * (item.quantity || 0)).toFixed(0)}
                                   </p>
                                 </div>
                               ))}

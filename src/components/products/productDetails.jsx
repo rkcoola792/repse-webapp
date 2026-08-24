@@ -402,7 +402,7 @@ export default function ProductDetails() {
                 View All <ArrowRight className="w-4 h-4" />
               </button>
             </div>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-gray-200">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {suggestionProducts.slice(0, 4).map((item, i) => (
                 <ProductCard key={i} {...item}></ProductCard>
               ))}

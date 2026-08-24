@@ -20,7 +20,7 @@ const NewArrivalsGrid = ({ products, loading }) => {
           </h1>
         </div>
 
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-px bg-gray-200 mb-8">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           {loading
             ? Array.from({ length: 4 }).map((_, i) => (
                 <ProductCardSkeleton key={i} />

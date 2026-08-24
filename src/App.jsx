@@ -1,27 +1,30 @@
 import "./App.css";
 import { useSelector, useDispatch } from "react-redux";
-import { useEffect } from "react";
+import { useEffect, Suspense, lazy } from "react";
 import { PersistGate } from "redux-persist/integration/react";
 import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
 import Body from "./body";
 import Homepage from "./components/homepage";
-import ProductsPage from "./components/products/productsPage";
-import ProductDetails from "./components/products/productDetails";
-import Login from "./components/Login";
-import Register from "./components/Register";
 import { persistor } from "./store/store";
 import ScrollToTop from "./components/products/ScrollToTop";
 import Popup from "./components/Popup";
 import LoginPromptModal from "./components/LoginPromptModal";
-import Profile from "./components/profile";
-import Favourites from "./components/Favourites";
 import { loadFavoritesForUser } from "./store/favoritesSlice";
-import TermsAndConditions from "./components/policies/termsAndConditions";
-import Privacy from "./components/policies/privacy";
-import CancellationsAndRefunds from "./components/policies/cancellationsAndRefunds";
-import Shipping from "./components/policies/shipping";
-import ContactUs from "./components/policies/contactUs";
-import ThankYouPage from "./components/thankyouPage";
+
+// Routes outside the initial landing page are code-split so the first
+// paint doesn't pay for JS the visitor may never need this session.
+const ProductsPage = lazy(() => import("./components/products/productsPage"));
+const ProductDetails = lazy(() => import("./components/products/productDetails"));
+const Login = lazy(() => import("./components/Login"));
+const Register = lazy(() => import("./components/Register"));
+const Profile = lazy(() => import("./components/profile"));
+const Favourites = lazy(() => import("./components/Favourites"));
+const TermsAndConditions = lazy(() => import("./components/policies/termsAndConditions"));
+const Privacy = lazy(() => import("./components/policies/privacy"));
+const CancellationsAndRefunds = lazy(() => import("./components/policies/cancellationsAndRefunds"));
+const Shipping = lazy(() => import("./components/policies/shipping"));
+const ContactUs = lazy(() => import("./components/policies/contactUs"));
+const ThankYouPage = lazy(() => import("./components/thankyouPage"));
 
 function App() {
   const loginPromptVisible = useSelector(
@@ -39,42 +42,44 @@ function App() {
     <PersistGate loading={null} persistor={persistor}>
       <BrowserRouter>
         <ScrollToTop />
-        <Routes>
-          <Route path="/" element={<Body />}>
-            <Route index element={<Homepage />} />
-            <Route path="/products" element={<ProductsPage />} />
-            <Route path="/profile" element={<Profile />} />
-            <Route path="/favourites" element={<Favourites />} />
-            <Route path="/terms" element={<TermsAndConditions />} />
-            <Route path="/privacy" element={<Privacy />} />
-            <Route path="/shipping" element={<Shipping />} />
-            <Route path="/contact" element={<ContactUs />} />
-            <Route path="/refunds" element={<CancellationsAndRefunds />} />
-            <Route path="/payment-success" element={<ThankYouPage />} />
-            <Route path="/product-details/:id" element={<ProductDetails />} />
-          </Route>
-          <Route
-            path="/login"
-            element={
-              user && user.user && user.user.email ? (
-                <Navigate to="/" replace />
-              ) : (
-                <Login />
-              )
-            }
-          />
-          <Route
-            path="/register"
-            element={
-              user && user.user && user.user.email ? (
-                <Navigate to="/" replace />
-              ) : (
-                <Register />
-              )
-            }
-          />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
+        <Suspense fallback={null}>
+          <Routes>
+            <Route path="/" element={<Body />}>
+              <Route index element={<Homepage />} />
+              <Route path="/products" element={<ProductsPage />} />
+              <Route path="/profile" element={<Profile />} />
+              <Route path="/favourites" element={<Favourites />} />
+              <Route path="/terms" element={<TermsAndConditions />} />
+              <Route path="/privacy" element={<Privacy />} />
+              <Route path="/shipping" element={<Shipping />} />
+              <Route path="/contact" element={<ContactUs />} />
+              <Route path="/refunds" element={<CancellationsAndRefunds />} />
+              <Route path="/payment-success" element={<ThankYouPage />} />
+              <Route path="/product-details/:id" element={<ProductDetails />} />
+            </Route>
+            <Route
+              path="/login"
+              element={
+                user && user.user && user.user.email ? (
+                  <Navigate to="/" replace />
+                ) : (
+                  <Login />
+                )
+              }
+            />
+            <Route
+              path="/register"
+              element={
+                user && user.user && user.user.email ? (
+                  <Navigate to="/" replace />
+                ) : (
+                  <Register />
+                )
+              }
+            />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </Suspense>
         <Popup />
         {loginPromptVisible && <LoginPromptModal />}
       </BrowserRouter>
