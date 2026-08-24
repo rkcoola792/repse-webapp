@@ -174,11 +174,9 @@ export default function Header({ onCartClick, isCartOpen }) {
               onClick={() => navigate("/")}
             >
               <img src="/REPSE_logo.svg" alt="" className="h-6 w-auto sm:h-7" />
-              <img
-                src="/REPSE-name-black.png"
-                alt="Repse"
-                className="h-4 w-auto sm:h-[18px]"
-              />
+              <span className="text-2xl font-extrabold tracking-tight">
+                REPSE
+              </span>
             </div>
             <nav className="hidden md:flex items-center space-x-6 text-sm text-gray-600">
               <a

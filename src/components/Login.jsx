@@ -92,9 +92,10 @@ export default function Login() {
       <div className="flex items-center justify-between px-6 sm:px-10 py-6">
         <button
           onClick={() => navigate("/")}
-          className="cursor-pointer"
+          className="text-white text-lg tracking-wide cursor-pointer"
+          style={{ fontFamily: ANTON }}
         >
-          <img src="/REPSE-name-white.png" alt="Repse" className="h-4 w-auto" />
+          REPSE
         </button>
         <button
           onClick={() => navigate("/")}

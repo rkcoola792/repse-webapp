@@ -99,12 +99,7 @@ const NewsletterFooter = () => {
           <div className="grid grid-cols-2 md:grid-cols-5 gap-8 mb-12">
             {/* Brand Column */}
             <div className="col-span-2 md:col-span-1">
-              <div className="flex items-center gap-1.5 mb-4">
-                <img src="/REPSE-name-white.png" alt="Repse" className="h-6 w-auto" />
-                <span className="font-brand text-white text-lg font-bold tracking-widest">
-                  .IN
-                </span>
-              </div>
+              <h3 className="text-white text-3xl font-black mb-4">REPSE.IN</h3>
               <p className="text-white/50 text-sm mb-6 max-w-xs">
                 Performance gymwear built for training, running and everyday
                 movement — for every athlete, every rep.

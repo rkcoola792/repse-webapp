@@ -1,9 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Bruno+Ace&display=swap");
 @import "tailwindcss";
-
-@theme {
-  --font-brand: "Bruno Ace", sans-serif;
-}
 
 @keyframes cart-shake {
   0% { transform: translateX(0); }
