@@ -24,6 +24,7 @@ const Privacy = lazy(() => import("./components/policies/privacy"));
 const CancellationsAndRefunds = lazy(() => import("./components/policies/cancellationsAndRefunds"));
 const Shipping = lazy(() => import("./components/policies/shipping"));
 const ContactUs = lazy(() => import("./components/policies/contactUs"));
+const About = lazy(() => import("./components/about"));
 const ThankYouPage = lazy(() => import("./components/thankyouPage"));
 
 function App() {
@@ -53,6 +54,7 @@ function App() {
               <Route path="/privacy" element={<Privacy />} />
               <Route path="/shipping" element={<Shipping />} />
               <Route path="/contact" element={<ContactUs />} />
+              <Route path="/about" element={<About />} />
               <Route path="/refunds" element={<CancellationsAndRefunds />} />
               <Route path="/payment-success" element={<ThankYouPage />} />
               <Route path="/product-details/:id" element={<ProductDetails />} />

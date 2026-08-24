@@ -20,7 +20,7 @@ const NewsletterFooter = () => {
 
   const footerLinks = {
     company: [
-      { name: "About", href: "#" },
+      { name: "About", href: "/about" },
       { name: "Features", href: "#" },
       { name: "Works", href: "#" },
     ],
@@ -99,7 +99,12 @@ const NewsletterFooter = () => {
           <div className="grid grid-cols-2 md:grid-cols-5 gap-8 mb-12">
             {/* Brand Column */}
             <div className="col-span-2 md:col-span-1">
-              <h3 className="text-white text-3xl font-black mb-4">REPSE.IN</h3>
+              <div className="flex items-center gap-1.5 mb-4">
+                <img src="/REPSE-name-white.png" alt="Repse" className="h-6 w-auto" />
+                <span className="font-brand text-white text-lg font-bold tracking-widest">
+                  .IN
+                </span>
+              </div>
               <p className="text-white/50 text-sm mb-6 max-w-xs">
                 Performance gymwear built for training, running and everyday
                 movement — for every athlete, every rep.
@@ -140,12 +145,12 @@ const NewsletterFooter = () => {
               <ul className="space-y-3">
                 {footerLinks?.company.map((link) => (
                   <li key={link.name}>
-                    <a
-                      href={link.href}
-                      className="text-white/50 text-sm hover:text-white transition-colors"
+                    <p
+                      onClick={() => navigate(link.href)}
+                      className="text-white/50 text-sm hover:text-white cursor-pointer transition-colors"
                     >
                       {link.name}
-                    </a>
+                    </p>
                   </li>
                 ))}
               </ul>

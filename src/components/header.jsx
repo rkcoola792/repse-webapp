@@ -170,10 +170,15 @@ export default function Header({ onCartClick, isCartOpen }) {
               {isMenuOpen ? <X /> : <Menu />}
             </button>
             <div
-              className="text-2xl font-extrabold tracking-tight cursor-pointer"
+              className="flex items-center gap-2 cursor-pointer"
               onClick={() => navigate("/")}
             >
-              REPSE
+              <img src="/REPSE_logo.svg" alt="" className="h-6 w-auto sm:h-7" />
+              <img
+                src="/REPSE-name-black.png"
+                alt="Repse"
+                className="h-4 w-auto sm:h-[18px]"
+              />
             </div>
             <nav className="hidden md:flex items-center space-x-6 text-sm text-gray-600">
               <a
