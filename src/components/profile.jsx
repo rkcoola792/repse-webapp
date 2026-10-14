@@ -734,9 +734,11 @@ export default function Profile() {
                       type="email"
                       name="email"
                       value={formData.email}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+                      readOnly
+                      aria-describedby="email-change-note"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-500"
                     />
+                    <p id="email-change-note" className="mt-2 text-sm text-gray-500">Contact support to change your sign-in email.</p>
                   </div>
 
                   {/* General Information */}

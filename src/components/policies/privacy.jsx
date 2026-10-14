@@ -59,6 +59,9 @@ const Privacy = () => {
                 <li>Contacting you for market research purposes via email, phone, fax, or mail</li>
                 <li>Customizing the website according to your interests</li>
               </ul>
+              <p className="mt-4 text-gray-700 leading-relaxed">
+                If you join our email list, we store your email address so we can manage drop and restock updates. You can ask us to stop using it for marketing at any time by contacting us using the details below.
+              </p>
             </div>
 
             {/* Security */}

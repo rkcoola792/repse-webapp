@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import { Twitter, Facebook, Instagram, Github, CheckCircle2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import api from "../api/axios";
 
 const isValidEmail = (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 
@@ -8,22 +8,30 @@ const NewsletterFooter = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState(null); // null | "error" | "success"
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [consented, setConsented] = useState(false);
 
-  const handleSubscribe = () => {
+  const handleSubscribe = async (event) => {
+    event?.preventDefault();
     if (!isValidEmail(email)) {
       setStatus("error");
       return;
     }
-    setStatus("success");
-    setEmail("");
+    setIsSubmitting(true);
+    try {
+      await api.post("/newsletter/subscribe", { email });
+      setStatus("success");
+      setEmail("");
+      setConsented(false);
+    } catch {
+      setStatus("error");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const footerLinks = {
-    company: [
-      { name: "About", href: "/about" },
-      { name: "Features", href: "#" },
-      { name: "Works", href: "#" },
-    ],
+    company: [{ name: "About", href: "/about" }],
     help: [
       { name: "Cancellation/Returns", href: "/refunds" },
       { name: "Shipping", href: "/shipping" },
@@ -31,12 +39,7 @@ const NewsletterFooter = () => {
       { name: "Privacy Policy", href: "/privacy" },
       { name: "Contact Us", href: "/contact" },
     ],
-    faq: [
-      { name: "Account", href: "#" },
-      { name: "Manage Deliveries", href: "#" },
-      { name: "Orders", href: "#" },
-      { name: "Payments", href: "#" },
-    ],
+    shop: [{ name: "Shop all", href: "/products" }],
  
   };
 
@@ -54,10 +57,10 @@ const NewsletterFooter = () => {
             Get The Next Drop First
           </h2>
           <p className="text-gray-500 text-sm sm:text-base mb-8">
-            No spam. Just release dates and restock alerts.
+            Join the REPSE email list for upcoming drop and restock updates.
           </p>
 
-          <div className="max-w-md mx-auto">
+          <form onSubmit={handleSubscribe} className="max-w-md mx-auto">
             <div
               className={`flex rounded-full border overflow-hidden bg-white ${
                 status === "error" ? "border-red-400" : "border-gray-300"
@@ -70,33 +73,51 @@ const NewsletterFooter = () => {
                   setEmail(e.target.value);
                   if (status) setStatus(null);
                 }}
-                onKeyDown={(e) => e.key === "Enter" && handleSubscribe()}
                 placeholder="Enter your email"
+                aria-label="Email address"
+                autoComplete="email"
                 className="flex-1 min-w-0 bg-transparent px-5 py-3.5 text-sm text-black placeholder-gray-400 outline-none"
               />
               <button
-                onClick={handleSubscribe}
+                type="submit"
+                disabled={isSubmitting}
                 className="px-6 py-3.5 bg-black text-white text-sm font-semibold uppercase tracking-wide hover:bg-gray-800 transition-colors cursor-pointer whitespace-nowrap"
               >
-                Notify Me
+                {isSubmitting ? "Saving…" : "Notify Me"}
               </button>
             </div>
+          <label className="mx-auto mt-4 flex max-w-md items-start gap-2 text-left text-xs leading-relaxed text-gray-500">
+            <input
+              type="checkbox"
+              required
+              checked={consented}
+              onChange={(event) => setConsented(event.target.checked)}
+              className="mt-0.5 accent-black"
+            />
+            <span>
+              I agree to receive REPSE drop and restock emails. See our{" "}
+              <button type="button" onClick={() => navigate("/privacy")} className="underline underline-offset-2 hover:text-black">
+                Privacy Policy
+              </button>
+              .
+            </span>
+          </label>
             {status === "error" && (
-              <p className="text-red-500 text-xs mt-2">Enter a valid email address.</p>
+              <p className="text-red-500 text-xs mt-2">Enter a valid email address or try again in a moment.</p>
             )}
             {status === "success" && (
               <p className="text-green-600 text-xs mt-2 flex items-center justify-center gap-1">
-                <CheckCircle2 className="w-3.5 h-3.5" /> Subscribed! Watch your inbox for drops.
+                <CheckCircle2 className="w-3.5 h-3.5" /> Thanks — your email is on the list.
               </p>
             )}
-          </div>
+          </form>
         </div>
       </div>
 
       {/* Footer Section */}
       <footer className="bg-black">
         <div className="max-w-screen-2xl mx-auto px-6 sm:px-8 lg:px-16 py-12">
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-8 mb-12">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-12">
             {/* Brand Column */}
             <div className="col-span-2 md:col-span-1">
               <h3 className="text-white text-3xl font-black mb-4">REPSE.IN</h3>
@@ -104,32 +125,6 @@ const NewsletterFooter = () => {
                 Performance gymwear built for training, running and everyday
                 movement — for every athlete, every rep.
               </p>
-              <div className="flex gap-3">
-                <a
-                  href="#"
-                  className="w-10 h-10 border border-white/20 rounded-full flex items-center justify-center text-white hover:bg-white/10 transition-colors"
-                >
-                  <Twitter className="w-4 h-4" />
-                </a>
-                <a
-                  href="#"
-                  className="w-10 h-10 bg-white rounded-full flex items-center justify-center hover:bg-gray-200 transition-colors"
-                >
-                  <Facebook className="w-4 h-4 text-black" />
-                </a>
-                <a
-                  href="#"
-                  className="w-10 h-10 border border-white/20 rounded-full flex items-center justify-center text-white hover:bg-white/10 transition-colors"
-                >
-                  <Instagram className="w-4 h-4" />
-                </a>
-                <a
-                  href="#"
-                  className="w-10 h-10 border border-white/20 rounded-full flex items-center justify-center text-white hover:bg-white/10 transition-colors"
-                >
-                  <Github className="w-4 h-4" />
-                </a>
-              </div>
             </div>
 
             {/* Company Links */}
@@ -140,12 +135,13 @@ const NewsletterFooter = () => {
               <ul className="space-y-3">
                 {footerLinks?.company.map((link) => (
                   <li key={link.name}>
-                    <p
+                    <button
+                      type="button"
                       onClick={() => navigate(link.href)}
-                      className="text-white/50 text-sm hover:text-white cursor-pointer transition-colors"
+                      className="text-white/50 text-sm hover:text-white cursor-pointer transition-colors text-left"
                     >
                       {link.name}
-                    </p>
+                    </button>
                   </li>
                 ))}
               </ul>
@@ -159,12 +155,13 @@ const NewsletterFooter = () => {
               <ul className="space-y-3">
                 {footerLinks.help.map((link) => (
                   <li key={link.name}>
-                    <p
+                    <button
+                      type="button"
                       onClick={() => navigate(link.href)}
-                      className="text-white/50 text-sm hover:text-white cursor-pointer transition-colors"
+                      className="text-white/50 text-sm hover:text-white cursor-pointer transition-colors text-left"
                     >
                       {link.name}
-                    </p>
+                    </button>
                   </li>
                 ))}
               </ul>
@@ -173,10 +170,10 @@ const NewsletterFooter = () => {
             {/* FAQ Links */}
             <div>
               <h4 className="text-white font-bold text-sm mb-4 uppercase tracking-wider">
-                FAQ
+                Shop
               </h4>
               <ul className="space-y-3">
-                {footerLinks.faq.map((link) => (
+                {footerLinks.shop.map((link) => (
                   <li key={link.name}>
                     <a
                       href={link.href}
@@ -197,26 +194,7 @@ const NewsletterFooter = () => {
             <p className="text-white/50 text-sm">
               Repse.in © 2026, All Rights Reserved
             </p>
-            <div className="flex gap-3">
-              <div className="w-12 h-8 border border-white/20 rounded flex items-center justify-center">
-                <span className="text-blue-400 font-bold text-xs">VISA</span>
-              </div>
-              <div className="w-12 h-8 border border-white/20 rounded flex items-center justify-center">
-                <span className="font-bold text-xs">
-                  <span className="text-red-500">●</span>
-                  <span className="text-orange-400">●</span>
-                </span>
-              </div>
-              <div className="w-12 h-8 border border-white/20 rounded flex items-center justify-center">
-                <span className="text-blue-400 font-bold text-xs">PayPal</span>
-              </div>
-              <div className="w-12 h-8 border border-white/20 rounded flex items-center justify-center">
-                <span className="text-white/70 font-bold text-xs">Pay</span>
-              </div>
-              <div className="w-12 h-8 border border-white/20 rounded flex items-center justify-center">
-                <span className="text-white/70 font-bold text-xs">G Pay</span>
-              </div>
-            </div>
+            <p className="text-white/50 text-xs">Payments are handled securely at checkout.</p>
           </div>
         </div>
       </footer>

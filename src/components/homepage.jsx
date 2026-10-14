@@ -1,13 +1,11 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import Hero from "./hero";
 import FeaturedProduct from "./featuredProduct";
 import NewArrivalsGrid from "./newArrival";
 import TopSelling from "./topSelling";
 import Statement from "./statement";
 import api from "../api/axios";
-import { useState } from "react";
 const Homepage = () => {
-  const [page, setPage] = useState(1);
   const limit = 20;
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -15,7 +13,7 @@ const Homepage = () => {
     setLoading(true);
     try {
       const response = await api.get("/products", {
-        params: { page, limit },
+        params: { page: 1, limit },
       });
       setProducts(response.data);
     } catch (error) {
@@ -33,12 +31,13 @@ const Homepage = () => {
   );
   const featuredProduct =
     topSellingProducts?.[0] || newArrivals?.[0] || products?.[0];
+  const heroProduct = products.find((product) => product._id !== featuredProduct?._id) || featuredProduct;
   useEffect(() => {
     getProducts();
   }, []);
   return (
     <>
-      <Hero />
+      <Hero product={heroProduct} />
       <NewArrivalsGrid products={newArrivals} loading={loading} />
       <FeaturedProduct product={featuredProduct} loading={loading} />
       <TopSelling products={topSellingProducts} loading={loading} />

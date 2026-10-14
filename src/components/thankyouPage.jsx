@@ -15,6 +15,8 @@ export default function ThankYouPage() {
   // Snapshot the cart + saved address once, before it gets cleared below.
   const [items] = useState(() => {
     try {
+      const checkout = JSON.parse(sessionStorage.getItem("repse_last_order") || "{}");
+      if (Array.isArray(checkout.items) && checkout.items.length > 0) return checkout.items;
       const raw = localStorage.getItem("persist:cart");
       if (!raw) return [];
       const persistedCart = JSON.parse(raw); // { cart: "[...]", _persist: "..." }
@@ -31,17 +33,30 @@ export default function ThankYouPage() {
       return null;
     }
   });
+  const [confirmedAmount] = useState(() => {
+    try {
+      return JSON.parse(sessionStorage.getItem("repse_last_order") || "{}").amount ?? null;
+    } catch {
+      return null;
+    }
+  });
 
   const cartItemsLive = useSelector((state) => state.cart.cart);
   const orderItems = items.length > 0 ? items : cartItemsLive;
+  const [paymentState, setPaymentState] = useState("checking");
 
   const subtotal = useMemo(
     () => orderItems.reduce((sum, item) => sum + item.price * item.quantity, 0),
     [orderItems]
   );
-  const discount = subtotal > 0 ? subtotal * 0.2 : 0;
-  const deliveryFee = subtotal > 0 ? 15 : 0;
-  const totalPaid = subtotal - discount + deliveryFee;
+  const configuredDiscountPercent = Number(import.meta.env.VITE_ORDER_DISCOUNT_PERCENT);
+  const discountPercent = Number.isFinite(configuredDiscountPercent) ? configuredDiscountPercent : 20;
+  const configuredDeliveryFee = Number(import.meta.env.VITE_ORDER_DELIVERY_FEE);
+  const discount = subtotal > 0 ? subtotal * (discountPercent / 100) : 0;
+  const deliveryFee = subtotal > 0 ? (Number.isFinite(configuredDeliveryFee) ? configuredDeliveryFee : 15) : 0;
+  const totalPaid = confirmedAmount !== null && Number.isFinite(Number(confirmedAmount))
+    ? Number(confirmedAmount)
+    : subtotal - discount + deliveryFee;
 
   const estimatedDelivery = useMemo(() => {
     const fmt = (d) => d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
@@ -53,20 +68,58 @@ export default function ThankYouPage() {
   const orderId = searchParams.get("order_id");
 
   useEffect(() => {
-    const paymentId = searchParams.get("payment_id");
-    const signature = searchParams.get("signature");
-    if (orderId && paymentId && signature) {
-      api
-        .post("/verify-payment", { orderId, paymentId, signature })
-        .catch((error) => {
-          console.error("Payment verification failed:", error);
-        });
+    let verification;
+    try {
+      verification = JSON.parse(sessionStorage.getItem("repse_payment_verification") || "null");
+    } catch {
+      verification = null;
+    }
+    // Accept older success links once, then immediately remove payment tokens from history.
+    verification ||= {
+      orderId,
+      paymentId: searchParams.get("payment_id"),
+      signature: searchParams.get("signature"),
+    };
+    window.history.replaceState({}, "", `${window.location.pathname}${orderId ? `?order_id=${encodeURIComponent(orderId)}` : ""}`);
+
+    if (!verification?.orderId || !verification?.paymentId || !verification?.signature) {
+      setPaymentState("unverified");
+      return;
     }
 
-    sessionStorage.removeItem("repse_last_order");
-    dispatch(clearCart());
+    let active = true;
+    api.post("/verify-payment", verification).then(() => {
+      if (!active) return;
+      setPaymentState("confirmed");
+      sessionStorage.removeItem("repse_payment_verification");
+      sessionStorage.removeItem("repse_last_order");
+      dispatch(clearCart());
+    }).catch((error) => {
+      if (!active) return;
+      if (error.response?.status === 409) {
+        setPaymentState("stock_issue");
+        sessionStorage.removeItem("repse_payment_verification");
+        sessionStorage.removeItem("repse_last_order");
+        dispatch(clearCart());
+      } else {
+        console.error("Payment verification failed:", error);
+        setPaymentState("failed");
+      }
+    });
+
+    return () => { active = false; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const paymentHeading = paymentState === "confirmed"
+    ? "Order Confirmed"
+    : paymentState === "stock_issue"
+      ? "Payment Received — Order Review Needed"
+      : paymentState === "checking"
+        ? "Verifying Payment"
+        : paymentState === "failed"
+          ? "Payment Verification Pending"
+          : "Order Status Unverified";
 
   return (
     <div className="min-h-screen bg-white">
@@ -77,20 +130,22 @@ export default function ThankYouPage() {
         </div>
 
         <p className="text-gray-500 text-xs font-semibold tracking-[0.25em] uppercase mb-4">
-          Order Confirmed
+          {paymentHeading}
         </p>
 
         <h1
           className="text-gray-900 uppercase text-4xl sm:text-5xl mb-4"
           style={{ fontFamily: ANTON }}
         >
-          You&apos;re All Set
+          {paymentState === "confirmed" ? "You're All Set" : paymentState === "checking" ? "Checking Your Payment" : "We're Checking It"}
         </h1>
 
         <p className="text-gray-500 text-sm leading-relaxed max-w-md mx-auto mb-10">
-          Your order has been placed. We&apos;ll send a shipping confirmation
-          the moment it leaves the warehouse — usually within 2 business
-          days.
+          {paymentState === "confirmed"
+            ? "Your payment is confirmed. We'll send a shipping confirmation when your order leaves the warehouse."
+            : paymentState === "stock_issue"
+              ? "Your payment was received, but an item needs manual stock review. Our team has been notified."
+              : "We haven't confirmed this payment yet. Your cart is still saved; refresh this page to check again."}
         </p>
 
         <div className="flex flex-wrap justify-center gap-10 mb-10 text-left">

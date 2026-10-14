@@ -20,6 +20,8 @@ export default function ProductPage() {
   const [hasMore, setHasMore] = useState(true);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
+  const [loadError, setLoadError] = useState(false);
+  const [retryKey, setRetryKey] = useState(0);
   const [sortBy, setSortBy] = useState("popular");
   const [isSortOpen, setIsSortOpen] = useState(false);
   const sortRef = useRef(null);
@@ -31,31 +33,34 @@ export default function ProductPage() {
   const searchQuery = searchParams.get("search") || "";
   const [searchInput, setSearchInput] = useState(searchQuery);
 
-  const fetchPage = async (pageNum, search) => {
+  const fetchPage = async (pageNum, search, categoryName) => {
     const response = await api.get("/products", {
       params: {
         page: pageNum,
         limit: PAGE_SIZE,
         search: search || undefined,
+        category: categoryName || undefined,
       },
     });
     return response.data;
   };
 
-  // Initial load, and reset whenever the search query changes
+  // Initial load, and reset whenever the search or category changes.
   useEffect(() => {
     let cancelled = false;
     const loadFirstPage = async () => {
       setLoading(true);
       setHasMore(true);
+      setLoadError(false);
       try {
-        const data = await fetchPage(1, searchQuery);
+        const data = await fetchPage(1, searchQuery, category?.label);
         if (cancelled) return;
         setProducts(data);
         setPage(1);
         setHasMore(data.length === PAGE_SIZE);
       } catch (error) {
         console.error("Error fetching products:", error);
+        if (!cancelled) setLoadError(true);
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -64,7 +69,7 @@ export default function ProductPage() {
     return () => {
       cancelled = true;
     };
-  }, [searchQuery]);
+  }, [searchQuery, category?.label, retryKey]);
 
   useEffect(() => {
     setSearchInput(searchQuery);
@@ -75,7 +80,7 @@ export default function ProductPage() {
     setLoadingMore(true);
     try {
       const nextPage = page + 1;
-      const data = await fetchPage(nextPage, searchQuery);
+      const data = await fetchPage(nextPage, searchQuery, category?.label);
       setProducts((prev) => [...prev, ...data]);
       setPage(nextPage);
       setHasMore(data.length === PAGE_SIZE);
@@ -84,8 +89,7 @@ export default function ProductPage() {
     } finally {
       setLoadingMore(false);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loading, loadingMore, hasMore, page, searchQuery]);
+  }, [loading, loadingMore, hasMore, page, searchQuery, category?.label]);
 
   // Infinite scroll: load the next page once the sentinel enters the viewport
   useEffect(() => {
@@ -132,16 +136,7 @@ export default function ProductPage() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const filteredProducts = useMemo(() => {
-    if (!products) return [];
-    if (!category) return products;
-    const keyword = category.label.toLowerCase();
-    return products.filter((p) =>
-      `${p.name || ""} ${p.description || ""} ${p.category || ""}`
-        .toLowerCase()
-        .includes(keyword),
-    );
-  }, [products, category]);
+  const filteredProducts = products;
 
   const sortedProducts = useMemo(() => {
     const list = [...filteredProducts];
@@ -198,7 +193,7 @@ export default function ProductPage() {
         </form>
 
         {/* Category chips */}
-        <div className="flex flex-wrap gap-2 mb-6">
+        <div className="-mx-1 mb-6 flex gap-2 overflow-x-auto px-1 pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" aria-label="Product categories">
           {CATEGORIES.map((c) => (
             <button
               key={c.slug}
@@ -211,7 +206,7 @@ export default function ProductPage() {
                 }
                 setSearchParams(next);
               }}
-              className={`px-4 py-2 rounded-full text-sm font-medium border cursor-pointer transition-colors ${
+              className={`shrink-0 rounded-full px-4 py-2 text-sm font-medium border cursor-pointer transition-colors ${
                 categorySlug === c.slug
                   ? "bg-black text-white border-black"
                   : "border-gray-200 text-gray-700 hover:bg-gray-50"
@@ -228,6 +223,8 @@ export default function ProductPage() {
             <span>
               {loading
                 ? "Loading products..."
+                : loadError
+                  ? "Products are temporarily unavailable"
                 : `Showing ${sortedProducts.length} ${
                     sortedProducts.length === 1 ? "product" : "products"
                   }${category ? ` in "${category.label}"` : ""}${
@@ -296,7 +293,14 @@ export default function ProductPage() {
         </div>
 
         {/* Product Grid */}
-        {!loading && sortedProducts.length === 0 ? (
+        {!loading && loadError ? (
+          <div role="alert" className="py-20 text-center">
+            <p className="mb-4 text-gray-600">We couldn’t load products. Check your connection and try again.</p>
+            <button onClick={() => setRetryKey((key) => key + 1)} className="rounded-full border border-gray-300 px-6 py-2 text-sm font-semibold hover:bg-gray-50">
+              Try again
+            </button>
+          </div>
+        ) : !loading && sortedProducts.length === 0 ? (
           <div className="text-center py-20">
             <p className="text-gray-500 mb-4">
               {searchQuery

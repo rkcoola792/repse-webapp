@@ -26,7 +26,7 @@ export default function Favourites() {
   const user = useSelector((state) => state.user.user);
   const favorites = useSelector((state) => state.favorites.favorites);
 
-  const userEmail = user?.user?.email || user?.email;
+  const userEmail = user?.user?.email || user?.email || user?.user?.mobile;
 
   const [favoriteSizes, setFavoriteSizes] = useState({});
   const [variantsMap, setVariantsMap] = useState({});

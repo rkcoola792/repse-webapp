@@ -23,17 +23,14 @@ const ProductCard = ({
   const isFavorite = favorites.some((item) => item.id === _id);
   const [isProcessing, setIsProcessing] = useState(false);
 
-  const userEmail = user?.user?.email || user?.email;
+  const userEmail = user?.user?.email || user?.email || user?.user?.mobile;
   const stock = variants?.reduce((sum, v) => sum + v.stock, 0);
   const isSoldOut = stock === 0;
   const isLowStock = typeof stock === "number" && stock > 0 && stock <= 5;
   const hasDiscount = originalPrice > price;
 
   return (
-    <div
-      className={`group bg-white text-left pb-6 ${isSoldOut ? "opacity-60" : "cursor-pointer"}`}
-      onClick={() => !isSoldOut && navigate(`/product-details/${_id}`)}
-    >
+    <article className={`group bg-white pb-6 ${isSoldOut ? "opacity-60" : ""}`}>
       {/* Image Container */}
       <div className="relative bg-gray-100 aspect-4/5 overflow-hidden">
         {(newArrival || isSoldOut || isLowStock) && (
@@ -46,14 +43,29 @@ const ProductCard = ({
           </span>
         )}
 
-        <img
-          src={images && images[0]}
-          alt={name}
-          loading="lazy"
-          className={`w-full h-full object-cover transition-transform duration-300 ${
-            isSoldOut ? "grayscale" : "group-hover:scale-105"
-          }`}
-        />
+        <button
+          type="button"
+          onClick={() => navigate(`/product-details/${_id}`)}
+          aria-label={`View ${name}${isSoldOut ? ", sold out" : ""}`}
+          className="absolute inset-0 h-full w-full cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-3px] focus-visible:outline-black"
+        >
+          <img
+            src={images?.[0]}
+            alt=""
+            loading="lazy"
+            className={`h-full w-full object-cover transition-transform duration-300 ${
+              isSoldOut ? "grayscale" : "group-hover:scale-105"
+            }`}
+          />
+          {images?.[1] && !isSoldOut && (
+            <img
+              src={images[1]}
+              alt=""
+              loading="lazy"
+              className="absolute inset-0 h-full w-full object-cover opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+            />
+          )}
+        </button>
 
         {/* Favorite Button */}
         <button
@@ -84,6 +96,9 @@ const ProductCard = ({
             setTimeout(() => setIsProcessing(false), 500);
           }}
           className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/90 shadow-sm flex items-center justify-center hover:bg-white transition-colors"
+          aria-label={isFavorite ? `Remove ${name} from favourites` : `Add ${name} to favourites`}
+          aria-pressed={isFavorite}
+          type="button"
         >
           <Heart
             className={`w-4 h-4 ${
@@ -100,9 +115,13 @@ const ProductCard = ({
             {category}
           </p>
         )}
-        <h3 className="text-gray-900 font-bold uppercase tracking-tight text-sm truncate group-hover:text-gray-600 transition-colors">
+        <button
+          type="button"
+          onClick={() => navigate(`/product-details/${_id}`)}
+          className="block max-w-full truncate text-left text-sm font-bold uppercase tracking-tight text-gray-900 transition-colors hover:text-gray-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black"
+        >
           {name}
-        </h3>
+        </button>
         <p className="text-gray-900 font-semibold text-sm mt-1">
           ₹{price}
           {hasDiscount && (
@@ -112,7 +131,7 @@ const ProductCard = ({
           )}
         </p>
       </div>
-    </div>
+    </article>
   );
 };
 

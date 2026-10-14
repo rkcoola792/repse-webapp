@@ -15,15 +15,14 @@ import { useDispatch } from "react-redux";
 import { Heart, User, Loader, Menu, X, ChevronDown, LogOut, Search } from "lucide-react";
 import { CATEGORIES } from "../constants/categories";
 
-// Search UI is hidden for now — flip this back on to re-enable it.
-const SEARCH_ENABLED = false;
+const SEARCH_ENABLED = true;
 
-export default function Header({ onCartClick, isCartOpen }) {
+export default function Header({ onCartClick }) {
   const navigate = useNavigate();
   const location = useLocation();
   const dispatch = useDispatch();
   const user = useSelector((state) => state.user.user);
-  const isLoggedIn = Boolean(user?.user?.email);
+  const isLoggedIn = Boolean(user?.user?.email || user?.user?.mobile);
   const cartItems = useSelector((state) => state.cart.cart); // Redux cart state
   const cartCount = cartItems.reduce((acc, item) => acc + item.quantity, 0); // total items
   const favorites = useSelector((state) => state.favorites.favorites);
@@ -62,7 +61,7 @@ export default function Header({ onCartClick, isCartOpen }) {
   };
 
   const handleLogout = async () => {
-    const userEmail = user?.user?.email || user?.email;
+    const userEmail = user?.user?.email || user?.email || user?.user?.mobile;
     if (userEmail) dispatch(saveFavoritesForUser(userEmail));
     try {
       await api.post("/signout");
@@ -86,7 +85,7 @@ export default function Header({ onCartClick, isCartOpen }) {
 
       return () => clearTimeout(timer);
     }
-  }, [shakeCart]);
+  }, [shakeCart, dispatch]);
 
   useEffect(() => {
     if (shakeFavorites) {
@@ -99,7 +98,7 @@ export default function Header({ onCartClick, isCartOpen }) {
 
       return () => clearTimeout(timer);
     }
-  }, [shakeFavorites]);
+  }, [shakeFavorites, dispatch]);
 
   useEffect(() => {
     setIsMenuOpen(false);
@@ -316,6 +315,9 @@ export default function Header({ onCartClick, isCartOpen }) {
               )}
 
               <button
+                type="button"
+                aria-label={`Open favourites${favoritesCount ? `, ${favoritesCount} saved` : ""}`}
+                aria-pressed={location.pathname === "/favourites"}
                 onClick={() => {
                   if (!user || Object.keys(user).length === 0) {
                     dispatch(showLoginPrompt());
@@ -333,6 +335,8 @@ export default function Header({ onCartClick, isCartOpen }) {
                 )}
               </button>
               <button
+                type="button"
+                aria-label={`Open shopping bag${cartCount ? `, ${cartCount} items` : ""}`}
                 className={`relative cursor-pointer hover:bg-gray-100 rounded-full p-2 ${
                   shake ? "animate-cart-shake" : ""
                 }`}
@@ -361,6 +365,7 @@ export default function Header({ onCartClick, isCartOpen }) {
               {/* Account dropdown */}
               <div className="relative" ref={accountRef}>
                 <button
+                  type="button"
                   className="p-2 rounded-full hover:bg-gray-100 cursor-pointer"
                   onClick={() => setIsAccountOpen((open) => !open)}
                   aria-expanded={isAccountOpen}
@@ -376,7 +381,7 @@ export default function Header({ onCartClick, isCartOpen }) {
                         <div className="px-4 py-2 border-b border-gray-100 mb-1">
                           <p className="text-xs text-gray-400">Signed in as</p>
                           <p className="text-sm font-medium text-gray-900 truncate">
-                            {user.user.name || user.user.email}
+                            {user.user.name || user.user.email || user.user.mobile}
                           </p>
                         </div>
                         <a

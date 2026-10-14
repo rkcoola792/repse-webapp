@@ -26,7 +26,7 @@ const NewArrivalsGrid = ({ products, loading }) => {
                 <ProductCardSkeleton key={i} />
               ))
             : products?.map((product) => (
-                <ProductCard key={product.id} {...product} />
+                <ProductCard key={product._id || product.id} {...product} />
               ))}
         </div>
 

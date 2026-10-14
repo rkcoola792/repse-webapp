@@ -7,7 +7,6 @@ import {
   Minus,
   Plus,
   Trash2,
-  Tag,
   ArrowRight,
   X,
   Heart,
@@ -72,10 +71,11 @@ export default function CartSidebar({ isOpen, onClose }) {
   const cartItems = useSelector((state) => state.cart.cart);
   const favorites = useSelector((state) => state.favorites.favorites);
   const cartView = useSelector((state) => state.ui.cartView);
-  const [promoCode, setPromoCode] = useState("");
   const [menuOpen, setMenuOpen] = useState(null);
   const [favoriteSizes, setFavoriteSizes] = useState({});
   const [showDeliveryPopup, setShowDeliveryPopup] = useState(false);
+  const [isFindingAddress, setIsFindingAddress] = useState(false);
+  const [addressLookupError, setAddressLookupError] = useState("");
 
   // FIX 1: addressForm state with the correct shape matching all form fields
   const [addressForm, setAddressForm] = useState({
@@ -94,6 +94,18 @@ export default function CartSidebar({ isOpen, onClose }) {
   const [stockMap, setStockMap] = useState({});
 
   const userEmail = user?.user?.email || user?.email;
+  const userIdentity = userEmail || user?.user?.mobile;
+
+  useEffect(() => {
+    const mobile = user?.user?.mobile || "";
+    const nationalPhone = mobile.startsWith("+91") ? mobile.slice(3) : mobile.replace(/\D/g, "");
+    const name = user?.user?.name || "";
+    setAddressForm((current) => ({
+      ...current,
+      fullName: current.fullName || (name.startsWith("Customer ") ? "" : name),
+      phone: current.phone || (nationalPhone.length === 10 ? nationalPhone : ""),
+    }));
+  }, [user]);
 
   const menuRef = useRef(null);
 
@@ -166,6 +178,50 @@ export default function CartSidebar({ isOpen, onClose }) {
     }
   };
 
+  const handleUseDeviceLocation = () => {
+    setAddressLookupError("");
+    if (!navigator.geolocation) {
+      setAddressLookupError("Location is not available in this browser. You can use your saved browser address or enter it manually.");
+      return;
+    }
+
+    setIsFindingAddress(true);
+    navigator.geolocation.getCurrentPosition(
+      async ({ coords }) => {
+        try {
+          const response = await api.get("/reverse-geocode", {
+            params: { lat: coords.latitude, lon: coords.longitude },
+          });
+          const result = response.data;
+          const address = result.address || {};
+          const street = [address.house_number, address.road || address.pedestrian || address.footway]
+            .filter(Boolean)
+            .join(" ");
+          const city = address.city || address.town || address.village || address.municipality || address.county || "";
+          setAddressForm((current) => ({
+            ...current,
+            street: [street, address.suburb || address.neighbourhood].filter(Boolean).join(", ") || current.street,
+            city: city || current.city,
+            state: address.state || current.state,
+            pincode: (address.postcode || "").replace(/\D/g, "").slice(0, 6) || current.pincode,
+          }));
+          setAddressErrors((current) => ({ ...current, street: "", city: "", state: "", pincode: "" }));
+        } catch {
+          setAddressLookupError("Could not find an address for this location. Please enter the delivery address manually.");
+        } finally {
+          setIsFindingAddress(false);
+        }
+      },
+      (error) => {
+        setIsFindingAddress(false);
+        setAddressLookupError(error.code === error.PERMISSION_DENIED
+          ? "Allow location access in your browser to fill the address automatically."
+          : "Could not get your location. Please enter the delivery address manually.");
+      },
+      { enableHighAccuracy: false, timeout: 10000, maximumAge: 60000 },
+    );
+  };
+
   // FIX 4: validation helper used before checkout
   const validateAddressForm = () => {
     const errors = {};
@@ -196,8 +252,11 @@ export default function CartSidebar({ isOpen, onClose }) {
     0,
   );
 
-  const discount = subtotal > 0 ? subtotal * 0.2 : 0;
-  const deliveryFee = subtotal > 0 ? 15 : 0;
+  const configuredDiscountPercent = Number(import.meta.env.VITE_ORDER_DISCOUNT_PERCENT);
+  const discountPercent = Number.isFinite(configuredDiscountPercent) ? configuredDiscountPercent : 20;
+  const configuredDeliveryFee = Number(import.meta.env.VITE_ORDER_DELIVERY_FEE);
+  const discount = subtotal > 0 ? subtotal * (discountPercent / 100) : 0;
+  const deliveryFee = subtotal > 0 ? (Number.isFinite(configuredDeliveryFee) ? configuredDeliveryFee : 15) : 0;
   const totalAmount = subtotal - discount + deliveryFee;
   console.log("cart items", cartItems);
   const handleCheckout = async () => {
@@ -218,31 +277,16 @@ export default function CartSidebar({ isOpen, onClose }) {
     setPaymentError("");
 
     try {
-      const userEmail = user?.user?.email || user?.email;
-
       const createOrderOptions = {
-        amount: Math.round(totalAmount), // Converts rupees to paise (e.g., 123.45 → 12345)
-        currency: "INR",
-        receipt: `receipt_${Date.now()}`,
-        payment_capture: 1,
         notes: {
           first_name: addressForm.fullName,
-          ...(userEmail ? { email: userEmail } : {}),
           mobile: addressForm.phone,
           address: `${addressForm.street}, ${addressForm.city}, ${addressForm.state} ${addressForm.pincode}`,
         },
         items: cartItems.map((item) => ({
-          id: item.productId,
           productId: item.productId,
           size: item.size,
-          name: item.name,
-          description: item.description,
-          image: item.image,
-          price: item.price,
           quantity: item.quantity,
-          // FIX B: same paise conversion for per-item amounts
-          amount: Math.round(item.price * item.quantity * 100),
-          currency: "INR",
         })),
       };
 
@@ -262,9 +306,21 @@ export default function CartSidebar({ isOpen, onClose }) {
           setShowDeliveryPopup(false);
           sessionStorage.setItem(
             "repse_last_order",
-            JSON.stringify({ address: addressForm }),
+            JSON.stringify({
+              address: addressForm,
+              items: order.data.items,
+              amount: order.data.amount / 100,
+            }),
           );
-          window.location.href = `${window.location.origin}/payment-success?payment_id=${response.razorpay_payment_id}&order_id=${response.razorpay_order_id}&signature=${response.razorpay_signature}`;
+          sessionStorage.setItem(
+            "repse_payment_verification",
+            JSON.stringify({
+              paymentId: response.razorpay_payment_id,
+              orderId: response.razorpay_order_id,
+              signature: response.razorpay_signature,
+            }),
+          );
+          window.location.href = `${window.location.origin}/payment-success?order_id=${encodeURIComponent(response.razorpay_order_id)}`;
         },
         prefill: {
           name: notes.first_name,
@@ -474,7 +530,7 @@ export default function CartSidebar({ isOpen, onClose }) {
                                       dispatch(
                                         removeFromFavorites({
                                           id: item.id,
-                                          userEmail,
+                                          userEmail: userIdentity,
                                         }),
                                       );
                                       setMenuOpen(null);
@@ -606,7 +662,7 @@ export default function CartSidebar({ isOpen, onClose }) {
                           dispatch(
                             removeFromFavorites({
                               id: item.productId,
-                              userEmail,
+                              userEmail: userIdentity,
                             }),
                           );
                         } else {
@@ -618,7 +674,7 @@ export default function CartSidebar({ isOpen, onClose }) {
                             selectedColor: item.color,
                             selectedSize: item.size,
                           };
-                          dispatch(addToFavorites({ ...favItem, userEmail }));
+                          dispatch(addToFavorites({ ...favItem, userEmail: userIdentity }));
                         }
                       };
 
@@ -772,7 +828,7 @@ export default function CartSidebar({ isOpen, onClose }) {
                   </span>
                 </div>
                 <div className="flex justify-between text-sm text-gray-600">
-                  <span>Discount (-20%)</span>
+                  <span>Discount (-{discountPercent}%)</span>
                   <span className="font-semibold text-red-500">
                     -₹{discount.toFixed(2)}
                   </span>
@@ -791,25 +847,6 @@ export default function CartSidebar({ isOpen, onClose }) {
                   <span className="font-bold text-2xl">
                     ₹{totalAmount.toFixed(2)}
                   </span>
-                </div>
-              </div>
-
-              {/* Promo Code */}
-              <div className="mb-4">
-                <div className="flex gap-2">
-                  <div className="flex-1 relative">
-                    <Tag className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-                    <input
-                      type="text"
-                      placeholder="Add promo code"
-                      value={promoCode}
-                      onChange={(e) => setPromoCode(e.target.value)}
-                      className="w-full pl-10 pr-4 py-2 text-sm border rounded-full focus:outline-none focus:ring-2 focus:ring-black/5"
-                    />
-                  </div>
-                  <button className="px-4 py-2 bg-black text-white rounded-full hover:bg-gray-800 text-sm whitespace-nowrap">
-                    Apply
-                  </button>
                 </div>
               </div>
 
@@ -875,6 +912,16 @@ export default function CartSidebar({ isOpen, onClose }) {
 
             {/* body */}
             <div className="px-6 py-6 flex flex-col gap-4">
+              <button
+                type="button"
+                onClick={handleUseDeviceLocation}
+                disabled={isFindingAddress}
+                className="w-full border border-gray-200 rounded-xl py-2.5 text-sm font-medium hover:bg-gray-50 disabled:opacity-60"
+              >
+                {isFindingAddress ? "Finding your address…" : "Use my device location"}
+              </button>
+              <p className="-mt-3 text-[10px] text-gray-400">Or choose a saved address from your browser when you focus an address field. If you continue, your device location is sent to REPSE and OpenStreetMap to find the address. © OpenStreetMap contributors.</p>
+              {addressLookupError && <p role="alert" className="-mt-2 text-xs text-red-500">{addressLookupError}</p>}
               <AddressField
                 icon={User}
                 label="Full Name"
@@ -882,6 +929,7 @@ export default function CartSidebar({ isOpen, onClose }) {
                 value={addressForm.fullName}
                 onChange={handleAddressChange}
                 placeholder="John Doe"
+                autoComplete="name"
                 error={addressErrors.fullName}
               />
 
@@ -892,6 +940,7 @@ export default function CartSidebar({ isOpen, onClose }) {
                 value={addressForm.street}
                 onChange={handleAddressChange}
                 placeholder="123 Main St, Apt 4B"
+                autoComplete="street-address"
                 error={addressErrors.street}
               />
 
@@ -903,6 +952,7 @@ export default function CartSidebar({ isOpen, onClose }) {
                   value={addressForm.city}
                   onChange={handleAddressChange}
                   placeholder="Delhi"
+                  autoComplete="address-level2"
                   error={addressErrors.city}
                 />
                 <AddressField
@@ -912,6 +962,7 @@ export default function CartSidebar({ isOpen, onClose }) {
                   value={addressForm.state}
                   onChange={handleAddressChange}
                   placeholder="Delhi"
+                  autoComplete="address-level1"
                   error={addressErrors.state}
                 />
               </div>
@@ -925,6 +976,7 @@ export default function CartSidebar({ isOpen, onClose }) {
                   onChange={handleAddressChange}
                   placeholder="110001"
                   maxLength={6}
+                  autoComplete="postal-code"
                   error={addressErrors.pincode}
                 />
                 <AddressField
@@ -936,6 +988,7 @@ export default function CartSidebar({ isOpen, onClose }) {
                   onChange={handleAddressChange}
                   placeholder="9876543210"
                   maxLength={10}
+                  autoComplete="tel"
                   error={addressErrors.phone}
                 />
               </div>

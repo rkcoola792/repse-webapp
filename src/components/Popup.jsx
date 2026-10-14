@@ -11,7 +11,7 @@ const Popup = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const user = useSelector((state) => state.user.user);
-  const userEmail = user?.user?.email || user?.email;
+  const userEmail = user?.user?.email || user?.email || user?.user?.mobile;
 
   const handleUndo = () => {
     if (undoAction === "add") {

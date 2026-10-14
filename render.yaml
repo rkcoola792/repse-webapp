@@ -7,6 +7,10 @@ services:
     envVars:
       - key: VITE_APP_BASE_URL
         value: /api
+      - key: VITE_ORDER_DISCOUNT_PERCENT
+        value: "20"
+      - key: VITE_ORDER_DELIVERY_FEE
+        value: "15"
     routes:
       - type: rewrite
         source: /api/*

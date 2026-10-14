@@ -1,118 +1,48 @@
-import React, { useState } from 'react';
-import { Star, ChevronLeft, ChevronRight, CheckCircle } from 'lucide-react';
+import { useRef } from "react";
+import { Star, ChevronLeft, ChevronRight, CheckCircle } from "lucide-react";
 
-const TestimonialCard = ({ name, verified, rating, review }) => {
+function TestimonialCard({ name, verified, rating = 5, review }) {
   return (
-    <div className="bg-white border border-gray-200 rounded-2xl p-4 sm:p-6 min-w-[280px] sm:min-w-[320px] md:min-w-[350px] max-w-[400px] flex-shrink-0">
-      <div className="flex gap-1 mb-3">
-        {[...Array(5)].map((_, i) => (
-          <Star
-            key={i}
-            className={`w-5 h-5 ${
-              i < rating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'
-            }`}
-          />
+    <article className="min-w-[280px] max-w-[400px] shrink-0 rounded-2xl border border-gray-200 bg-white p-4 sm:min-w-[320px] sm:p-6">
+      <div className="mb-3 flex gap-1" aria-label={`${rating} out of 5 stars`}>
+        {[1, 2, 3, 4, 5].map((star) => (
+          <Star key={star} aria-hidden="true" className={`h-5 w-5 ${star <= rating ? "fill-yellow-400 text-yellow-400" : "text-gray-300"}`} />
         ))}
       </div>
-      
-      <div className="flex items-center gap-2 mb-3">
-        <h3 className="font-bold text-lg">{name}</h3>
-        {verified && (
-          <CheckCircle className="w-5 h-5 text-green-500 fill-green-500" />
-        )}
+      <div className="mb-3 flex items-center gap-2">
+        <h3 className="text-lg font-bold">{name}</h3>
+        {verified && <CheckCircle aria-label="Verified purchase" className="h-5 w-5 text-green-600" />}
       </div>
-      
-      <p className="text-gray-600 text-sm leading-relaxed">
-        "{review}"
-      </p>
-    </div>
+      <p className="text-sm leading-relaxed text-gray-600">“{review}”</p>
+    </article>
   );
-};
+}
 
-const OurHappyCustomers = () => {
-  const [scrollPosition, setScrollPosition] = useState(0);
-  
-  const testimonials = [
-    {
-      id: 1,
-      name: 'Sarah M.',
-      verified: true,
-      rating: 5,
-      review: "I'm blown away by the quality and style of the clothes I received from Shop.co. From casual wear to elegant dresses, every piece I've bought has exceeded my expectations."
-    },
-    {
-      id: 2,
-      name: 'Alex K.',
-      verified: true,
-      rating: 5,
-      review: "Finding clothes that align with my personal style used to be a challenge until I discovered Shop.co. The range of options they offer is truly remarkable, catering to a variety of tastes and occasions."
-    },
-    {
-      id: 3,
-      name: 'James L.',
-      verified: true,
-      rating: 5,
-      review: "As someone who's always on the lookout for unique fashion pieces, I'm thrilled to have stumbled upon Shop.co. The selection of clothes is not only diverse but also on-point with the latest trends."
-    },
-    {
-      id: 4,
-      name: 'Mooen',
-      verified: true,
-      rating: 5,
-      review: "The customer service at Shop.co is exceptional. They helped me find the perfect outfit for my event and the quality exceeded my expectations. Highly recommend!"
-    }
-  ];
+export default function OurHappyCustomers({ testimonials = [] }) {
+  const containerRef = useRef(null);
+  if (testimonials.length === 0) return null;
 
-  const handleScroll = (direction) => {
-    const container = document.getElementById('testimonials-container');
-    if (container) {
-      const scrollAmount = window.innerWidth < 640 ? 300 : 370; // Responsive scroll amount
-      if (direction === 'left') {
-        container.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
-      } else {
-        container.scrollBy({ left: scrollAmount, behavior: 'smooth' });
-      }
-    }
+  const scroll = (direction) => {
+    containerRef.current?.scrollBy({
+      left: direction * (window.innerWidth < 640 ? 300 : 370),
+      behavior: "smooth",
+    });
   };
 
   return (
-    <div className="bg-white py-8 sm:py-6 lg:py-12">
-      <div className="max-w-screen-2xl mx-auto px-6 sm:px-8 lg:px-16">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8 sm:mb-10 gap-4">
-          <h2 className="text-2xl sm:text-2xl md:text-4xl lg:text-5xl font-black tracking-tight">
-            OUR HAPPY CUSTOMERS
-          </h2>
-
+    <section className="bg-white py-10 sm:py-12" aria-labelledby="customer-reviews-title">
+      <div className="mx-auto max-w-screen-2xl px-6 sm:px-8 lg:px-16">
+        <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <h2 id="customer-reviews-title" className="text-2xl font-black tracking-tight sm:text-4xl">CUSTOMER REVIEWS</h2>
           <div className="flex gap-3 self-start sm:self-auto">
-            <button
-              onClick={() => handleScroll('left')}
-              className="p-2 sm:p-3 border border-gray-300 rounded-full hover:bg-gray-50 transition-colors touch-manipulation"
-              aria-label="Previous testimonials"
-            >
-              <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6" />
-            </button>
-            <button
-              onClick={() => handleScroll('right')}
-              className="p-2 sm:p-3 border border-gray-300 rounded-full hover:bg-gray-50 transition-colors touch-manipulation"
-              aria-label="Next testimonials"
-            >
-              <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6" />
-            </button>
+            <button type="button" onClick={() => scroll(-1)} aria-label="Previous reviews" className="rounded-full border border-gray-300 p-3 hover:bg-gray-50"><ChevronLeft className="h-5 w-5" /></button>
+            <button type="button" onClick={() => scroll(1)} aria-label="Next reviews" className="rounded-full border border-gray-300 p-3 hover:bg-gray-50"><ChevronRight className="h-5 w-5" /></button>
           </div>
         </div>
-
-        <div
-          id="testimonials-container"
-          className="flex gap-3 sm:gap-4 md:gap-5 overflow-x-auto scrollbar-hide pb-4"
-          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-        >
-          {testimonials.map((testimonial) => (
-            <TestimonialCard key={testimonial.id} {...testimonial} />
-          ))}
+        <div ref={containerRef} className="flex gap-4 overflow-x-auto pb-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          {testimonials.map((testimonial) => <TestimonialCard key={testimonial.id || testimonial.name} {...testimonial} />)}
         </div>
       </div>
-    </div>
+    </section>
   );
-};
-
-export default OurHappyCustomers;
+}

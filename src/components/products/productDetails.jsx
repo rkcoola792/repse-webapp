@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
 import {
@@ -125,7 +125,7 @@ export default function ProductDetails() {
     }
   };
 
-  const getProductDetails = async () => {
+  const getProductDetails = useCallback(async () => {
     setLoading(true);
     try {
       const response = await api.get(`/product/${id}`);
@@ -135,8 +135,8 @@ export default function ProductDetails() {
     } finally {
       setLoading(false);
     }
-  };
-  const getProducts = async () => {
+  }, [id]);
+  const getProducts = useCallback(async () => {
     try {
       const response = await api.get("/products", {
         params: { page: 1, limit: 20 },
@@ -149,12 +149,12 @@ export default function ProductDetails() {
     } catch (error) {
       console.error("Error fetching products:", error);
     }
-  };
+  }, [id]);
 
   useEffect(() => {
     getProductDetails();
     getProducts();
-  }, [id]);
+  }, [getProductDetails, getProducts]);
 
   if (loading) {
     return (
@@ -196,7 +196,7 @@ export default function ProductDetails() {
       </div>
 
       {/* Product Section */}
-      <div className="max-w-screen-2xl mx-auto px-6 sm:px-8 lg:px-16 pb-8">
+      <div className="max-w-screen-2xl mx-auto px-6 sm:px-8 lg:px-16 pb-24 md:pb-8">
         <div className="grid md:grid-cols-2 gap-8 md:gap-12">
           {/* Image Gallery */}
           <div className="flex gap-2 sm:gap-4">
@@ -286,7 +286,7 @@ export default function ProductDetails() {
 
             {/* Size Selection */}
             <div className="mb-6">
-              <p className="text-sm font-medium mb-3">
+              <p className="mb-3 text-sm font-medium">
                 Size:{" "}
                 <span className="text-gray-500">
                   {SIZE_LABELS[selectedSize] || selectedSize}
@@ -317,6 +317,13 @@ export default function ProductDetails() {
                   );
                 })}
               </div>
+              <button
+                type="button"
+                onClick={() => navigate("/contact")}
+                className="mt-3 text-sm font-medium text-gray-600 underline underline-offset-4 hover:text-black focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+              >
+                Need help choosing a size? Contact us
+              </button>
             </div>
 
             {/* Quantity and Add to Cart */}
@@ -359,7 +366,7 @@ export default function ProductDetails() {
             <div className="border-t border-gray-200">
               {[
                 { key: "details", icon: Info, title: "Product Details", body: product.description || "No additional details available for this product." },
-                { key: "shipping", icon: Truck, title: "Shipping & Returns", body: "Ships in 2–5 business days. Free returns within 7 days of delivery for unworn items with tags attached. Full policy on our Shipping and Refunds pages." },
+                { key: "shipping", icon: Truck, title: "Shipping & Support", body: "Orders are shipped within 3–5 days. Review our shipping and cancellation/refund policies for current terms." },
                 { key: "care", icon: Shirt, title: "Care Instructions", body: "Machine wash cold with like colors. Do not bleach. Tumble dry low or hang dry to preserve fit and print." },
               ].map((section) => (
                 <div key={section.key} className="border-b border-gray-200">
@@ -409,6 +416,22 @@ export default function ProductDetails() {
             </div>
           </div>
         )}
+      </div>
+      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-gray-200 bg-white/95 px-4 py-3 shadow-[0_-8px_24px_rgba(0,0,0,0.08)] backdrop-blur md:hidden">
+        <div className="mx-auto flex max-w-screen-sm items-center gap-4">
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-xs text-gray-500">{product.name}</p>
+            <p className="text-base font-bold">₹{product.price}</p>
+          </div>
+          <button
+            type="button"
+            onClick={handleAddToCart}
+            disabled={!canAddToCart}
+            className="min-h-11 rounded-full bg-black px-6 text-sm font-semibold text-white transition hover:bg-gray-800 disabled:cursor-not-allowed disabled:bg-gray-300"
+          >
+            {isSizeSoldOut ? "Out of stock" : "Add to bag"}
+          </button>
+        </div>
       </div>
     </div>
   );

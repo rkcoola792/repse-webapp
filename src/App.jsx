@@ -16,7 +16,6 @@ import { loadFavoritesForUser } from "./store/favoritesSlice";
 const ProductsPage = lazy(() => import("./components/products/productsPage"));
 const ProductDetails = lazy(() => import("./components/products/productDetails"));
 const Login = lazy(() => import("./components/Login"));
-const Register = lazy(() => import("./components/Register"));
 const Profile = lazy(() => import("./components/profile"));
 const Favourites = lazy(() => import("./components/Favourites"));
 const TermsAndConditions = lazy(() => import("./components/policies/termsAndConditions"));
@@ -35,8 +34,9 @@ function App() {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    if (user && user.user && user.user.email) {
-      dispatch(loadFavoritesForUser(user.user.email));
+    const identity = user?.user?.email || user?.user?.mobile;
+    if (identity) {
+      dispatch(loadFavoritesForUser(identity));
     }
   }, [user, dispatch]);
   return (
@@ -62,7 +62,7 @@ function App() {
             <Route
               path="/login"
               element={
-                user && user.user && user.user.email ? (
+                user?.user && (user.user.email || user.user.mobile) ? (
                   <Navigate to="/" replace />
                 ) : (
                   <Login />
@@ -71,13 +71,7 @@ function App() {
             />
             <Route
               path="/register"
-              element={
-                user && user.user && user.user.email ? (
-                  <Navigate to="/" replace />
-                ) : (
-                  <Register />
-                )
-              }
+              element={<Navigate to="/login" replace />}
             />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
