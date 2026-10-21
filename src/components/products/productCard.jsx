@@ -1,8 +1,7 @@
-"use client";
 import { Heart } from "lucide-react";
 import { useState } from "react";
-import Link from "next/link";
 import { useSelector, useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import { addToFavorites, removeFromFavorites } from "../../store/favoritesSlice";
 import { triggerFavoritesShake, showPopup, showLoginPrompt } from "../../store/uiSlice";
 
@@ -18,6 +17,7 @@ const ProductCard = ({
   _id,
   description,
 }) => {
+  const navigate = useNavigate();
   const dispatch = useDispatch();
   const favorites = useSelector((state) => state.favorites.favorites);
   const user = useSelector((state) => state.user.user);
@@ -46,8 +46,9 @@ const ProductCard = ({
           </span>
         )}
 
-        <Link
-          href={`/product-details/${_id}`}
+        <button
+          type="button"
+          onClick={() => navigate(`/product-details/${_id}`)}
           aria-label={`View ${name}${isSoldOut ? ", sold out" : ""}`}
           className="absolute inset-0 h-full w-full cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-3px] focus-visible:outline-black"
         >
@@ -67,7 +68,7 @@ const ProductCard = ({
               className="absolute inset-0 h-full w-full object-cover opacity-0 transition-opacity duration-300 group-hover:opacity-100"
             />
           )}
-        </Link>
+        </button>
 
         {/* Favorite Button */}
         <button
@@ -117,12 +118,13 @@ const ProductCard = ({
             {category}
           </p>
         )}
-        <Link
-          href={`/product-details/${_id}`}
+        <button
+          type="button"
+          onClick={() => navigate(`/product-details/${_id}`)}
           className="block max-w-full truncate text-left text-sm font-bold uppercase tracking-tight text-gray-900 transition-colors hover:text-gray-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black"
         >
           {name}
-        </Link>
+        </button>
         <p className="text-gray-900 font-semibold text-sm mt-1">
           ₹{price}
           {hasDiscount && (

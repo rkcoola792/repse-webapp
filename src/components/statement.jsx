@@ -1,5 +1,4 @@
-"use client";
-import { useNavigate } from "../navigation.js";
+import { useNavigate } from "react-router-dom";
 
 // TODO: placeholder numbers — swap for real stats before launch, then uncomment the block below.
 // const STATS = [

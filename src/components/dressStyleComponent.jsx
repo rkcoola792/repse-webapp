@@ -1,4 +1,3 @@
-"use client";
 import React from 'react';
 
 const StyleCard = ({ title, imageUrl, size = 'default' }) => {
@@ -7,7 +6,7 @@ const StyleCard = ({ title, imageUrl, size = 'default' }) => {
       size === 'large' ? 'lg:col-span-2' : ''
     }`}>
       <div className="relative h-48 sm:h-72">
-        <img loading="lazy" decoding="async"
+        <img
           src={imageUrl}
           alt={title}
           className="w-full h-full object-cover"

@@ -1,22 +1,20 @@
 services:
   - type: web
     name: repse-webapp
-    runtime: node
-    buildCommand: npm ci && npm run build
-    startCommand: npm start
-    healthCheckPath: /
+    runtime: static
+    buildCommand: npm install && npm run build
+    staticPublishPath: ./dist
     envVars:
-      - key: NODE_VERSION
-        value: 22.14.0
-      - key: NEXT_PUBLIC_API_BASE_URL
+      - key: VITE_APP_BASE_URL
         value: /api
-      - key: API_BASE_URL
-        value: https://repse-backend-latest.onrender.com
-      - key: NEXT_PUBLIC_SITE_URL
-        value: https://repse-webapp.onrender.com
-      - key: NEXT_PUBLIC_GOOGLE_CLIENT_ID
-        sync: false
-      - key: NEXT_PUBLIC_ORDER_DISCOUNT_PERCENT
+      - key: VITE_ORDER_DISCOUNT_PERCENT
         value: "20"
-      - key: NEXT_PUBLIC_ORDER_DELIVERY_FEE
+      - key: VITE_ORDER_DELIVERY_FEE
         value: "15"
+    routes:
+      - type: rewrite
+        source: /api/*
+        destination: https://repse-backend-latest.onrender.com/*
+      - type: rewrite
+        source: /*
+        destination: /index.html

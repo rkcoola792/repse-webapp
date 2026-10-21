@@ -1,8 +1,7 @@
-"use client";
 import React from "react";
 import ProductCard from "./products/productCard";
 import ProductCardSkeleton from "./products/productCardSkeleton";
-import { useNavigate } from "../navigation.js";
+import { useNavigate } from "react-router-dom";
 
 const NewArrivalsGrid = ({ products, loading }) => {
   const navigate = useNavigate();

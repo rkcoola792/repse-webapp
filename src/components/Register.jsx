@@ -1,7 +1,6 @@
-"use client";
 import { useState, useRef } from "react";
 import { Eye, EyeOff, AlertCircle, ChevronDown } from "lucide-react";
-import { useNavigate } from "../navigation.js";
+import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { showPopup } from "../store/uiSlice";
 import api from "../api/axios";

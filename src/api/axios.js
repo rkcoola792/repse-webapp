@@ -3,7 +3,7 @@ import { store } from "../store/store";
 import { removeUser } from "../store/userSlice";
 
 const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_BASE_URL,
+  baseURL: import.meta.env.VITE_APP_BASE_URL,
   withCredentials: true,
 });
 

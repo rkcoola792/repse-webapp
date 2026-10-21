@@ -1,7 +1,6 @@
-"use client";
 import { useRef, useState } from "react";
 import { AlertCircle, ArrowLeft } from "lucide-react";
-import { useNavigate } from "../navigation.js";
+import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import api from "../api/axios";
 import { addUser } from "../store/userSlice";
@@ -15,7 +14,7 @@ const ARCHIVO = "'Archivo', sans-serif";
 export default function Login() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const [email, setEmail] = useState(() => typeof window === "undefined" ? "" : window.localStorage.getItem(REMEMBER_KEY) || "");
+  const [email, setEmail] = useState(() => localStorage.getItem(REMEMBER_KEY) || "");
   // Phone channel is paused until Twilio SMS delivery is enabled:
   // const [channel, setChannel] = useState("email");
   const [code, setCode] = useState("");

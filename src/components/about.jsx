@@ -1,6 +1,5 @@
-"use client";
 import React from "react";
-import { useNavigate } from "../navigation.js";
+import { useNavigate } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 
 const About = () => {
@@ -10,7 +9,7 @@ const About = () => {
     <section className="bg-black py-16 sm:py-20">
       <div className="max-w-screen-2xl mx-auto px-6 sm:px-8 lg:px-16 grid md:grid-cols-2 gap-10 md:gap-16 items-center">
         <div className="flex items-center justify-center h-full">
-          <img loading="lazy" decoding="async"
+          <img
             src="/banner.png"
             alt="Repse — Train Hard. Wear Repse."
             className="w-full max-w-xl h-auto object-contain"

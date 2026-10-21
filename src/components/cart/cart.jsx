@@ -1,7 +1,6 @@
-"use client";
 import React, { useState, useRef, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { useNavigate } from "../../navigation.js";
+import { useNavigate } from "react-router-dom";
 
 import {
   ShoppingCart,
@@ -253,9 +252,9 @@ export default function CartSidebar({ isOpen, onClose }) {
     0,
   );
 
-  const configuredDiscountPercent = Number(process.env.NEXT_PUBLIC_ORDER_DISCOUNT_PERCENT);
+  const configuredDiscountPercent = Number(import.meta.env.VITE_ORDER_DISCOUNT_PERCENT);
   const discountPercent = Number.isFinite(configuredDiscountPercent) ? configuredDiscountPercent : 20;
-  const configuredDeliveryFee = Number(process.env.NEXT_PUBLIC_ORDER_DELIVERY_FEE);
+  const configuredDeliveryFee = Number(import.meta.env.VITE_ORDER_DELIVERY_FEE);
   const discount = subtotal > 0 ? subtotal * (discountPercent / 100) : 0;
   const deliveryFee = subtotal > 0 ? (Number.isFinite(configuredDeliveryFee) ? configuredDeliveryFee : 15) : 0;
   const totalAmount = subtotal - discount + deliveryFee;
@@ -457,7 +456,7 @@ export default function CartSidebar({ isOpen, onClose }) {
                             navigate(`/product-details/${item.id}`)
                           }
                         >
-                          <img loading="lazy" decoding="async"
+                          <img
                             src={item.primaryImage || item.image || item.images?.[0]}
                             alt={item.name}
                             className="w-full h-full object-cover"
@@ -688,7 +687,7 @@ export default function CartSidebar({ isOpen, onClose }) {
                                 navigate(`/product-details/${item.productId}`)
                               }
                             >
-                              <img loading="lazy" decoding="async"
+                              <img
                                 src={item.image}
                                 alt={item.name}
                                 className={`w-full h-full object-cover ${outOfStock ? "grayscale" : ""}`}

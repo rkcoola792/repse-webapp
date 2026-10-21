@@ -1,4 +1,3 @@
-"use client";
 import { useRef } from "react";
 import { Star, ChevronLeft, ChevronRight, CheckCircle } from "lucide-react";
 

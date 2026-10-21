@@ -1,20 +1,27 @@
-"use client";
-import React from "react";
-import { useQuery } from "@tanstack/react-query";
+import React, { useEffect, useState } from "react";
 import Hero from "./hero";
 import FeaturedProduct from "./featuredProduct";
 import NewArrivalsGrid from "./newArrival";
 import TopSelling from "./topSelling";
 import Statement from "./statement";
 import api from "../api/axios";
-const Homepage = ({ initialProducts = [] }) => {
+const Homepage = () => {
   const limit = 20;
-  const { data: products = [], isPending: loading } = useQuery({
-    queryKey: ["products", { page: 1, limit }],
-    queryFn: async () => (await api.get("/products", { params: { page: 1, limit } })).data,
-    initialData: initialProducts,
-    staleTime: 60_000,
-  });
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const getProducts = async () => {
+    setLoading(true);
+    try {
+      const response = await api.get("/products", {
+        params: { page: 1, limit },
+      });
+      setProducts(response.data);
+    } catch (error) {
+      console.error("Error fetching products:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const newArrivals = products?.filter(
     (product) => product.newArrival === true
@@ -25,6 +32,9 @@ const Homepage = ({ initialProducts = [] }) => {
   const featuredProduct =
     topSellingProducts?.[0] || newArrivals?.[0] || products?.[0];
   const heroProduct = products.find((product) => product._id !== featuredProduct?._id) || featuredProduct;
+  useEffect(() => {
+    getProducts();
+  }, []);
   return (
     <>
       <Hero product={heroProduct} />

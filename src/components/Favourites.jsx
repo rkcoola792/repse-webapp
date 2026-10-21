@@ -1,7 +1,6 @@
-"use client";
 import React, { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { useNavigate } from "../navigation.js";
+import { useNavigate } from "react-router-dom";
 import { Heart, ChevronDown, LayoutGrid, Package, Settings } from "lucide-react";
 
 import { addItem } from "../store/cartSlice";

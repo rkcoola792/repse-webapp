@@ -1,7 +1,6 @@
-"use client";
 import { useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { useNavigate } from "../navigation.js";
+import { useNavigate } from "react-router-dom";
 import { hidePopup } from "../store/uiSlice";
 import { addToFavorites, removeFromFavorites } from "../store/favoritesSlice";
 

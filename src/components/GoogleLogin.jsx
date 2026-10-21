@@ -1,7 +1,6 @@
-"use client";
 import { useEffect, useRef } from "react";
 import { useDispatch } from "react-redux";
-import { useNavigate } from "../navigation.js";
+import { useNavigate } from "react-router-dom";
 import api from "../api/axios";
 import { addUser } from "../store/userSlice";
 import { loadFavoritesForUser } from "../store/favoritesSlice";
@@ -36,7 +35,7 @@ const GoogleLogin = () => {
       if (!window.google || !googleButtonRef.current) return;
 
       window.google.accounts.id.initialize({
-        client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID,
+        client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
         callback: handleGoogleResponse,
       });
 

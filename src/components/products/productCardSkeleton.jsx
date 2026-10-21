@@ -1,4 +1,3 @@
-"use client";
 export default function ProductCardSkeleton() {
   return (
     <div className="bg-white pb-6 animate-pulse">

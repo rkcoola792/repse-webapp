@@ -1,5 +1,5 @@
-"use client";
 import React, { useEffect, useRef } from 'react'
+import { Outlet } from 'react-router-dom'
 import Header from './components/header'
 import NewsletterFooter from './components/footer'
 import CartSidebar from './components/cart/cart'
@@ -7,7 +7,7 @@ import AnnouncementBar from './components/discountBanner'
 import { useSelector, useDispatch } from 'react-redux'
 import { toggleCart, closeCart } from './store/uiSlice'
 
-const Body = ({ children }) => {
+const Body = () => {
   const dispatch = useDispatch();
   const isCartOpen = useSelector(state => state.ui.isCartOpen);
   const user = useSelector(state => state.user.user);
@@ -42,7 +42,9 @@ const Body = ({ children }) => {
       <div className="min-h-screen">
          {!isLoggedIn && <AnnouncementBar />}
          <Header onCartClick={handleToggleCart} />
-         <main>{children}</main>
+         <main>
+           <Outlet />
+         </main>
          <NewsletterFooter/>
          <CartSidebar isOpen={isCartOpen} onClose={handleCloseCart} />
        </div>
