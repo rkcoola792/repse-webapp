@@ -47,9 +47,9 @@ export default function Hero({ product }) {
           aria-label={product ? `Shop ${product.name}` : "Featured product"}
           className="group relative block aspect-[4/4.5] w-full overflow-hidden bg-neutral-800 text-left disabled:cursor-default sm:aspect-[4/3.5] lg:aspect-[4/4.5]"
         >
-          {product?.images?.[0] ? (
+          {(product?.primaryImage || product?.images?.[0]) ? (
             <img
-              src={product.images[0]}
+              src={product.primaryImage || product.images[0]}
               alt={product.name}
               fetchPriority="high"
               className="h-full w-full object-cover transition duration-700 group-hover:scale-[1.03]"

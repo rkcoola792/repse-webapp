@@ -7,6 +7,7 @@ import { triggerFavoritesShake, showPopup, showLoginPrompt } from "../../store/u
 
 const ProductCard = ({
   images,
+  primaryImage,
   name,
   price,
   originalPrice,
@@ -28,6 +29,8 @@ const ProductCard = ({
   const isSoldOut = stock === 0;
   const isLowStock = typeof stock === "number" && stock > 0 && stock <= 5;
   const hasDiscount = originalPrice > price;
+  const coverImage = primaryImage || images?.[0];
+  const hoverImage = images?.find((image) => image !== coverImage);
 
   return (
     <article className={`group bg-white pb-6 ${isSoldOut ? "opacity-60" : ""}`}>
@@ -50,16 +53,16 @@ const ProductCard = ({
           className="absolute inset-0 h-full w-full cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-3px] focus-visible:outline-black"
         >
           <img
-            src={images?.[0]}
+            src={coverImage}
             alt=""
             loading="lazy"
             className={`h-full w-full object-cover transition-transform duration-300 ${
               isSoldOut ? "grayscale" : "group-hover:scale-105"
             }`}
           />
-          {images?.[1] && !isSoldOut && (
+          {hoverImage && !isSoldOut && (
             <img
-              src={images[1]}
+              src={hoverImage}
               alt=""
               loading="lazy"
               className="absolute inset-0 h-full w-full object-cover opacity-0 transition-opacity duration-300 group-hover:opacity-100"
@@ -82,10 +85,10 @@ const ProductCard = ({
               dispatch(showPopup({
                 message: "Item removed from the wishlist",
                 undoAction: 'add',
-                itemData: { id: _id, name, price, images, description }
+                itemData: { id: _id, name, price, images, primaryImage: coverImage, description }
               }));
             } else {
-              dispatch(addToFavorites({ id: _id, name, price, images, description, userEmail }));
+              dispatch(addToFavorites({ id: _id, name, price, images, primaryImage: coverImage, description, userEmail }));
               dispatch(triggerFavoritesShake());
               dispatch(showPopup({
                 message: "Item added to wishlist",

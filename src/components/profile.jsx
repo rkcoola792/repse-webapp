@@ -330,7 +330,7 @@ export default function Profile() {
                             setActiveTab("orders");
                             handleViewOrder(order._id);
                           }}
-                          className="w-full grid grid-cols-[56px_1fr_auto_auto] gap-4 items-center py-4 text-left cursor-pointer"
+                          className="w-full grid grid-cols-[56px_minmax(0,1fr)_auto] sm:grid-cols-[56px_minmax(0,1fr)_auto_auto] gap-3 sm:gap-4 items-center py-4 text-left cursor-pointer"
                         >
                           <div className="w-14 h-16 bg-gray-100 rounded overflow-hidden shrink-0">
                             {order.items?.[0]?.image && (
@@ -362,7 +362,7 @@ export default function Profile() {
                           >
                             {statusLabel(order.deliveryStatus)}
                           </span>
-                          <p className="text-sm font-semibold text-gray-900 whitespace-nowrap">
+                          <p className="col-start-2 sm:col-start-auto text-sm font-semibold text-gray-900 whitespace-nowrap">
                             ₹{order.amount ?? 0}
                           </p>
                         </button>

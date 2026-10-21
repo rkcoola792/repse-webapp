@@ -48,7 +48,16 @@ function App() {
             <Route path="/" element={<Body />}>
               <Route index element={<Homepage />} />
               <Route path="/products" element={<ProductsPage />} />
-              <Route path="/profile" element={<Profile />} />
+              <Route
+                path="/profile"
+                element={
+                  user?.user && (user.user.email || user.user.mobile) ? (
+                    <Profile />
+                  ) : (
+                    <Navigate to="/login" replace />
+                  )
+                }
+              />
               <Route path="/favourites" element={<Favourites />} />
               <Route path="/terms" element={<TermsAndConditions />} />
               <Route path="/privacy" element={<Privacy />} />

@@ -75,7 +75,7 @@ export default function ProductDetails() {
       size: selectedSize,
       color: selectedColor,
       quantity: Math.min(quantity, selectedStock),
-      image: product.images?.[0],
+      image: product.primaryImage || product.images?.[0],
     };
 
     dispatch(addItem(cartItem));
@@ -96,6 +96,7 @@ export default function ProductDetails() {
             name: product.name,
             price: product.price,
             images: product.images,
+            primaryImage: product.primaryImage || product.images?.[0],
             description: product.description,
             selectedColor,
             selectedSize,
@@ -109,6 +110,7 @@ export default function ProductDetails() {
           name: product.name,
           price: product.price,
           images: product.images,
+          primaryImage: product.primaryImage || product.images?.[0],
           description: product.description,
           selectedColor,
           selectedSize,
@@ -129,7 +131,10 @@ export default function ProductDetails() {
     setLoading(true);
     try {
       const response = await api.get(`/product/${id}`);
-      setProduct(response.data);
+      const loadedProduct = response.data;
+      setProduct(loadedProduct);
+      const primaryImageIndex = loadedProduct.images?.indexOf(loadedProduct.primaryImage) ?? -1;
+      setSelectedImage(primaryImageIndex >= 0 ? primaryImageIndex : 0);
     } catch (error) {
       console.error("Error fetching product details:", error);
     } finally {
@@ -233,7 +238,7 @@ export default function ProductDetails() {
               <img
                 src={
                   product.images?.[selectedImage] ||
-                  product.images?.[0] ||
+                  product.primaryImage || product.images?.[0] ||
                   "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&h=400&fit=crop"
                 }
                 alt={product.name}

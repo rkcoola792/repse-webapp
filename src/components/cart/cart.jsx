@@ -309,7 +309,7 @@ export default function CartSidebar({ isOpen, onClose }) {
             JSON.stringify({
               address: addressForm,
               items: order.data.items,
-              amount: order.data.amount / 100,
+              amount: order.data.totalAmount,
             }),
           );
           sessionStorage.setItem(
@@ -457,7 +457,7 @@ export default function CartSidebar({ isOpen, onClose }) {
                           }
                         >
                           <img
-                            src={item.images && item.images[0]}
+                            src={item.primaryImage || item.image || item.images?.[0]}
                             alt={item.name}
                             className="w-full h-full object-cover"
                           />
@@ -509,7 +509,7 @@ export default function CartSidebar({ isOpen, onClose }) {
                                         size: selectedSize,
                                         color: item.selectedColor,
                                         quantity: 1,
-                                        image: item.images?.[0],
+                                        image: item.primaryImage || item.image || item.images?.[0],
                                       };
                                       dispatch(addItem(cartItem));
                                       dispatch(setCartView("cart"));
@@ -608,7 +608,7 @@ export default function CartSidebar({ isOpen, onClose }) {
                                   size: selectedSize,
                                   color: item.selectedColor,
                                   quantity: 1,
-                                  image: item.images?.[0],
+                                  image: item.primaryImage || item.image || item.images?.[0],
                                 };
 
                                 dispatch(addItem(cartItem));

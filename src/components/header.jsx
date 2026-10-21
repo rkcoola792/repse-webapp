@@ -33,6 +33,7 @@ export default function Header({ onCartClick }) {
   const [isMobileShopOpen, setIsMobileShopOpen] = useState(false);
   const [isAccountOpen, setIsAccountOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isHeaderHidden, setIsHeaderHidden] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [suggestions, setSuggestions] = useState([]);
   const [suggestionsLoading, setSuggestionsLoading] = useState(false);
@@ -47,6 +48,43 @@ export default function Header({ onCartClick }) {
   const accountRef = useRef(null);
   const searchRef = useRef(null);
   const searchInputRef = useRef(null);
+  const lastScrollY = useRef(0);
+
+  useEffect(() => {
+    const mobileViewport = window.matchMedia("(max-width: 767px)");
+    lastScrollY.current = window.scrollY;
+
+    const updateHeaderVisibility = () => {
+      const currentScrollY = Math.max(0, window.scrollY);
+      const movement = currentScrollY - lastScrollY.current;
+
+      if (!mobileViewport.matches || isMenuOpen || isSearchOpen || isAccountOpen) {
+        setIsHeaderHidden(false);
+        lastScrollY.current = currentScrollY;
+        return;
+      }
+
+      if (currentScrollY < 80) {
+        setIsHeaderHidden(false);
+        lastScrollY.current = currentScrollY;
+      } else if (Math.abs(movement) >= 8) {
+        setIsHeaderHidden(movement > 0);
+        lastScrollY.current = currentScrollY;
+      }
+    };
+
+    const handleViewportChange = () => {
+      if (!mobileViewport.matches) setIsHeaderHidden(false);
+      lastScrollY.current = window.scrollY;
+    };
+
+    window.addEventListener("scroll", updateHeaderVisibility, { passive: true });
+    mobileViewport.addEventListener("change", handleViewportChange);
+    return () => {
+      window.removeEventListener("scroll", updateHeaderVisibility);
+      mobileViewport.removeEventListener("change", handleViewportChange);
+    };
+  }, [isMenuOpen, isSearchOpen, isAccountOpen]);
 
   const runSearch = (query) => {
     const trimmed = query.trim();
@@ -154,14 +192,14 @@ export default function Header({ onCartClick }) {
   }, [searchQuery]);
 
   return (
-    <header className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50 w-full">
-      <div className="max-w-screen-2xl mx-auto px-6 sm:px-8 lg:px-16">
+    <header className={`sticky top-0 z-50 w-full border-b border-gray-200 bg-white shadow-sm transition-transform duration-300 ease-out will-change-transform ${isHeaderHidden ? "-translate-y-full md:translate-y-0" : "translate-y-0"}`}>
+      <div className="max-w-screen-2xl mx-auto px-3 sm:px-8 lg:px-16">
         <div className="flex items-center justify-between h-16">
           {/* Left: logo + nav */}
-          <div className="flex items-center space-x-6">
+          <div className="flex min-w-0 items-center gap-2 sm:gap-6">
             <button
               type="button"
-              className="md:hidden p-2 -ml-2 rounded-full hover:bg-gray-100 cursor-pointer"
+              className="md:hidden shrink-0 p-2 -ml-1 rounded-full hover:bg-gray-100 cursor-pointer"
               onClick={() => setIsMenuOpen((open) => !open)}
               aria-label={isMenuOpen ? "Close menu" : "Open menu"}
               aria-expanded={isMenuOpen}
@@ -169,11 +207,12 @@ export default function Header({ onCartClick }) {
               {isMenuOpen ? <X /> : <Menu />}
             </button>
             <div
-              className="flex items-center gap-2 cursor-pointer"
+              className="flex min-w-0 items-center gap-1.5 cursor-pointer"
+              aria-label="REPSE home"
               onClick={() => navigate("/")}
             >
-              <img src="/REPSE_logo.svg" alt="" className="h-6 w-auto sm:h-7" />
-              <span className="text-2xl font-extrabold tracking-tight">
+              <img src="/REPSE_logo.svg" alt="" className="h-6 w-auto shrink-0 sm:h-7 max-[360px]:hidden" />
+              <span className="whitespace-nowrap text-xl font-extrabold tracking-tight min-[400px]:text-2xl">
                 REPSE
               </span>
             </div>
@@ -229,8 +268,8 @@ export default function Header({ onCartClick }) {
           <div className="flex-1" />
 
           {/* Right: icons */}
-          <div className="flex items-center space-x-4">
-            <div className="flex items-center space-x-0.5 sm:space-x-3">
+          <div className="ml-1 flex shrink-0 items-center sm:space-x-4">
+            <div className="flex items-center gap-0 sm:gap-3">
               {/* Search */}
               {SEARCH_ENABLED && (
               <div className="relative" ref={searchRef}>
@@ -244,7 +283,7 @@ export default function Header({ onCartClick }) {
                 </button>
 
                 {isSearchOpen && (
-                  <div className="absolute right-0 top-full mt-3 w-80 sm:w-96 bg-white rounded-xl shadow-lg border border-gray-100 z-50">
+                  <div className="absolute right-0 top-full mt-3 w-[min(20rem,calc(100vw-1.5rem))] sm:w-96 bg-white rounded-xl shadow-lg border border-gray-100 z-50">
                     <form onSubmit={handleSearchSubmit} className="p-3 border-b border-gray-100">
                       <div className="relative">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -279,9 +318,9 @@ export default function Header({ onCartClick }) {
                                 className="flex items-center gap-3 px-4 py-2 hover:bg-gray-50 cursor-pointer"
                               >
                                 <div className="w-10 h-10 bg-gray-100 rounded overflow-hidden flex-shrink-0">
-                                  {product.images?.[0] && (
+                                  {(product.primaryImage || product.images?.[0]) && (
                                     <img
-                                      src={product.images[0]}
+                                      src={product.primaryImage || product.images[0]}
                                       alt={product.name}
                                       className="w-full h-full object-cover"
                                     />
@@ -325,7 +364,7 @@ export default function Header({ onCartClick }) {
                     navigate('/favourites');
                   }
                 }}
-                className={`relative cursor-pointer hover:bg-gray-100 rounded-full p-2 ${
+                className={`relative hidden cursor-pointer hover:bg-gray-100 rounded-full p-2 md:flex ${
                   shakeFav ? "animate-cart-shake" : ""
                 }`}
               >
@@ -366,7 +405,7 @@ export default function Header({ onCartClick }) {
               <div className="relative" ref={accountRef}>
                 <button
                   type="button"
-                  className="p-2 rounded-full hover:bg-gray-100 cursor-pointer"
+                className="hidden p-2 rounded-full hover:bg-gray-100 cursor-pointer md:flex"
                   onClick={() => setIsAccountOpen((open) => !open)}
                   aria-expanded={isAccountOpen}
                   aria-label="Account menu"
@@ -430,8 +469,8 @@ export default function Header({ onCartClick }) {
 
       {/* Mobile nav panel */}
       <div
-        className={`md:hidden overflow-hidden transition-all duration-200 ease-in-out border-t border-gray-200 ${
-          isMenuOpen ? "max-h-96" : "max-h-0 border-t-0"
+        className={`md:hidden overflow-y-auto transition-[max-height] duration-300 ease-in-out border-t border-gray-200 ${
+          isMenuOpen ? "max-h-[80vh]" : "max-h-0 border-t-0"
         }`}
       >
         <nav className="flex flex-col px-6 py-3 text-sm text-gray-700">
@@ -477,6 +516,58 @@ export default function Header({ onCartClick }) {
               ))}
             </div>
           </div>
+
+          <div className="my-2 border-t border-gray-200" />
+          <button
+            type="button"
+            onClick={() => {
+              setIsMenuOpen(false);
+              if (!isLoggedIn) dispatch(showLoginPrompt());
+              else navigate("/favourites");
+            }}
+            className="flex min-h-11 items-center gap-3 py-2 text-left hover:text-gray-900"
+          >
+            <Heart className="h-4 w-4" />
+            <span>Favourites</span>
+            {favoritesCount > 0 && <span className="ml-auto text-xs text-gray-500">{favoritesCount}</span>}
+          </button>
+          {isLoggedIn ? (
+            <>
+              <button
+                type="button"
+                onClick={() => {
+                  setIsMenuOpen(false);
+                  navigate("/profile");
+                }}
+                className="flex min-h-11 items-center gap-3 py-2 text-left hover:text-gray-900"
+              >
+                <User className="h-4 w-4" /> Profile &amp; Orders
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setIsMenuOpen(false);
+                  handleLogout();
+                }}
+                className="flex min-h-11 items-center gap-3 py-2 text-left text-red-600 hover:text-red-700"
+              >
+                <LogOut className="h-4 w-4" /> Log out
+              </button>
+            </>
+          ) : (
+            <>
+              <button
+                type="button"
+                onClick={() => {
+                  setIsMenuOpen(false);
+                  navigate("/login");
+                }}
+                className="flex min-h-11 items-center gap-3 py-2 text-left hover:text-gray-900"
+              >
+                <User className="h-4 w-4" /> Log in or create an account
+              </button>
+            </>
+          )}
         </nav>
       </div>
     </header>
