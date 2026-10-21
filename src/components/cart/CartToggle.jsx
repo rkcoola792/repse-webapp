@@ -1,3 +1,4 @@
+"use client";
 import { Handbag, Heart} from "lucide-react";
 
 export default function CartWishlistToggle({ isWishlist, onToggle }) {

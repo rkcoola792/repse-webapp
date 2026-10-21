@@ -1,5 +1,6 @@
+"use client";
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "../navigation.js";
 import api from "../api/axios";
 
 const isValidEmail = (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);

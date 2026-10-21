@@ -1,4 +1,5 @@
-import { useNavigate } from "react-router-dom";
+"use client";
+import { useNavigate } from "../navigation.js";
 import { ArrowRight } from "lucide-react";
 import { CATEGORIES } from "../constants/categories";
 

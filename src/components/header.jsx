@@ -1,7 +1,8 @@
+"use client";
 import React, { useEffect, useRef, useState } from "react";
 import api from "../api/axios";
 import { CiShoppingCart } from "react-icons/ci";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation } from "../navigation.js";
 import { useSelector } from "react-redux";
 import {
   resetCartShake,

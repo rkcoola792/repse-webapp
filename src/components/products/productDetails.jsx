@@ -1,6 +1,8 @@
-import React, { useCallback, useEffect, useState } from "react";
+"use client";
+import React, { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "../../navigation.js";
 import {
   Heart,
   Star,
@@ -21,7 +23,7 @@ import ProductCard from "./productCard";
 
 const SIZE_LABELS = { S: "Small", M: "Medium", L: "Large" };
 
-export default function ProductDetails() {
+export default function ProductDetails({ initialProduct = null }) {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const favorites = useSelector((state) => state.favorites.favorites);
@@ -31,9 +33,18 @@ export default function ProductDetails() {
   const [selectedImage, setSelectedImage] = useState(0);
   const [openSection, setOpenSection] = useState("details");
 
-  const [product, setProduct] = useState(null);
-  const [suggestionProducts, setSuggestionProducts] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const { data: product = null, isPending: loading } = useQuery({
+    queryKey: ["product", id],
+    queryFn: async () => (await api.get(`/product/${id}`)).data,
+    initialData: initialProduct || undefined,
+    staleTime: 60_000,
+  });
+  const { data: suggestionProducts = [] } = useQuery({
+    queryKey: ["product-suggestions", id],
+    queryFn: async () => (await api.get("/products", { params: { page: 1, limit: 20 } })).data
+      .filter((item) => item._id !== id && item.topSelling === true),
+    staleTime: 60_000,
+  });
   const { id } = useParams();
 
   const isFavorite = favorites.some((item) => item.id === product?._id);
@@ -127,39 +138,10 @@ export default function ProductDetails() {
     }
   };
 
-  const getProductDetails = useCallback(async () => {
-    setLoading(true);
-    try {
-      const response = await api.get(`/product/${id}`);
-      const loadedProduct = response.data;
-      setProduct(loadedProduct);
-      const primaryImageIndex = loadedProduct.images?.indexOf(loadedProduct.primaryImage) ?? -1;
-      setSelectedImage(primaryImageIndex >= 0 ? primaryImageIndex : 0);
-    } catch (error) {
-      console.error("Error fetching product details:", error);
-    } finally {
-      setLoading(false);
-    }
-  }, [id]);
-  const getProducts = useCallback(async () => {
-    try {
-      const response = await api.get("/products", {
-        params: { page: 1, limit: 20 },
-      });
-      setSuggestionProducts(
-        response.data
-          .filter((prod) => prod._id !== id)
-          .filter((product) => product.topSelling === true)
-      );
-    } catch (error) {
-      console.error("Error fetching products:", error);
-    }
-  }, [id]);
-
   useEffect(() => {
-    getProductDetails();
-    getProducts();
-  }, [getProductDetails, getProducts]);
+    const primaryImageIndex = product?.images?.indexOf(product?.primaryImage) ?? -1;
+    setSelectedImage(primaryImageIndex >= 0 ? primaryImageIndex : 0);
+  }, [product]);
 
   if (loading) {
     return (
@@ -217,6 +199,8 @@ export default function ProductDetails() {
                   <img
                     src={image}
                     alt={`${product.name} ${i + 1}`}
+                    loading="lazy"
+                    decoding="async"
                     className="w-full h-full object-cover"
                   />
                 </div>
@@ -242,6 +226,8 @@ export default function ProductDetails() {
                   "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&h=400&fit=crop"
                 }
                 alt={product.name}
+                fetchPriority="high"
+                decoding="async"
                 className="w-full h-full object-cover"
               />
             </div>

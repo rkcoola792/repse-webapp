@@ -1,6 +1,8 @@
+"use client";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import api from "../../api/axios";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams } from "../../navigation.js";
 import { X, ChevronDown, Check, Search } from "lucide-react";
 import ProductCard from "./productCard";
 import ProductCardSkeleton from "./productCardSkeleton";
@@ -14,14 +16,7 @@ const SORT_OPTIONS = [
 
 const PAGE_SIZE = 20;
 
-export default function ProductPage() {
-  const [products, setProducts] = useState([]);
-  const [page, setPage] = useState(1);
-  const [hasMore, setHasMore] = useState(true);
-  const [loading, setLoading] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
-  const [loadError, setLoadError] = useState(false);
-  const [retryKey, setRetryKey] = useState(0);
+export default function ProductPage({ initialProducts = [] }) {
   const [sortBy, setSortBy] = useState("popular");
   const [isSortOpen, setIsSortOpen] = useState(false);
   const sortRef = useRef(null);
@@ -45,51 +40,27 @@ export default function ProductPage() {
     return response.data;
   };
 
-  // Initial load, and reset whenever the search or category changes.
-  useEffect(() => {
-    let cancelled = false;
-    const loadFirstPage = async () => {
-      setLoading(true);
-      setHasMore(true);
-      setLoadError(false);
-      try {
-        const data = await fetchPage(1, searchQuery, category?.label);
-        if (cancelled) return;
-        setProducts(data);
-        setPage(1);
-        setHasMore(data.length === PAGE_SIZE);
-      } catch (error) {
-        console.error("Error fetching products:", error);
-        if (!cancelled) setLoadError(true);
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    };
-    loadFirstPage();
-    return () => {
-      cancelled = true;
-    };
-  }, [searchQuery, category?.label, retryKey]);
+  const productsQuery = useInfiniteQuery({
+    queryKey: ["products", { search: searchQuery, category: category?.label }],
+    queryFn: ({ pageParam }) => fetchPage(pageParam, searchQuery, category?.label),
+    initialPageParam: 1,
+    initialData: !searchQuery && !category ? { pages: [initialProducts], pageParams: [1] } : undefined,
+    getNextPageParam: (lastPage, allPages) => lastPage.length === PAGE_SIZE ? allPages.length + 1 : undefined,
+    staleTime: 60_000,
+  });
+  const loading = productsQuery.isPending;
+  const loadError = productsQuery.isError;
+  const products = productsQuery.data?.pages.flat() || [];
+  const hasMore = productsQuery.hasNextPage ?? true;
+  const loadingMore = productsQuery.isFetchingNextPage;
 
   useEffect(() => {
     setSearchInput(searchQuery);
   }, [searchQuery]);
 
-  const loadMore = useCallback(async () => {
-    if (loading || loadingMore || !hasMore) return;
-    setLoadingMore(true);
-    try {
-      const nextPage = page + 1;
-      const data = await fetchPage(nextPage, searchQuery, category?.label);
-      setProducts((prev) => [...prev, ...data]);
-      setPage(nextPage);
-      setHasMore(data.length === PAGE_SIZE);
-    } catch (error) {
-      console.error("Error fetching more products:", error);
-    } finally {
-      setLoadingMore(false);
-    }
-  }, [loading, loadingMore, hasMore, page, searchQuery, category?.label]);
+  const loadMore = useCallback(() => {
+    if (!loading && !loadingMore && hasMore) productsQuery.fetchNextPage();
+  }, [loading, loadingMore, hasMore, productsQuery]);
 
   // Infinite scroll: load the next page once the sentinel enters the viewport
   useEffect(() => {
@@ -296,7 +267,7 @@ export default function ProductPage() {
         {!loading && loadError ? (
           <div role="alert" className="py-20 text-center">
             <p className="mb-4 text-gray-600">We couldn’t load products. Check your connection and try again.</p>
-            <button onClick={() => setRetryKey((key) => key + 1)} className="rounded-full border border-gray-300 px-6 py-2 text-sm font-semibold hover:bg-gray-50">
+            <button onClick={() => productsQuery.refetch()} className="rounded-full border border-gray-300 px-6 py-2 text-sm font-semibold hover:bg-gray-50">
               Try again
             </button>
           </div>

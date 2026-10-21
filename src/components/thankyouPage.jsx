@@ -1,8 +1,9 @@
+"use client";
 import React, { useEffect, useMemo, useState } from "react";
 import { Check, ArrowRight } from "lucide-react";
 import { clearCart } from "../store/cartSlice";
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "../navigation.js";
 import api from "../api/axios";
 
 const ANTON = "'Anton', sans-serif";
@@ -13,33 +14,28 @@ export default function ThankYouPage() {
   const [searchParams] = useSearchParams();
 
   // Snapshot the cart + saved address once, before it gets cleared below.
-  const [items] = useState(() => {
+  const [items, setItems] = useState([]);
+  const [address, setAddress] = useState(null);
+  const [confirmedAmount, setConfirmedAmount] = useState(null);
+
+  useEffect(() => {
     try {
       const checkout = JSON.parse(sessionStorage.getItem("repse_last_order") || "{}");
-      if (Array.isArray(checkout.items) && checkout.items.length > 0) return checkout.items;
-      const raw = localStorage.getItem("persist:cart");
-      if (!raw) return [];
-      const persistedCart = JSON.parse(raw); // { cart: "[...]", _persist: "..." }
-      return JSON.parse(persistedCart.cart);
+      let savedItems = checkout.items;
+      if (!Array.isArray(savedItems) || savedItems.length === 0) {
+        const raw = localStorage.getItem("persist:cart");
+        const persistedCart = raw ? JSON.parse(raw) : null;
+        savedItems = persistedCart ? JSON.parse(persistedCart.cart) : [];
+      }
+      setItems(Array.isArray(savedItems) ? savedItems : []);
+      setAddress(checkout.address || null);
+      setConfirmedAmount(checkout.amount ?? null);
     } catch {
-      return [];
+      setItems([]);
+      setAddress(null);
+      setConfirmedAmount(null);
     }
-  });
-  const [address] = useState(() => {
-    try {
-      const raw = sessionStorage.getItem("repse_last_order");
-      return raw ? JSON.parse(raw).address : null;
-    } catch {
-      return null;
-    }
-  });
-  const [confirmedAmount] = useState(() => {
-    try {
-      return JSON.parse(sessionStorage.getItem("repse_last_order") || "{}").amount ?? null;
-    } catch {
-      return null;
-    }
-  });
+  }, []);
 
   const cartItemsLive = useSelector((state) => state.cart.cart);
   const orderItems = items.length > 0 ? items : cartItemsLive;
@@ -49,9 +45,9 @@ export default function ThankYouPage() {
     () => orderItems.reduce((sum, item) => sum + item.price * item.quantity, 0),
     [orderItems]
   );
-  const configuredDiscountPercent = Number(import.meta.env.VITE_ORDER_DISCOUNT_PERCENT);
+  const configuredDiscountPercent = Number(process.env.NEXT_PUBLIC_ORDER_DISCOUNT_PERCENT);
   const discountPercent = Number.isFinite(configuredDiscountPercent) ? configuredDiscountPercent : 20;
-  const configuredDeliveryFee = Number(import.meta.env.VITE_ORDER_DELIVERY_FEE);
+  const configuredDeliveryFee = Number(process.env.NEXT_PUBLIC_ORDER_DELIVERY_FEE);
   const discount = subtotal > 0 ? subtotal * (discountPercent / 100) : 0;
   const deliveryFee = subtotal > 0 ? (Number.isFinite(configuredDeliveryFee) ? configuredDeliveryFee : 15) : 0;
   const totalPaid = confirmedAmount !== null && Number.isFinite(Number(confirmedAmount))
@@ -209,7 +205,7 @@ export default function ThankYouPage() {
               >
                 <div className="w-16 h-[76px] bg-gray-100 overflow-hidden shrink-0">
                   {item.image && (
-                    <img
+                    <img loading="lazy" decoding="async"
                       src={item.image}
                       alt={item.name}
                       className="w-full h-full object-cover"

@@ -1,3 +1,4 @@
+"use client";
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { removeUser } from "../store/userSlice";
@@ -12,7 +13,7 @@ import {
   ChevronLeft,
 } from "lucide-react";
 import api from "../api/axios";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "../navigation.js";
 
 const SIDEBAR_ITEMS = [
   { key: "overview", label: "Overview", icon: LayoutGrid },
@@ -334,7 +335,7 @@ export default function Profile() {
                         >
                           <div className="w-14 h-16 bg-gray-100 rounded overflow-hidden shrink-0">
                             {order.items?.[0]?.image && (
-                              <img
+                              <img loading="lazy" decoding="async"
                                 src={order.items[0].image}
                                 alt={order.items[0].name || "Order"}
                                 className="w-full h-full object-cover"
@@ -526,7 +527,7 @@ export default function Profile() {
                                 >
                                   <div className="w-14 h-16 bg-gray-100 rounded overflow-hidden shrink-0">
                                     {item.image && (
-                                      <img
+                                      <img loading="lazy" decoding="async"
                                         src={item.image}
                                         alt={item.name}
                                         className="w-full h-full object-cover"
@@ -670,7 +671,7 @@ export default function Profile() {
                                 >
                                   <div className="w-14 h-16 bg-gray-100 rounded overflow-hidden shrink-0">
                                     {item.image && (
-                                      <img
+                                      <img loading="lazy" decoding="async"
                                         src={item.image}
                                         alt={item.name}
                                         className="w-full h-full object-cover"

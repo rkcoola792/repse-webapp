@@ -1,7 +1,8 @@
+"use client";
 import React from 'react';
 import ProductCard from './products/productCard';
 import ProductCardSkeleton from './products/productCardSkeleton';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from "../navigation.js";
 
 const TopSelling = ({ products, loading }) => {
   const navigate = useNavigate();

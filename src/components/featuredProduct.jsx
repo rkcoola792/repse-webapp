@@ -1,4 +1,5 @@
-import { useNavigate } from "react-router-dom";
+"use client";
+import { useNavigate } from "../navigation.js";
 import { ArrowRight } from "lucide-react";
 
 export default function FeaturedProduct({ product, loading }) {
@@ -36,7 +37,7 @@ export default function FeaturedProduct({ product, loading }) {
               New Drop
             </span>
           )}
-          <img
+          <img loading="lazy" decoding="async"
             src={product.primaryImage || product.images?.[0]}
             alt={product.name}
             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
